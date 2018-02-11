@@ -22,6 +22,10 @@ int main(void) {
 	    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	}, 500);
 
+	schedule_task([](){
+	    unschedule_task(0);
+	}, 10000 - 1);
+
 	start_scheduler();
 
 	for (;;);

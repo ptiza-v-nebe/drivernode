@@ -11,16 +11,18 @@
 #define SCHEDULER_SCHEDULER_H_
 
 #include "scheduler/Task.h"
-
 #include <functional>
 
+/**
+ * Maximum number of task that can be scheduled at a time
+ */
 constexpr int MAX_TASKS = 10;
 
 class Scheduler {
 public:
     static Scheduler& getScheduler(); //Singleton
 private:
-    Task tasks[MAX_TASKS];
+    Task tasks[MAX_TASKS]; ///< buffer for scheduling slots
 private:
     Scheduler() = default;
 public:
