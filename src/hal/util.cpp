@@ -55,6 +55,7 @@ static void setupCLK(void) {
 
     // Update SystemCoreCloc Variable
     SystemCoreClockUpdate();
+    HAL_RCC_GetSysClockFreq();
     // Final state: MSI: 4 MHz, PLL-out: 80MHz, SYSCLK: PLL-out
 }
 

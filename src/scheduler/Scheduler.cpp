@@ -13,6 +13,7 @@
 
 /**
  * Override Systick-Callback from CubeHAL
+ * @attention This is called from an ISR!
  */
 void HAL_SYSTICK_Callback(void) {
     Scheduler::getScheduler().tick();
@@ -50,6 +51,16 @@ int Scheduler::addTask(std::function<void(void)> task, int delay, int period) {
 }
 
 /**
+ * Add a task to be scheduled from an ISR.
+ *
+ * @param task   the task to execute
+ */
+void Scheduler::addISRTask(std::function<void(void)> task) {
+    // last task is reserved for ISR
+    tasks[MAX_TASKS] = {task, 0 , 0};
+}
+
+/**
  * Remove a scheduled task
  *
  * @param id the id of the task to remove
@@ -66,7 +77,7 @@ void Scheduler::removeTask(int id) {
  */
 void Scheduler::run() {
     while (1) {
-        for (int i = 0; i < MAX_TASKS; i++) {
+        for (int i = 0; i < TASK_COUNT; i++) {
             tasks[i].execute();
         }
         // TODO: maybe sleep here?
@@ -74,10 +85,11 @@ void Scheduler::run() {
 }
 
 /**
- * **Executed from ISR** - tick all tasks
+ * Tick all tasks.
+ * @attention This is called from an ISR!
  */
 void Scheduler::tick() {
-    for (int i = 0; i < MAX_TASKS; i++) {
+    for (int i = 0; i < TASK_COUNT; i++) {
         tasks[i].tick();
     }
 }
@@ -118,6 +130,15 @@ int schedule_repeating_task(std::function<void(void)> task, int period,
 }
 
 /**
+ * Wrapper: schedule a task from an ISR to defer it to normal context
+ *
+ * @param task   the task to be run in normal context
+ */
+void schedule_task_from_isr(std::function<void(void)> task) {
+    Scheduler::getScheduler().addISRTask(task);
+}
+
+/**
  * Remove a task that is scheduled.
  *
  * @param id the is of the task to be removed
@@ -125,5 +146,4 @@ int schedule_repeating_task(std::function<void(void)> task, int period,
 void unschedule_task(int id) {
     Scheduler::getScheduler().removeTask(id);
 }
-
 /** @} */

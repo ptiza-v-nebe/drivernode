@@ -10,23 +10,29 @@
 #ifndef SERIAL_UARTWRAPPER_H_
 #define SERIAL_UARTWRAPPER_H_
 
+#include "serial/UARTReceiveHandler.h"
+
 #include <stm32l4xx.h>
 #include <string>
 
 class UARTWrapper {
+public:
+    static UARTWrapper& getInstance();
 private:
 	UART_HandleTypeDef uart;
 	GPIO_InitTypeDef uart_gpio;
-public:
+	UARTReceiveHandler *receiveHandler;
+private:
 	UARTWrapper();
-	virtual ~UARTWrapper();
 
+public:
 	void send(std::string msg);
-	std::string receive();
+	void send(const uint8_t* buffer, const int size);
+	void handleByte(uint8_t byte);
+	void setReceiveHandler(UARTReceiveHandler *receiveHandler);
 
 private:
 	void init();
-	void release();
 };
 
 #endif /* SERIAL_UARTWRAPPER_H_ */
