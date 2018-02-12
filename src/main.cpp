@@ -6,10 +6,12 @@
  */
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
+#include "serial/UARTWrapper.h"
 
 int main(void) {
 	setupHardware();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_USART2_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpioa = getDefaultGPIO();
 	gpioa.Pin = GPIO_PIN_5;
@@ -22,9 +24,10 @@ int main(void) {
 	    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	}, 500);
 
-	schedule_task([](){
-	    unschedule_task(0);
-	}, 10000 - 1);
+	UARTWrapper uartWrapper;
+	schedule_repeating_task([&uartWrapper](){
+		uartWrapper.send("Hello World - From the Nucleo :)\r\n");
+	}, 1000, 250);
 
 	start_scheduler();
 
