@@ -76,7 +76,8 @@ int main(void) {
     uartWrapper.setReceiveHandler(&handler);
 
     schedule_repeating_task([&uartWrapper]() {
-        uartWrapper.send("Hello World - From the Nucleo\r\n");
+        //uartWrapper.send("Hello World - From the Nucleo\r\n");
+        printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255); // @suppress("Float formatting support")
     }, 1000, 250);
 
     start_scheduler();

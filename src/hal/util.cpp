@@ -69,7 +69,7 @@ void setupHardware(){
 }
 
 GPIO_InitTypeDef getDefaultGPIO(){
-    GPIO_InitTypeDef gpio = {0};
+    GPIO_InitTypeDef gpio;
     gpio.Pin = 0; // no pins
     gpio.Mode = GPIO_MODE_INPUT;
     gpio.Speed = GPIO_SPEED_MEDIUM;

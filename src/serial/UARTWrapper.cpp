@@ -10,20 +10,39 @@
 #include <serial/UARTWrapper.h>
 
 #include "hal/util.h"
+#include "hal/interupts.h"
 
 static constexpr int TRANSMIT_TIMEOUT_MS = 10;
 
+// ////////////////////////////////////////////////////////
+// ISRs and other C-Stuff
+// ////////////////////////////////////////////////////////
 extern "C" {
 void USART2_IRQHandler() {
     if (USART2->ISR & USART_ISR_RXNE) {
         // bit was received
         UARTWrapper::getInstance().handleByte(USART2->RDR);
     } else {
-        // unexpected...error maybe?
+        // TODO: unexpected...error maybe?
     }
 }
+
+/**
+ * Low-Level 'syscall' needed for printf.
+ *
+ * @param ch the character to send
+ * @return always 0
+ */
+int __io_putchar(int ch) {
+    UARTWrapper::getInstance().send(reinterpret_cast<uint8_t*>(&ch), 1);
+    return 0;
 }
 
+} // extern "C"
+
+// ////////////////////////////////////////////////////////
+// Implementation
+// ////////////////////////////////////////////////////////
 UARTWrapper& UARTWrapper::getInstance() {
     static UARTWrapper instance;
     return instance;
@@ -69,13 +88,10 @@ void UARTWrapper::init() {
     HAL_GPIO_Init(GPIOA, &uart_gpio);
     HAL_UART_Init(&uart);
 
-    /*SET_BIT(USART2->CR1, USART_CR1_RE);
-     SET_BIT(USART2->CR1, USART_CR1_RXNEIE);*/
-
-    uint8_t unusedBuffer; // needed for the call
+    uint8_t unusedBuffer;
     // Use receive IT function but we are actually handling the interrupt ourselves
     HAL_UART_Receive_IT(&uart, &unusedBuffer, 1);
-    HAL_NVIC_SetPriority(USART2_IRQn, 2, 0);
+    HAL_NVIC_SetPriority(USART2_IRQn, UART_PREMPTION_PRIO, UART_SUB_PRIO);
     HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
