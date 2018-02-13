@@ -7,10 +7,14 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/UARTWrapper.h"
+#include "serial/ODROIDCommandHandler.h"
+
+#include "serial/TestMessage1.h"
+#include "serial/TestMessage2.h"
 
 class DebugUARTReceiveHandler: public UARTReceiveHandler {
 public:
-    void processByte(uint8_t byte) override {
+    void processByte(uint8_t) override {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     }
 };
@@ -69,16 +73,25 @@ int main(void) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     }, 500);
 
+    MessageDispatcher dispatcher;
+    dispatcher.registerMessageHandler<TestMessage1>([](TestMessage1 msg) {
+        msg.printYourself();
+    });
+    dispatcher.registerMessageHandler<TestMessage2>([](TestMessage2 msg) {
+        msg.printYourself();
+    });
+
     UARTWrapper& uartWrapper = UARTWrapper::getInstance();
     //DebugUARTReceiveHandler handler;
     //EchoUARTReceiveHandler handler;
-    SmartEchoUARTReceiveHandler handler;
+    //SmartEchoUARTReceiveHandler handler;
+    ODROIDCommandHandler handler(dispatcher);
     uartWrapper.setReceiveHandler(&handler);
 
     schedule_repeating_task([&uartWrapper]() {
         //uartWrapper.send("Hello World - From the Nucleo\r\n");
-        printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255); // @suppress("Float formatting support")
-    }, 1000, 250);
+            printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);// @suppress("Float formatting support")
+        }, 1000, 250);
 
     start_scheduler();
 
