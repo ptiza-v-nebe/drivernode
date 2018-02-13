@@ -19,9 +19,9 @@ class UARTWrapper {
 public:
     static UARTWrapper& getInstance();
 private:
-	UART_HandleTypeDef uart;
-	GPIO_InitTypeDef uart_gpio;
-	UARTReceiveHandler *receiveHandler;
+	UART_HandleTypeDef uart; ///< low level uart handle
+	GPIO_InitTypeDef uart_gpio; ///< low level gpio handle
+	UARTReceiveHandler *receiveHandler; ///< the receive handler to be notified about incoming bytes
 private:
 	UARTWrapper();
 

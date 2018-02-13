@@ -18,9 +18,12 @@ static constexpr int TRANSMIT_TIMEOUT_MS = 10;
 // ISRs and other C-Stuff
 // ////////////////////////////////////////////////////////
 extern "C" {
+/**
+ * ISR for USART2
+ */
 void USART2_IRQHandler() {
     if (USART2->ISR & USART_ISR_RXNE) {
-        // bit was received
+        // byte was received
         UARTWrapper::getInstance().handleByte(USART2->RDR);
     } else {
         // TODO: unexpected...error maybe?
@@ -43,26 +46,47 @@ int __io_putchar(int ch) {
 // ////////////////////////////////////////////////////////
 // Implementation
 // ////////////////////////////////////////////////////////
+/**
+ * Singleton access to the UART Wrapper.
+ *
+ * @return the UARTWrapper (for USART2)
+ */
 UARTWrapper& UARTWrapper::getInstance() {
-    static UARTWrapper instance;
+    static UARTWrapper instance; // Meyers singleton
     return instance;
 }
 
+/**
+ * Constructs the UARTWrapper
+ */
 UARTWrapper::UARTWrapper() :
         receiveHandler(nullptr) {
     init();
 }
 
+/**
+ * Handles receiving a byte.
+ *
+ * @param byte the byte that was received
+ */
 void UARTWrapper::handleByte(uint8_t byte) {
     if (receiveHandler) {
         receiveHandler->processByte(byte);
     }
 }
 
+/**
+ * Change the receive handler that will be notified about incoming bytes.
+ *
+ * @param receiveHandler the new receive handler
+ */
 void UARTWrapper::setReceiveHandler(UARTReceiveHandler* receiveHandler) {
     this->receiveHandler = receiveHandler;
 }
 
+/**
+ * Initialize the UART instance
+ */
 void UARTWrapper::init() {
     uart.Instance = USART2;
 
@@ -95,10 +119,21 @@ void UARTWrapper::init() {
     HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
+/**
+ * Helper to send a string.
+ *
+ * @param msg the string to send.
+ */
 void UARTWrapper::send(std::string msg) {
     send(reinterpret_cast<const uint8_t*>(msg.c_str()), msg.length());
 }
 
+/**
+ * Send data via UART
+ *
+ * @param buffer the data to send
+ * @param size   the size of the data
+ */
 void UARTWrapper::send(const uint8_t* buffer, const int size) {
     HAL_UART_Transmit(&uart, const_cast<uint8_t*>(buffer), size,
             TRANSMIT_TIMEOUT_MS);
