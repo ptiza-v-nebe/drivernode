@@ -23,7 +23,8 @@ MessageDispatcher::MessageDispatcher() {
 void MessageDispatcher::processMessage(uint8_t* msg, int size) {
     int messageType = (msg[0] & MSG_TYPE_MASK) >> MSG_TYPE_OFFSET;
     if(messageType > 0 && messageType < MESSAGE_TYPE_COUNT) {
-        messageHandlers[messageType](msg, size);
+        // pass payload to serializer
+        messageHandlers[messageType](msg + 1, size - 1);
     }
 }
 /** @} */

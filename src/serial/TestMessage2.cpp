@@ -13,10 +13,10 @@
 
 TestMessage2 TestMessage2::deserialize(uint8_t* msg, int size) {
     TestMessage2 obj;
-    if(size == 3){
-        obj.payload1 = msg[1];
-        obj.payload2 = msg[2];
-        obj.number = ((uint16_t)msg[1] << 8) | msg[2];
+    if(size == 2){
+        obj.payload1 = msg[0];
+        obj.payload2 = msg[1];
+        obj.number = ((uint16_t)msg[0] << 8) | msg[1];
     }
     return obj;
 }
