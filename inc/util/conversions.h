@@ -12,8 +12,13 @@
 
 constexpr float PI = 3.1415926535;
 
-constexpr float degreesToRadians(float degrees);
-constexpr float radiansToDegrees(float rad);
+constexpr float degreesToRadians(float degrees) {
+    return degrees * PI / 180;
+}
+
+constexpr float radiansToDegrees(float rad) {
+    return rad * 180 / PI;
+}
 
 
 #endif /* UTIL_CONVERSIONS_H_ */
