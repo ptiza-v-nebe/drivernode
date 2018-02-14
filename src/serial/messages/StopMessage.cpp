@@ -9,9 +9,17 @@
 
 #include <serial/messages/StopMessage.h>
 
-StopMessage::StopMessage() {
-    // TODO Auto-generated constructor stub
+#include <cstdio>
 
+Maybe<StopMessage> StopMessage::deserialize(uint8_t*, int) {
+    return {StopMessage()};
 }
 
+int StopMessage::serialize(uint8_t*, int) {
+    return 0;
+}
+
+void StopMessage::print() {
+    printf("StopCommand");
+}
 /** @} */

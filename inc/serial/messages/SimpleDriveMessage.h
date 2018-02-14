@@ -10,19 +10,30 @@
 #ifndef SERIAL_MESSAGES_SIMPLEDRIVEMESSAGE_H_
 #define SERIAL_MESSAGES_SIMPLEDRIVEMESSAGE_H_
 
-#include <cstdint>
+#include "serial/messages/drive_types.h"
 
-class SimpleDriveMessage {
+#include "serial/messages/Message.h"
+#include "serial/messages/Maybe.h"
+
+constexpr int PAYLOAD_SIZE = 1;
+
+class SimpleDriveMessage : public Message {
 public:
-    static SimpleDriveMessage deserialize(uint8_t* msg, int size);
+    static Maybe<SimpleDriveMessage> deserialize(uint8_t* msg, int size);
     static int getMessageType() {
         return 0x2;
     }
+private:
+    DriveSpeed speed;
+    DriveDirection direction;
 public:
-    SimpleDriveMessage();
+    SimpleDriveMessage(const DriveSpeed& speed, const DriveDirection& direction);
 
-    int serialize(uint8_t* buffer, int buffersize);
-    void print();
+    int serialize(uint8_t* buffer, int buffersize) override;
+    void print() override;
+
+    const DriveSpeed& getSpeed();
+    const DriveDirection& getDirection();
 };
 
 #endif /* SERIAL_MESSAGES_SIMPLEDRIVEMESSAGE_H_ */

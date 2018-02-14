@@ -10,19 +10,18 @@
 #ifndef SERIAL_MESSAGES_STOPMESSAGE_H_
 #define SERIAL_MESSAGES_STOPMESSAGE_H_
 
-#include <cstdint>
+#include "serial/messages/Message.h"
+#include "serial/messages/Maybe.h"
 
-class StopMessage {
+class StopMessage : public Message {
 public:
-    static StopMessage deserialize(uint8_t* msg, int size);
+    static Maybe<StopMessage> deserialize(uint8_t* msg, int size);
     static int getMessageType() {
         return 0x1;
     }
 public:
-    StopMessage();
-
-    int serialize(uint8_t* buffer, int buffersize);
-    void print();
+    int serialize(uint8_t* buffer, int buffersize) override;
+    void print() override;
 };
 
 #endif /* SERIAL_MESSAGES_STOPMESSAGE_H_ */

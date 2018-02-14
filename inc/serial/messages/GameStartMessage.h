@@ -10,19 +10,18 @@
 #ifndef SERIAL_MESSAGES_GAMESTARTMESSAGE_H_
 #define SERIAL_MESSAGES_GAMESTARTMESSAGE_H_
 
-#include <cstdint>
+#include "serial/messages/Message.h"
+#include "serial/messages/Maybe.h"
 
-class GameStartMessage {
+class GameStartMessage : public Message {
 public:
-    static GameStartMessage deserialize(uint8_t* msg, int size);
+    static Maybe<GameStartMessage> deserialize(uint8_t* msg, int size);
     static int getMessageType() {
         return 0xE;
     }
 public:
-    GameStartMessage();
-
-    int serialize(uint8_t* buffer, int buffersize);
-    void print();
+    int serialize(uint8_t* buffer, int buffersize) override;
+    void print() override;
 };
 
 #endif /* SERIAL_MESSAGES_GAMESTARTMESSAGE_H_ */

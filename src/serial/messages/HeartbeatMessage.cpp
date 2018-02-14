@@ -9,9 +9,17 @@
 
 #include <serial/messages/HeartbeatMessage.h>
 
-HeartbeatMessage::HeartbeatMessage() {
-    // TODO Auto-generated constructor stub
+#include <cstdio>
 
+Maybe<HeartbeatMessage>HeartbeatMessage::deserialize(uint8_t*, int) {
+    return {HeartbeatMessage()};
 }
 
+int HeartbeatMessage::serialize(uint8_t*, int) {
+    return 0;
+}
+
+void HeartbeatMessage::print() {
+    printf("Heartbeat");
+}
 /** @} */

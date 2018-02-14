@@ -8,10 +8,17 @@
  */
 
 #include <serial/messages/GameStartMessage.h>
+#include <cstdio>
 
-GameStartMessage::GameStartMessage() {
-    // TODO Auto-generated constructor stub
-
+Maybe<GameStartMessage> GameStartMessage::deserialize(uint8_t*, int) {
+    return {GameStartMessage()};
 }
 
+int GameStartMessage::serialize(uint8_t*, int) {
+    return 0;
+}
+
+void GameStartMessage::print() {
+    printf("GameStartCommand");
+}
 /** @} */

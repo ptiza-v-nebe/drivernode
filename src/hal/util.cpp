@@ -78,6 +78,4 @@ GPIO_InitTypeDef getDefaultGPIO(){
 
     return gpio;
 }
-
-
 /** @} */
