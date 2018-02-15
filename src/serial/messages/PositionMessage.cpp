@@ -12,9 +12,11 @@
 #include "util/conversions.h"
 #include <cstdio>
 
-Maybe<PositionMessage> PositionMessage::deserialize(uint8_t* msg, int size) {
+static constexpr int PAYLOAD_SIZE = 8;
+
+std::experimental::optional<PositionMessage> PositionMessage::deserialize(const uint8_t* msg, const int size) {
     if (size != PAYLOAD_SIZE) {
-        return Maybe<PositionMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     uint16_t x, y;

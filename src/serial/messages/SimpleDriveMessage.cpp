@@ -15,11 +15,13 @@ static constexpr uint8_t SPEED_MASK = 0x0F;
 static constexpr uint8_t DIRECTION_MASK = 0xF0;
 static constexpr int DIRECTION_OFFSET = 4;
 
-Maybe<SimpleDriveMessage> SimpleDriveMessage::deserialize(uint8_t* msg,
-        int size) {
+static constexpr int PAYLOAD_SIZE = 1;
+
+std::experimental::optional<SimpleDriveMessage> SimpleDriveMessage::deserialize(const uint8_t* msg,
+        const int size) {
     if (size != PAYLOAD_SIZE) {
         // something is wrong
-        return Maybe<SimpleDriveMessage>::EMPTY;
+        return std::experimental::nullopt;
     } else {
         DriveSpeed speed = static_cast<DriveSpeed>(msg[0] & SPEED_MASK);
         DriveDirection direction = static_cast<DriveDirection>((msg[0]

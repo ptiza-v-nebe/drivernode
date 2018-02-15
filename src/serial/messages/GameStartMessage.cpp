@@ -10,7 +10,7 @@
 #include <serial/messages/GameStartMessage.h>
 #include <cstdio>
 
-Maybe<GameStartMessage> GameStartMessage::deserialize(uint8_t*, int) {
+std::experimental::optional<GameStartMessage> GameStartMessage::deserialize(const uint8_t*, const int) {
     return {GameStartMessage()};
 }
 

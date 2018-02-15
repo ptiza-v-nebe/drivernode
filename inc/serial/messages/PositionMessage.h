@@ -11,13 +11,11 @@
 #define SERIAL_MESSAGES_POSITIONMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
-
-constexpr int PAYLOAD_SIZE = 8;
+#include "util/optional.hpp"
 
 class PositionMessage : public Message {
 public:
-    static Maybe<PositionMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<PositionMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x6;
     }

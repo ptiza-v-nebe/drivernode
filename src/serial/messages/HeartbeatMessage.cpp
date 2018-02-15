@@ -11,7 +11,7 @@
 
 #include <cstdio>
 
-Maybe<HeartbeatMessage>HeartbeatMessage::deserialize(uint8_t*, int) {
+std::experimental::optional<HeartbeatMessage>HeartbeatMessage::deserialize(const uint8_t*, const int) {
     return {HeartbeatMessage()};
 }
 

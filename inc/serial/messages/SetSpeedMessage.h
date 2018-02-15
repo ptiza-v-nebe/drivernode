@@ -11,14 +11,11 @@
 #define SERIAL_MESSAGES_SETSPEEDMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
-
-constexpr int PAYLOAD_SIZE_EQUAL = 2;
-constexpr int PAYLOAD_SIZE_BOTH = 4;
+#include "util/optional.hpp"
 
 class SetSpeedMessage: public Message {
 public:
-    static Maybe<SetSpeedMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<SetSpeedMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0xF;
     }

@@ -12,9 +12,11 @@
 
 SMARTENUM_SPECIAL_DEFINE_NAMES(Status, STATUS_VALUES)
 
-Maybe<StatusMessage> StatusMessage::deserialize(uint8_t* msg, int size) {
+static constexpr int PAYLOAD_SIZE = 1;
+
+std::experimental::optional<StatusMessage> StatusMessage::deserialize(const uint8_t* msg, const int size) {
     if(size != PAYLOAD_SIZE){
-        return Maybe<StatusMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     Status status = getEnum<Status>(msg[0]);

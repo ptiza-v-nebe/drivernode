@@ -19,5 +19,7 @@ static constexpr int MSG_TYPE_OFFSET = 4;
 
 constexpr uint8_t PAYLOAD_SIZE_MASK = 0x0F;
 
+constexpr int MESSAGE_TYPE_COUNT = MAX_TYPE + 1;
+
 #endif /* SERIAL_MESSAGES_MESSAGE_INFO_H_ */
 /** @} */

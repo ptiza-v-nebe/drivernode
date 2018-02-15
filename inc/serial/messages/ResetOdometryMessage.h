@@ -11,13 +11,11 @@
 #define SERIAL_MESSAGES_RESETODOMETRYMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
-
-constexpr int PAYLOAD_SIZE = 8;
+#include "util/optional.hpp"
 
 class ResetOdometryMessage : public Message {
 public:
-    static Maybe<ResetOdometryMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<ResetOdometryMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x8;
     }

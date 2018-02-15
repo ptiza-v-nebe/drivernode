@@ -11,11 +11,11 @@
 #define SERIAL_MESSAGES_HEARTBEATMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
+#include "util/optional.hpp"
 
 class HeartbeatMessage : public Message {
 public:
-    static Maybe<HeartbeatMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<HeartbeatMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x0;
     }

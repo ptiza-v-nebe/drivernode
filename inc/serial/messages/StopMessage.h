@@ -11,11 +11,11 @@
 #define SERIAL_MESSAGES_STOPMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
+#include "util/optional.hpp"
 
 class StopMessage : public Message {
 public:
-    static Maybe<StopMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<StopMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x1;
     }

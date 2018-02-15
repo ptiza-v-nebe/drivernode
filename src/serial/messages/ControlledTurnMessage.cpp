@@ -12,10 +12,12 @@
 #include "util/conversions.h"
 #include <cstdio>
 
-Maybe<ControlledTurnMessage> ControlledTurnMessage::deserialize(uint8_t* msg,
-        int size) {
+static constexpr int PAYLOAD_SIZE = 5;
+
+std::experimental::optional<ControlledTurnMessage> ControlledTurnMessage::deserialize(const uint8_t* msg,
+        const int size) {
     if (size != PAYLOAD_SIZE) {
-        return Maybe<ControlledTurnMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     TurnSpeed speed = static_cast<TurnSpeed>(msg[0]);

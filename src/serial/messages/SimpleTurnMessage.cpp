@@ -15,11 +15,13 @@ static constexpr uint8_t SPEED_MASK = 0x0F;
 static constexpr uint8_t DIRECTION_MASK = 0xF0;
 static constexpr int DIRECTION_OFFSET = 4;
 
-Maybe<SimpleTurnMessage> SimpleTurnMessage::deserialize(uint8_t* msg,
-        int size) {
+static constexpr int PAYLOAD_SIZE = 1;
+
+std::experimental::optional<SimpleTurnMessage> SimpleTurnMessage::deserialize(const uint8_t* msg,
+        const int size) {
     if (size != PAYLOAD_SIZE) {
         // invalid
-        return Maybe<SimpleTurnMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     TurnSpeed speed = static_cast<TurnSpeed>(msg[0] & SPEED_MASK);

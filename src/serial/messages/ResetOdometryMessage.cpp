@@ -12,10 +12,12 @@
 #include "util/conversions.h"
 #include <cstdio>
 
-Maybe<ResetOdometryMessage> ResetOdometryMessage::deserialize(uint8_t* msg,
-        int size) {
+static constexpr int PAYLOAD_SIZE = 8;
+
+std::experimental::optional<ResetOdometryMessage> ResetOdometryMessage::deserialize(const uint8_t* msg,
+        const int size) {
     if (size != PAYLOAD_SIZE) {
-        return Maybe<ResetOdometryMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     uint16_t x, y;

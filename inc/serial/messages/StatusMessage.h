@@ -13,7 +13,7 @@
 #include "util/enum_to_string.h"
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
+#include "util/optional.hpp"
 
 #define STATUS_VALUES(m)\
     m(OK, 'O')\
@@ -26,10 +26,9 @@
 SMARTENUM_SPECIAL_DEFINE_ENUM(Status, STATUS_VALUES)
 
 
-constexpr int PAYLOAD_SIZE = 1;
 class StatusMessage : public Message {
 public:
-    static Maybe<StatusMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<StatusMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x7;
     }

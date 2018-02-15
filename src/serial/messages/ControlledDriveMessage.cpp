@@ -11,11 +11,13 @@
 #include "serial/messages/util.h"
 #include <cstdio>
 
-Maybe<ControlledDriveMessage> ControlledDriveMessage::deserialize(uint8_t* msg,
-        int size) {
+static constexpr int PAYLOAD_SIZE = 5;
+
+std::experimental::optional<ControlledDriveMessage> ControlledDriveMessage::deserialize(const uint8_t* msg,
+        const int size) {
     if (size != PAYLOAD_SIZE) {
         // invalid message
-        return Maybe<ControlledDriveMessage>::EMPTY;
+        return std::experimental::nullopt;
     }
 
     DriveSpeed speed = static_cast<DriveSpeed>(msg[0]);

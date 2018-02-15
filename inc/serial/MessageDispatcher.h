@@ -10,13 +10,11 @@
 #ifndef SERIAL_MESSAGEDISPATCHER_H_
 #define SERIAL_MESSAGEDISPATCHER_H_
 
-#include "serial/messages/Maybe.h"
+#include "util/optional.hpp"
 #include "serial/messages/Message.h"
 #include "serial/MessageSender.h"
 #include "serial/messages/message_info.h"
 #include <functional>
-
-constexpr int MESSAGE_TYPE_COUNT = MAX_TYPE + 1;
 
 class MessageDispatcher {
 private:
@@ -45,9 +43,9 @@ inline void MessageDispatcher::registerMessageHandler(
     if(messageType > 0 && messageType < MESSAGE_TYPE_COUNT) {
         // message type is valid --> register handler
         messageHandlers[messageType] = [this, handler](uint8_t* msg, int size) {
-            Maybe<Message> result = Message::deserialize(msg, size);
-            if(result.isValid()) {
-                handler(result.get());
+            auto result = Message::deserialize(msg, size);
+            if(result.has_value()) {
+                handler(*result);
                 sendAcknowledge();
             } else {
                 sendInvalid();

@@ -13,13 +13,11 @@
 #include "serial/messages/drive_types.h"
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
-
-constexpr int PAYLOAD_SIZE = 5;
+#include "util/optional.hpp"
 
 class ControlledDriveMessage : public Message {
 public:
-    static Maybe<ControlledDriveMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<ControlledDriveMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0x3;
     }

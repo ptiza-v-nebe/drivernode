@@ -11,11 +11,11 @@
 #define SERIAL_MESSAGES_GAMESTARTMESSAGE_H_
 
 #include "serial/messages/Message.h"
-#include "serial/messages/Maybe.h"
+#include "util/optional.hpp"
 
 class GameStartMessage : public Message {
 public:
-    static Maybe<GameStartMessage> deserialize(uint8_t* msg, int size);
+    static std::experimental::optional<GameStartMessage> deserialize(const uint8_t* msg, const int size);
     static int getMessageType() {
         return 0xE;
     }

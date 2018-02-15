@@ -11,7 +11,10 @@
 #include "serial/messages/util.h"
 #include <cstdio>
 
-Maybe<SetSpeedMessage> SetSpeedMessage::deserialize(uint8_t* msg, int size) {
+static constexpr int PAYLOAD_SIZE_EQUAL = 2;
+static constexpr int PAYLOAD_SIZE_BOTH = 4;
+
+std::experimental::optional<SetSpeedMessage> SetSpeedMessage::deserialize(const uint8_t* msg, const int size) {
     switch (size) {
         case PAYLOAD_SIZE_EQUAL:
             uint16_t speed;
@@ -23,7 +26,7 @@ Maybe<SetSpeedMessage> SetSpeedMessage::deserialize(uint8_t* msg, int size) {
             serialToSystem(msg + 2, right);
             return {SetSpeedMessage(left, right)};
         default:
-            return Maybe<SetSpeedMessage>::EMPTY;
+            return std::experimental::nullopt;
     }
 }
 

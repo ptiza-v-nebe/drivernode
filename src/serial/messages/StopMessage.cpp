@@ -11,7 +11,7 @@
 
 #include <cstdio>
 
-Maybe<StopMessage> StopMessage::deserialize(uint8_t*, int) {
+std::experimental::optional<StopMessage> StopMessage::deserialize(const uint8_t*, const int) {
     return {StopMessage()};
 }
 
