@@ -14,9 +14,14 @@
 
 static constexpr int PAYLOAD_SIZE = 5;
 
-std::experimental::optional<ControlledTurnMessage> ControlledTurnMessage::deserialize(const uint8_t* msg,
-        const int size) {
+std::experimental::optional<ControlledTurnMessage> ControlledTurnMessage::deserialize(
+        const uint8_t* msg, const int size) {
     if (size != PAYLOAD_SIZE) {
+        return std::experimental::nullopt;
+    }
+
+    if (msg[0] >= static_cast<uint8_t>(TurnSpeed::_Count)) {
+        // invaid enum
         return std::experimental::nullopt;
     }
 

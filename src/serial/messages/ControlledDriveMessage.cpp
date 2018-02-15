@@ -20,6 +20,10 @@ std::experimental::optional<ControlledDriveMessage> ControlledDriveMessage::dese
         return std::experimental::nullopt;
     }
 
+    if(msg[0] >= static_cast<uint8_t>(DriveSpeed::_Count)) {
+        // invaid enum
+        return std::experimental::nullopt;
+    }
     DriveSpeed speed = static_cast<DriveSpeed>(msg[0]);
     uint16_t x, y;
     serialToSystem(msg + 1, x);

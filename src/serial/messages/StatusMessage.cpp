@@ -20,6 +20,10 @@ std::experimental::optional<StatusMessage> StatusMessage::deserialize(const uint
     }
 
     Status status = getEnum<Status>(msg[0]);
+    if(status == Status::_Count){
+        // invalid status code
+        return std::experimental::nullopt;
+    }
     return {StatusMessage(status)};
 }
 

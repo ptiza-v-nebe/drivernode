@@ -17,16 +17,23 @@ static constexpr int DIRECTION_OFFSET = 4;
 
 static constexpr int PAYLOAD_SIZE = 1;
 
-std::experimental::optional<SimpleDriveMessage> SimpleDriveMessage::deserialize(const uint8_t* msg,
-        const int size) {
+std::experimental::optional<SimpleDriveMessage> SimpleDriveMessage::deserialize(
+        const uint8_t* msg, const int size) {
     if (size != PAYLOAD_SIZE) {
         // something is wrong
         return std::experimental::nullopt;
     } else {
-        DriveSpeed speed = static_cast<DriveSpeed>(msg[0] & SPEED_MASK);
-        DriveDirection direction = static_cast<DriveDirection>((msg[0]
-                & DIRECTION_MASK) >> DIRECTION_OFFSET);
-        return { {speed, direction}};
+        uint8_t spd = msg[0] & SPEED_MASK;
+        uint8_t dir = (msg[0] & DIRECTION_MASK) >> DIRECTION_OFFSET;
+
+        if(spd >= static_cast<uint8_t>(DriveSpeed::_Count) || dir >= static_cast<uint8_t>(DriveDirection::_Count)) {
+            // invalid enum
+            return std::experimental::nullopt;
+        }
+
+        DriveSpeed speed = static_cast<DriveSpeed>(spd);
+        DriveDirection direction = static_cast<DriveDirection>(dir);
+        return { {speed, direction} };
     }
 }
 

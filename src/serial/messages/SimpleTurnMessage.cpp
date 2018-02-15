@@ -17,16 +17,24 @@ static constexpr int DIRECTION_OFFSET = 4;
 
 static constexpr int PAYLOAD_SIZE = 1;
 
-std::experimental::optional<SimpleTurnMessage> SimpleTurnMessage::deserialize(const uint8_t* msg,
-        const int size) {
+std::experimental::optional<SimpleTurnMessage> SimpleTurnMessage::deserialize(
+        const uint8_t* msg, const int size) {
     if (size != PAYLOAD_SIZE) {
         // invalid
         return std::experimental::nullopt;
     }
 
-    TurnSpeed speed = static_cast<TurnSpeed>(msg[0] & SPEED_MASK);
-    TurnDirection direction = static_cast<TurnDirection>((msg[0]
-            & DIRECTION_MASK) >> DIRECTION_OFFSET);
+    uint8_t spd = msg[0] & SPEED_MASK;
+    uint8_t dir = (msg[0] & DIRECTION_MASK) >> DIRECTION_OFFSET;
+
+    if (spd >= static_cast<uint8_t>(TurnSpeed::_Count)
+            || dir >= static_cast<uint8_t>(TurnDirection::_Count)) {
+        // invalid enum
+        return std::experimental::nullopt;
+    }
+
+    TurnSpeed speed = static_cast<TurnSpeed>(spd);
+    TurnDirection direction = static_cast<TurnDirection>(dir);
 
     return {SimpleTurnMessage(speed, direction)};
 }
