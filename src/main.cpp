@@ -23,7 +23,8 @@ class EchoUARTReceiveHandler: public UARTReceiveHandler {
 public:
     void processByte(uint8_t byte) override {
         schedule_task_from_isr([byte]() {
-            UARTWrapper::getInstance().send(&byte, 1);
+            printf("%X ", byte);
+            fflush(stdout);
         });
     }
 };
@@ -35,24 +36,44 @@ private:
     int count = 0;
 public:
     void processByte(uint8_t byte) override {
-        buffers[currentBuffer][count] = byte;
-        count++;
+        if (byte == 0x7F || byte == '\b') {
+            // delete or backspace
+            if (count > 0) {
+                count--;
 
-        if (byte == '\n' || count == 50) {
+                schedule_task_from_isr([]() {
+                    uint8_t buffer[] = {'\b', ' ', '\b'};
+                    UARTWrapper::getInstance().send(buffer, 3);
+                });
+            }
+        } else {
+            buffers[currentBuffer][count] = byte;
+            count++;
 
-            uint8_t* msg = buffers[currentBuffer];
-            int size = count;
+            if (byte == '\n' || count == 50) {
 
-            schedule_task_from_isr([msg, size]() {
-                UARTWrapper::getInstance().send(msg, size);
-            });
-            currentBuffer = (currentBuffer + 1) % 2;
-            count = 0;
-        }
+                uint8_t* msg = buffers[currentBuffer];
+                int size = count;
 
-        if (byte == '\r') {
-            // add newline after carriage return
-            processByte('\n');
+                schedule_task_from_isr([msg, size]() {
+                    // we need to echo the characters
+                        uint8_t buffer[2];
+                        buffer[0] = '\r';
+                        buffer[1] = '\n';
+                        UARTWrapper::getInstance().send(buffer, 2);
+
+                        UARTWrapper::getInstance().send(msg, size);
+                    });
+                currentBuffer = (currentBuffer + 1) % 2;
+                count = 0;
+            } else if (byte == '\r') {
+                // add newline after carriage return
+                processByte('\n');
+            } else {
+                schedule_task_from_isr([byte]() {
+                    UARTWrapper::getInstance().send(&byte, 1);
+                });
+            }
         }
     }
 };
@@ -84,14 +105,14 @@ int main(void) {
     UARTWrapper& uartWrapper = UARTWrapper::getInstance();
     //DebugUARTReceiveHandler handler;
     //EchoUARTReceiveHandler handler;
-    //SmartEchoUARTReceiveHandler handler;
-    ODROIDCommandHandler handler(dispatcher);
+    SmartEchoUARTReceiveHandler handler;
+    //ODROIDCommandHandler handler(dispatcher);
     uartWrapper.setReceiveHandler(&handler);
 
-    schedule_repeating_task([&uartWrapper]() {
-        //uartWrapper.send("Hello World - From the Nucleo\r\n");
-        printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);// @suppress("Float formatting support")
-    }, 1000, 250);
+    /*schedule_repeating_task([&uartWrapper]() {
+     //uartWrapper.send("Hello World - From the Nucleo\r\n");
+     printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);// @suppress("Float formatting support")
+     }, 1000, 250);*/
 
     start_scheduler();
 
