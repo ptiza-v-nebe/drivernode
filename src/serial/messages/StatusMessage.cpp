@@ -21,7 +21,7 @@ Maybe<StatusMessage> StatusMessage::deserialize(uint8_t* msg, int size) {
     return {StatusMessage(status)};
 }
 
-StatusMessage::StatusMessage(const Status& status) : status(status) {
+StatusMessage::StatusMessage(const Status& status) : Message(getMessageType()), status(status) {
 }
 
 int StatusMessage::serialize(uint8_t* buffer, int buffersize) {

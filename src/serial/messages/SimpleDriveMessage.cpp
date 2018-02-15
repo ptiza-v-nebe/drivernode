@@ -30,7 +30,7 @@ Maybe<SimpleDriveMessage> SimpleDriveMessage::deserialize(uint8_t* msg,
 
 SimpleDriveMessage::SimpleDriveMessage(const DriveSpeed& speed,
         const DriveDirection& direction) :
-        speed(speed), direction(direction) {
+        Message(getMessageType()), speed(speed), direction(direction) {
 }
 
 int SimpleDriveMessage::serialize(uint8_t* buffer, int buffersize) {
@@ -49,8 +49,7 @@ int SimpleDriveMessage::serialize(uint8_t* buffer, int buffersize) {
 }
 
 void SimpleDriveMessage::print() {
-    printf("SimpleDriveComand[speed=%s, direction=%s]",
-            enumToString(speed),
+    printf("SimpleDriveComand[speed=%s, direction=%s]", enumToString(speed),
             enumToString(direction));
 }
 

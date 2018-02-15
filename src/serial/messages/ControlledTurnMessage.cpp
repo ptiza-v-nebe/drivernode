@@ -12,10 +12,9 @@
 #include "util/conversions.h"
 #include <cstdio>
 
-
 Maybe<ControlledTurnMessage> ControlledTurnMessage::deserialize(uint8_t* msg,
         int size) {
-    if(size != PAYLOAD_SIZE) {
+    if (size != PAYLOAD_SIZE) {
         return Maybe<ControlledTurnMessage>::EMPTY;
     }
 
@@ -27,11 +26,12 @@ Maybe<ControlledTurnMessage> ControlledTurnMessage::deserialize(uint8_t* msg,
 }
 
 ControlledTurnMessage::ControlledTurnMessage(const TurnSpeed& speed,
-        const float targetHeading) : speed(speed), targetHeading(targetHeading) {
+        const float targetHeading) :
+        Message(getMessageType()), speed(speed), targetHeading(targetHeading) {
 }
 
 int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) {
-    if(buffersize < PAYLOAD_SIZE){
+    if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
 
@@ -42,7 +42,8 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) {
 }
 
 void ControlledTurnMessage::print() {
-    printf("ControlledTurnCommand[speed=%s, target=%.2f]", enumToString(speed), radiansToDegrees(targetHeading)); // @suppress("Float formatting support")
+    printf("ControlledTurnCommand[speed=%s, target=%.2f]", enumToString(speed),
+            radiansToDegrees(targetHeading)); // @suppress("Float formatting support")
 }
 
 const TurnSpeed& ControlledTurnMessage::getSpeed() {

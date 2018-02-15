@@ -12,8 +12,8 @@
 
 #include <serial/UARTReceiveHandler.h>
 #include "serial/MessageDispatcher.h"
+#include "serial/messages/message_info.h"
 
-constexpr int MAX_PAYLOAD = 0xF;
 constexpr int MAX_MESSAGE_BYTES = MAX_PAYLOAD + 1;
 constexpr int BUFFER_COUNT = 2;
 

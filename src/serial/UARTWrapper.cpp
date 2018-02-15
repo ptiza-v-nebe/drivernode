@@ -120,15 +120,6 @@ void UARTWrapper::init() {
 }
 
 /**
- * Helper to send a string.
- *
- * @param msg the string to send.
- */
-void UARTWrapper::send(std::string msg) {
-    send(reinterpret_cast<const uint8_t*>(msg.c_str()), msg.length());
-}
-
-/**
  * Send data via UART
  *
  * @param buffer the data to send

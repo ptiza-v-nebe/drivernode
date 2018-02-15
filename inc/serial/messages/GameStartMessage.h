@@ -20,6 +20,7 @@ public:
         return 0xE;
     }
 public:
+    GameStartMessage() : Message(getMessageType()) {}
     int serialize(uint8_t* buffer, int buffersize) override;
     void print() override;
 };

@@ -29,7 +29,7 @@ Maybe<PositionMessage> PositionMessage::deserialize(uint8_t* msg, int size) {
 
 PositionMessage::PositionMessage(const uint16_t x, const uint16_t y,
         const float heading) :
-        x(x), y(y), heading(heading) {
+        Message(getMessageType()), x(x), y(y), heading(heading) {
 }
 
 int PositionMessage::serialize(uint8_t* buffer, int buffersize) {
@@ -50,7 +50,8 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) {
 }
 
 void PositionMessage::print() {
-    printf("PositionMessage[position=(%d, %d), heading=%.2f]", x, y, radiansToDegrees(heading)); // @suppress("Float formatting support")
+    printf("PositionMessage[position=(%d, %d), heading=%.2f]", x, y,
+            radiansToDegrees(heading)); // @suppress("Float formatting support")
 }
 
 uint16_t PositionMessage::getX() {

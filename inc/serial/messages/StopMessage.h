@@ -20,6 +20,7 @@ public:
         return 0x1;
     }
 public:
+    StopMessage() : Message(getMessageType()) {}
     int serialize(uint8_t* buffer, int buffersize) override;
     void print() override;
 };

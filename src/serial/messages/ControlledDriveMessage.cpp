@@ -28,6 +28,7 @@ Maybe<ControlledDriveMessage> ControlledDriveMessage::deserialize(uint8_t* msg,
 
 ControlledDriveMessage::ControlledDriveMessage(const DriveSpeed& speed,
         const uint16_t x, const uint16_t y) :
+        Message(getMessageType()),
         speed(speed), x(x), y(y) {
 }
 

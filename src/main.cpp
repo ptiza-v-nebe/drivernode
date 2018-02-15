@@ -9,9 +9,6 @@
 #include "serial/UARTWrapper.h"
 #include "serial/ODROIDCommandHandler.h"
 
-#include "serial/TestMessage1.h"
-#include "serial/TestMessage2.h"
-
 class DebugUARTReceiveHandler: public UARTReceiveHandler {
 public:
     void processByte(uint8_t) override {
@@ -94,15 +91,9 @@ int main(void) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     }, 500);
 
-    MessageDispatcher dispatcher;
-    dispatcher.registerMessageHandler<TestMessage1>([](TestMessage1 msg) {
-        msg.printYourself();
-    });
-    dispatcher.registerMessageHandler<TestMessage2>([](TestMessage2 msg) {
-        msg.printYourself();
-    });
-
     UARTWrapper& uartWrapper = UARTWrapper::getInstance();
+    MessageDispatcher dispatcher(uartWrapper);
+
     //DebugUARTReceiveHandler handler;
     //EchoUARTReceiveHandler handler;
     SmartEchoUARTReceiveHandler handler;

@@ -32,7 +32,7 @@ SetSpeedMessage::SetSpeedMessage(uint16_t speed) :
 }
 
 SetSpeedMessage::SetSpeedMessage(uint16_t left, uint16_t right) :
-        speedLeft(left), speedRight(right) {
+        Message(getMessageType()), speedLeft(left), speedRight(right) {
 }
 
 int SetSpeedMessage::serialize(uint8_t* buffer, int buffersize) {
@@ -69,7 +69,7 @@ int SetSpeedMessage::serializeBoth(uint8_t* buffer, int buffersize) {
 }
 
 void SetSpeedMessage::print() {
-    if(speedLeft == speedRight){
+    if (speedLeft == speedRight) {
         printf("SetSpeedComand[speed=%d]", speedLeft);
     } else {
         printf("SetSpeedComand[left=%d, right=%d]", speedLeft, speedRight);

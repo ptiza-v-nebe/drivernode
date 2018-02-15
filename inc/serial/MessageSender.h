@@ -7,20 +7,16 @@
  ******************************************************************************
  */
 
-#ifndef SERIAL_TESTMESSAGE1_H_
-#define SERIAL_TESTMESSAGE1_H_
+#ifndef SERIAL_MESSAGESENDER_H_
+#define SERIAL_MESSAGESENDER_H_
 
 #include <cstdint>
 
-class TestMessage1 {
+class MessageSender {
 public:
-    static TestMessage1 deserialize(uint8_t* msg, int size);
-    static int getMessageType(){
-        return 0x7;
-    }
-
-    void printYourself();
+    virtual ~MessageSender() = default;
+    virtual void send(const uint8_t* buffer, const int size) = 0;
 };
 
-#endif /* SERIAL_TESTMESSAGE1_H_ */
+#endif /* SERIAL_MESSAGESENDER_H_ */
 /** @} */

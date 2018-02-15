@@ -15,10 +15,9 @@
 #include "serial/messages/Message.h"
 #include "serial/messages/Maybe.h"
 
-
 #define STATUS_VALUES(m)\
     m(OK, 'O')\
-    m(UNDEFINED, 'U')\
+    m(UNKNOWN, 'U')\
     m(INVALID, 'I')\
     m(ABORTED, 'A')\
     m(FINISHED, 'F')\

@@ -12,7 +12,8 @@
 #include "util/conversions.h"
 #include <cstdio>
 
-Maybe<ResetOdometryMessage> ResetOdometryMessage::deserialize(uint8_t* msg, int size) {
+Maybe<ResetOdometryMessage> ResetOdometryMessage::deserialize(uint8_t* msg,
+        int size) {
     if (size != PAYLOAD_SIZE) {
         return Maybe<ResetOdometryMessage>::EMPTY;
     }
@@ -29,7 +30,7 @@ Maybe<ResetOdometryMessage> ResetOdometryMessage::deserialize(uint8_t* msg, int 
 
 ResetOdometryMessage::ResetOdometryMessage(const uint16_t x, const uint16_t y,
         const float heading) :
-        x(x), y(y), heading(heading) {
+        Message(getMessageType()), x(x), y(y), heading(heading) {
 }
 
 int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) {
@@ -50,7 +51,8 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) {
 }
 
 void ResetOdometryMessage::print() {
-    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f]", x, y, radiansToDegrees(heading)); // @suppress("Float formatting support")
+    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f]", x, y,
+            radiansToDegrees(heading)); // @suppress("Float formatting support")
 }
 
 uint16_t ResetOdometryMessage::getX() {

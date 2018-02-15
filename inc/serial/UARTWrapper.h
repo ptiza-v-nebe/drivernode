@@ -11,11 +11,12 @@
 #define SERIAL_UARTWRAPPER_H_
 
 #include "serial/UARTReceiveHandler.h"
+#include "serial/MessageSender.h"
 
 #include <stm32l4xx.h>
 #include <string>
 
-class UARTWrapper {
+class UARTWrapper : public MessageSender {
 public:
     static UARTWrapper& getInstance();
 private:
@@ -26,8 +27,7 @@ private:
 	UARTWrapper();
 
 public:
-	void send(std::string msg);
-	void send(const uint8_t* buffer, const int size);
+	void send(const uint8_t* buffer, const int size) override;
 	void handleByte(uint8_t byte);
 	void setReceiveHandler(UARTReceiveHandler *receiveHandler);
 

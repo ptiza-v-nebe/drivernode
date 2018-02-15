@@ -10,8 +10,6 @@
 #include <serial/ODROIDCommandHandler.h>
 #include "scheduler/Scheduler.h"
 
-static constexpr uint8_t HEADER_SIZE_MASK = 0x0F;
-
 ODROIDCommandHandler::ODROIDCommandHandler(MessageDispatcher& dispatcher) :
         currentBuffer(0), currentByte(0), expectedSize(0), dispatcher(dispatcher) {
 }
@@ -19,7 +17,7 @@ ODROIDCommandHandler::ODROIDCommandHandler(MessageDispatcher& dispatcher) :
 void ODROIDCommandHandler::processByte(uint8_t byte) {
     if (currentByte == 0) {
         // expecting header
-        expectedSize = (byte & HEADER_SIZE_MASK) + 1;
+        expectedSize = (byte & PAYLOAD_SIZE_MASK) + 1;
     }
     buffers[currentBuffer][currentByte] = byte;
     currentByte++;
