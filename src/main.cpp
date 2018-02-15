@@ -8,6 +8,10 @@
 #include "scheduler/Scheduler.h"
 #include "serial/UARTWrapper.h"
 #include "serial/ODROIDCommandHandler.h"
+#include "serial/HumanSender.h"
+
+#include "serial/messages/all.h"
+#include "util/conversions.h"
 
 class DebugUARTReceiveHandler: public UARTReceiveHandler {
 public:
@@ -92,18 +96,45 @@ int main(void) {
     }, 500);
 
     UARTWrapper& uartWrapper = UARTWrapper::getInstance();
-    MessageDispatcher dispatcher(uartWrapper);
+    //MessageDispatcher dispatcher(uartWrapper);
+
+    HumanSender hSender;
+    MessageDispatcher dispatcher(hSender);
+
+    dispatcher.registerMessageHandler<StatusMessage>(
+            [&dispatcher](StatusMessage sm) {
+                dispatcher.sendMessage(sm);
+            });
+    dispatcher.registerMessageHandler<ControlledDriveMessage>(
+            [&dispatcher](ControlledDriveMessage cdm) {
+                dispatcher.sendMessage(cdm);
+            });
 
     //DebugUARTReceiveHandler handler;
     //EchoUARTReceiveHandler handler;
-    SmartEchoUARTReceiveHandler handler;
-    //ODROIDCommandHandler handler(dispatcher);
+    //SmartEchoUARTReceiveHandler handler;
+    ODROIDCommandHandler handler(dispatcher);
     uartWrapper.setReceiveHandler(&handler);
 
+    /*schedule_repeating_task([&dispatcher]() {
+     StatusMessage message(Status::ABORTED);
+     dispatcher.sendMessage(message);
+     }, 1000, 250);*/
     /*schedule_repeating_task([&uartWrapper]() {
      //uartWrapper.send("Hello World - From the Nucleo\r\n");
      printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);
      }, 1000, 250);*/
+
+    ResetOdometryMessage rom(0, 256, 0.0);
+    dispatcher.sendMessage(rom);
+
+    PositionMessage pm(1500, 0xAFFE, PI);
+    dispatcher.sendMessage(pm);
+
+    SimpleDriveMessage sdm1(DriveSpeed::FAST, DriveDirection::BACKWARD);
+    SimpleDriveMessage sdm2(DriveSpeed::SLOW, DriveDirection::FORWARD);
+    dispatcher.sendMessage(sdm1);
+    dispatcher.sendMessage(sdm2);
 
     start_scheduler();
 
