@@ -125,16 +125,40 @@ int main(void) {
      printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);
      }, 1000, 250);*/
 
-    ResetOdometryMessage rom(0, 256, 0.0);
-    dispatcher.sendMessage(rom);
-
-    PositionMessage pm(1500, 0xAFFE, PI);
-    dispatcher.sendMessage(pm);
-
     SimpleDriveMessage sdm1(DriveSpeed::FAST, DriveDirection::BACKWARD);
     SimpleDriveMessage sdm2(DriveSpeed::SLOW, DriveDirection::FORWARD);
     dispatcher.sendMessage(sdm1);
     dispatcher.sendMessage(sdm2);
+
+    SimpleTurnMessage stm(TurnSpeed::FAST, TurnDirection::CCW);
+    dispatcher.sendMessage(stm);
+
+
+    ControlledDriveMessage cdm(DriveSpeed::FAST, 0, 256);
+    dispatcher.sendMessage(cdm);
+
+    ControlledTurnMessage ctm(TurnSpeed::SLOW, degreesToRadians(45.28));
+    dispatcher.sendMessage(ctm);
+
+    HeartbeatMessage hbm;
+    dispatcher.sendMessage(hbm);
+
+    StopMessage sm;
+    dispatcher.sendMessage(sm);
+
+    GameStartMessage gsm;
+    dispatcher.sendMessage(gsm);
+
+    ResetOdometryMessage rom(0, 256, 0.0);
+    dispatcher.sendMessage(rom);
+
+    PositionMessage pm(0xDEAD, 0xBEEF, PI);
+    dispatcher.sendMessage(pm);
+
+    SetSpeedMessage ssm1(100);
+    SetSpeedMessage ssm2(25, 3000);
+    dispatcher.sendMessage(ssm1);
+    dispatcher.sendMessage(ssm2);
 
     start_scheduler();
 
