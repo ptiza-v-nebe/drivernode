@@ -102,7 +102,7 @@ int main(void) {
 
     /*schedule_repeating_task([&uartWrapper]() {
      //uartWrapper.send("Hello World - From the Nucleo\r\n");
-     printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);// @suppress("Float formatting support")
+     printf("Well hello there from printf - %d, %.2f, %X.\r\n", 15, 133.456, 255);
      }, 1000, 250);*/
 
     start_scheduler();

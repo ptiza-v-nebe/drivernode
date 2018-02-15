@@ -43,7 +43,7 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) {
 
 void ControlledTurnMessage::print() {
     printf("ControlledTurnCommand[speed=%s, target=%.2f]", enumToString(speed),
-            radiansToDegrees(targetHeading)); // @suppress("Float formatting support")
+            radiansToDegrees(targetHeading));
 }
 
 const TurnSpeed& ControlledTurnMessage::getSpeed() {

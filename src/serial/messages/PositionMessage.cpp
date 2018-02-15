@@ -51,7 +51,7 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) {
 
 void PositionMessage::print() {
     printf("PositionMessage[position=(%d, %d), heading=%.2f]", x, y,
-            radiansToDegrees(heading)); // @suppress("Float formatting support")
+            radiansToDegrees(heading));
 }
 
 uint16_t PositionMessage::getX() {

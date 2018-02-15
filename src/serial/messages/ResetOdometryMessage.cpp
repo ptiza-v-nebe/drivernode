@@ -52,7 +52,7 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) {
 
 void ResetOdometryMessage::print() {
     printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f]", x, y,
-            radiansToDegrees(heading)); // @suppress("Float formatting support")
+            radiansToDegrees(heading));
 }
 
 uint16_t ResetOdometryMessage::getX() {
