@@ -128,7 +128,7 @@ struct EnumSpecialValues
  * @return the special value for that enum value
  */
 template<typename T>
-const int getSpecialValue(const T& enumValue) {
+int getSpecialValue(const T& enumValue) {
     return EnumSpecialValues<T>::data[static_cast<int>(enumValue)];
 }
 

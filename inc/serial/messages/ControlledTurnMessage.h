@@ -31,7 +31,7 @@ public:
     void print() override;
 
     const TurnSpeed& getSpeed();
-    const float getTargetHeading();
+    float getTargetHeading();
 };
 
 #endif /* SERIAL_MESSAGES_CONTROLLEDTURNMESSAGE_H_ */

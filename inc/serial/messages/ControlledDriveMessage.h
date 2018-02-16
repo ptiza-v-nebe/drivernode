@@ -32,8 +32,8 @@ public:
     void print() override;
 
     const DriveSpeed& getSpeed();
-    const uint16_t getX();
-    const uint16_t getY();
+    uint16_t getX();
+    uint16_t getY();
 };
 
 #endif /* SERIAL_MESSAGES_CONTROLLEDDRIVEMESSAGE_H_ */

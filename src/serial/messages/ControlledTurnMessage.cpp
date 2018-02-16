@@ -57,7 +57,7 @@ const TurnSpeed& ControlledTurnMessage::getSpeed() {
     return speed;
 }
 
-const float ControlledTurnMessage::getTargetHeading() {
+float ControlledTurnMessage::getTargetHeading() {
     return targetHeading;
 }
 /** @} */

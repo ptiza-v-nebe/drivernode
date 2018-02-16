@@ -62,11 +62,11 @@ const DriveSpeed& ControlledDriveMessage::getSpeed() {
     return speed;
 }
 
-const uint16_t ControlledDriveMessage::getX() {
+uint16_t ControlledDriveMessage::getX() {
     return x;
 }
 
-const uint16_t ControlledDriveMessage::getY() {
+uint16_t ControlledDriveMessage::getY() {
     return y;
 }
 /** @} */
