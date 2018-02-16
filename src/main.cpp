@@ -8,6 +8,7 @@
 #include "scheduler/Scheduler.h"
 #include "serial/UARTWrapper.h"
 #include "serial/ODROIDCommandHandler.h"
+#include "serial/HumanCommandHandler.h"
 #include "serial/HumanSender.h"
 
 #include "serial/messages/all.h"
@@ -48,34 +49,46 @@ public:
                 });
             }
         } else {
-            buffers[currentBuffer][count] = byte;
-            count++;
-
-            if (byte == '\n' || count == 50) {
-
+            if (byte == '\r' || count == 50) {
                 uint8_t* msg = buffers[currentBuffer];
                 int size = count;
 
                 schedule_task_from_isr([msg, size]() {
-                    // we need to echo the characters
+                    // we need to echo the linebreak
                         uint8_t buffer[2];
                         buffer[0] = '\r';
                         buffer[1] = '\n';
                         UARTWrapper::getInstance().send(buffer, 2);
 
                         UARTWrapper::getInstance().send(msg, size);
+                        UARTWrapper::getInstance().send(buffer, 2);
                     });
                 currentBuffer = (currentBuffer + 1) % 2;
                 count = 0;
-            } else if (byte == '\r') {
-                // add newline after carriage return
-                processByte('\n');
-            } else {
+
+            } else if (isValidCharacter(byte)) {
+                buffers[currentBuffer][count] = byte;
+                count++;
+
                 schedule_task_from_isr([byte]() {
                     UARTWrapper::getInstance().send(&byte, 1);
                 });
             }
         }
+    }
+private:
+    bool isValidCharacter(uint8_t& byte) {
+        bool uppercase = (byte >= 'A' && byte <= 'Z');
+        if (uppercase) {
+            byte = byte + ('a' - 'A'); // convert to lowercase
+            return true;
+        }
+
+        bool lowercase = (byte >= 'a' && byte <= 'z');
+        bool number = (byte >= '0' && byte <= '9');
+        bool space = (byte == ' ');
+
+        return lowercase || number || space;
     }
 };
 
@@ -96,24 +109,25 @@ int main(void) {
     }, 500);
 
     UARTWrapper& uartWrapper = UARTWrapper::getInstance();
-    //MessageDispatcher dispatcher(uartWrapper);
+//MessageDispatcher dispatcher(uartWrapper);
 
     HumanSender hSender;
     MessageDispatcher dispatcher(hSender);
 
-    dispatcher.registerMessageHandler<StatusMessage>(
+    /*dispatcher.registerMessageHandler<StatusMessage>(
             [&dispatcher](StatusMessage sm) {
                 dispatcher.sendMessage(sm);
             });
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
             [&dispatcher](ControlledDriveMessage cdm) {
                 dispatcher.sendMessage(cdm);
-            });
+            });*/
 
-    //DebugUARTReceiveHandler handler;
-    //EchoUARTReceiveHandler handler;
+//DebugUARTReceiveHandler handler;
+//EchoUARTReceiveHandler handler;
     //SmartEchoUARTReceiveHandler handler;
-    ODROIDCommandHandler handler(dispatcher);
+//ODROIDCommandHandler handler(dispatcher);
+    HumanCommandHandler handler(dispatcher);
     uartWrapper.setReceiveHandler(&handler);
 
     /*schedule_repeating_task([&dispatcher]() {
@@ -132,7 +146,6 @@ int main(void) {
 
     SimpleTurnMessage stm(TurnSpeed::FAST, TurnDirection::CCW);
     dispatcher.sendMessage(stm);
-
 
     ControlledDriveMessage cdm(DriveSpeed::FAST, 0, 256);
     dispatcher.sendMessage(cdm);
