@@ -38,7 +38,7 @@ ControlledDriveMessage::ControlledDriveMessage(const DriveSpeed& speed,
         speed(speed), x(x), y(y) {
 }
 
-int ControlledDriveMessage::serialize(uint8_t* buffer, int buffersize) {
+int ControlledDriveMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -54,7 +54,7 @@ int ControlledDriveMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void ControlledDriveMessage::print() {
+void ControlledDriveMessage::print() const {
     printf("ControlledDriveCommand[speed=%s, target=(%d, %d)]", enumToString(speed), x, y);
 }
 

@@ -35,7 +35,7 @@ ResetOdometryMessage::ResetOdometryMessage(const uint16_t x, const uint16_t y,
         Message(getMessageType()), x(x), y(y), heading(heading) {
 }
 
-int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) {
+int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -52,7 +52,7 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void ResetOdometryMessage::print() {
+void ResetOdometryMessage::print() const {
     printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f]", x, y,
             radiansToDegrees(heading));
 }

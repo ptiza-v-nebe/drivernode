@@ -26,15 +26,15 @@ public:
     SetSpeedMessage(uint16_t speed);
     SetSpeedMessage(uint16_t left, uint16_t right);
 
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 
     uint16_t getSpeedLeft();
     uint16_t getSpeedRight();
 
 private:
-    int serializeEqual(uint8_t* buffer, int buffersize);
-    int serializeBoth(uint8_t* buffer, int buffersize);
+    int serializeEqual(uint8_t* buffer, int buffersize) const;
+    int serializeBoth(uint8_t* buffer, int buffersize) const;
 };
 
 #endif /* SERIAL_MESSAGES_SETSPEEDMESSAGE_H_ */

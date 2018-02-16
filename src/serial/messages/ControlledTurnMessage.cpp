@@ -37,7 +37,7 @@ ControlledTurnMessage::ControlledTurnMessage(const TurnSpeed& speed,
         Message(getMessageType()), speed(speed), targetHeading(targetHeading) {
 }
 
-int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) {
+int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -48,7 +48,7 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void ControlledTurnMessage::print() {
+void ControlledTurnMessage::print() const {
     printf("ControlledTurnCommand[speed=%s, target=%.2f]", enumToString(speed),
             radiansToDegrees(targetHeading));
 }

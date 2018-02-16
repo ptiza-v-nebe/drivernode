@@ -27,8 +27,8 @@ private:
 public:
     SimpleDriveMessage(const DriveSpeed& speed, const DriveDirection& direction);
 
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 
     const DriveSpeed& getSpeed();
     const DriveDirection& getDirection();

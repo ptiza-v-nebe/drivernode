@@ -15,11 +15,11 @@ std::experimental::optional<HeartbeatMessage>HeartbeatMessage::deserialize(const
     return {HeartbeatMessage()};
 }
 
-int HeartbeatMessage::serialize(uint8_t*, int) {
+int HeartbeatMessage::serialize(uint8_t*, int) const {
     return 0;
 }
 
-void HeartbeatMessage::print() {
+void HeartbeatMessage::print() const {
     printf("Heartbeat");
 }
 /** @} */

@@ -44,7 +44,7 @@ SimpleTurnMessage::SimpleTurnMessage(const TurnSpeed& speed,
         Message(getMessageType()), speed(speed), direction(direction) {
 }
 
-int SimpleTurnMessage::serialize(uint8_t* buffer, int buffersize) {
+int SimpleTurnMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -58,7 +58,7 @@ int SimpleTurnMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void SimpleTurnMessage::print() {
+void SimpleTurnMessage::print() const {
     printf("SimpleTurnCommand[speed=%s, direction=%s]", enumToString(speed),
             enumToString(direction));
 }

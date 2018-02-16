@@ -30,7 +30,7 @@ std::experimental::optional<StatusMessage> StatusMessage::deserialize(const uint
 StatusMessage::StatusMessage(const Status& status) : Message(getMessageType()), status(status) {
 }
 
-int StatusMessage::serialize(uint8_t* buffer, int buffersize) {
+int StatusMessage::serialize(uint8_t* buffer, int buffersize) const {
     if(buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -39,7 +39,7 @@ int StatusMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void StatusMessage::print() {
+void StatusMessage::print() const {
     printf("StatusMessage[%s]", enumToString(status));
 }
 

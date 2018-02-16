@@ -42,7 +42,7 @@ SimpleDriveMessage::SimpleDriveMessage(const DriveSpeed& speed,
         Message(getMessageType()), speed(speed), direction(direction) {
 }
 
-int SimpleDriveMessage::serialize(uint8_t* buffer, int buffersize) {
+int SimpleDriveMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         // cannot serialize because it doesn't fit
         return -1;
@@ -57,7 +57,7 @@ int SimpleDriveMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void SimpleDriveMessage::print() {
+void SimpleDriveMessage::print() const {
     printf("SimpleDriveComand[speed=%s, direction=%s]", enumToString(speed),
             enumToString(direction));
 }

@@ -21,8 +21,8 @@ public:
     }
 public:
     StopMessage() : Message(getMessageType()) {}
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 };
 
 #endif /* SERIAL_MESSAGES_STOPMESSAGE_H_ */

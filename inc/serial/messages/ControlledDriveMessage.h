@@ -28,8 +28,8 @@ private:
 public:
     ControlledDriveMessage(const DriveSpeed& speed, const uint16_t x, const uint16_t y);
 
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 
     const DriveSpeed& getSpeed();
     uint16_t getX();

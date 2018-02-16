@@ -34,7 +34,7 @@ PositionMessage::PositionMessage(const uint16_t x, const uint16_t y,
         Message(getMessageType()), x(x), y(y), heading(heading) {
 }
 
-int PositionMessage::serialize(uint8_t* buffer, int buffersize) {
+int PositionMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE) {
         return -1;
     }
@@ -51,7 +51,7 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE;
 }
 
-void PositionMessage::print() {
+void PositionMessage::print() const {
     printf("PositionMessage[position=(%d, %d), heading=%.2f]", x, y,
             radiansToDegrees(heading));
 }

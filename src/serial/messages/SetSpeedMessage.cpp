@@ -38,7 +38,7 @@ SetSpeedMessage::SetSpeedMessage(uint16_t left, uint16_t right) :
         Message(getMessageType()), speedLeft(left), speedRight(right) {
 }
 
-int SetSpeedMessage::serialize(uint8_t* buffer, int buffersize) {
+int SetSpeedMessage::serialize(uint8_t* buffer, int buffersize) const {
     if (speedLeft == speedRight) {
         return serializeEqual(buffer, buffersize);
     } else {
@@ -46,7 +46,7 @@ int SetSpeedMessage::serialize(uint8_t* buffer, int buffersize) {
     }
 }
 
-int SetSpeedMessage::serializeEqual(uint8_t* buffer, int buffersize) {
+int SetSpeedMessage::serializeEqual(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE_EQUAL) {
         return -1;
     }
@@ -57,7 +57,7 @@ int SetSpeedMessage::serializeEqual(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE_EQUAL;
 }
 
-int SetSpeedMessage::serializeBoth(uint8_t* buffer, int buffersize) {
+int SetSpeedMessage::serializeBoth(uint8_t* buffer, int buffersize) const {
     if (buffersize < PAYLOAD_SIZE_BOTH) {
         return -1;
     }
@@ -71,7 +71,7 @@ int SetSpeedMessage::serializeBoth(uint8_t* buffer, int buffersize) {
     return PAYLOAD_SIZE_BOTH;
 }
 
-void SetSpeedMessage::print() {
+void SetSpeedMessage::print() const {
     if (speedLeft == speedRight) {
         printf("SetSpeedComand[speed=%d]", speedLeft);
     } else {

@@ -15,11 +15,11 @@ std::experimental::optional<StopMessage> StopMessage::deserialize(const uint8_t*
     return {StopMessage()};
 }
 
-int StopMessage::serialize(uint8_t*, int) {
+int StopMessage::serialize(uint8_t*, int) const {
     return 0;
 }
 
-void StopMessage::print() {
+void StopMessage::print() const {
     printf("StopCommand");
 }
 /** @} */

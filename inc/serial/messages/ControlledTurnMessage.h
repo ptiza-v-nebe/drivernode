@@ -27,8 +27,8 @@ private:
 public:
     ControlledTurnMessage(const TurnSpeed& speed, const float targetHeading);
 
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 
     const TurnSpeed& getSpeed();
     float getTargetHeading();

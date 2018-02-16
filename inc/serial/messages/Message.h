@@ -19,9 +19,9 @@ public:
     Message(const uint8_t type) : type(type) {}
 	virtual ~Message() = default;
 
-	virtual int serialize(uint8_t* buffer, int size) = 0;
-	virtual void print() = 0;
-	uint8_t getType() { return type; }
+	virtual int serialize(uint8_t* buffer, int size) const = 0;
+	virtual void print() const = 0;
+	uint8_t getType() const { return type; }
 };
 
 #endif /* SERIAL_MESSAGES_MESSAGE_H_ */

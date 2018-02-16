@@ -26,8 +26,8 @@ private:
 public:
     PositionMessage(const uint16_t x, const uint16_t y, const float heading);
 
-    int serialize(uint8_t* buffer, int buffersize) override;
-    void print() override;
+    int serialize(uint8_t* buffer, int buffersize) const override;
+    void print() const override;
 
     uint16_t getX();
     uint16_t getY();

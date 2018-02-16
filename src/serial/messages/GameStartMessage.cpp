@@ -14,11 +14,11 @@ std::experimental::optional<GameStartMessage> GameStartMessage::deserialize(cons
     return {GameStartMessage()};
 }
 
-int GameStartMessage::serialize(uint8_t*, int) {
+int GameStartMessage::serialize(uint8_t*, int) const {
     return 0;
 }
 
-void GameStartMessage::print() {
+void GameStartMessage::print() const {
     printf("GameStartCommand");
 }
 /** @} */
