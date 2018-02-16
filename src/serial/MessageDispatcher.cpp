@@ -9,6 +9,7 @@
 
 #include <serial/MessageDispatcher.h>
 #include "serial/messages/StatusMessage.h"
+#include "serial/Serializer.h"
 
 MessageDispatcher::MessageDispatcher(MessageSender& sender) :
         sender(sender) {
@@ -31,19 +32,9 @@ void MessageDispatcher::processMessage(uint8_t* msg, int size) {
 void MessageDispatcher::sendMessage(Message& message) {
     static uint8_t buffer[MAX_PAYLOAD + 1];
 
-    // serialize message into payload part of buffer
-    int result = message.serialize(buffer + 1, MAX_PAYLOAD);
-    if(result < 0 || result > MAX_PAYLOAD) {
-        // something went wrong
-    } else {
-        // calculate header
-        uint8_t header = 0;
-        header |= (message.getType() << MSG_TYPE_OFFSET) & MSG_TYPE_MASK;
-        header |= result & PAYLOAD_SIZE_MASK;
-
-        buffer[0] = header;
-
-        sender.send(buffer, result + 1);
+    int result = Serializer::serialize(message, buffer, MAX_PAYLOAD + 1);
+    if(result > 0) {
+        sender.send(buffer, result);
     }
 }
 
