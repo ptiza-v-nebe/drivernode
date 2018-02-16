@@ -49,7 +49,7 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) const {
 }
 
 void ControlledTurnMessage::print() const {
-    printf("ControlledTurnCommand[speed=%s, target=%.2f]", enumToString(speed),
+    printf("ControlledTurnCommand[speed=%s, target=%.2f°]", enumToString(speed),
             radiansToDegrees(targetHeading));
 }
 

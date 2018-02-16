@@ -52,7 +52,7 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) const {
 }
 
 void PositionMessage::print() const {
-    printf("PositionMessage[position=(%d, %d), heading=%.2f]", x, y,
+    printf("PositionMessage[position=(%d, %d), heading=%.2f°]", x, y,
             radiansToDegrees(heading));
 }
 

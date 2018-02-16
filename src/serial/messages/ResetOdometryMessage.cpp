@@ -53,7 +53,7 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) const {
 }
 
 void ResetOdometryMessage::print() const {
-    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f]", x, y,
+    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f°]", x, y,
             radiansToDegrees(heading));
 }
 
