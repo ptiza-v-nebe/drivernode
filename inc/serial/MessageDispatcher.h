@@ -23,16 +23,20 @@ private:
 public:
     MessageDispatcher(MessageSender& sender);
 
+    // prevent copy
+    MessageDispatcher(const MessageDispatcher&) = delete;
+    MessageDispatcher& operator= (const MessageDispatcher&) = delete;
+
     template<class Message>
     void registerMessageHandler(std::function<void(Message)> handler);
 
-    void sendMessage(Message& message);
+    void sendMessage(Message& message) const;
 
-    void processMessage(uint8_t* msg, int size);
+    void processMessage(uint8_t* msg, int size) const;
 private:
-    void sendAcknowledge();
-    void sendInvalid();
-    void sendUnknown();
+    void sendAcknowledge() const;
+    void sendInvalid() const;
+    void sendUnknown() const;
 };
 
 template<class Message>

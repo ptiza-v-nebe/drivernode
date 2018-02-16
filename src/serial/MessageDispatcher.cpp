@@ -20,7 +20,7 @@ MessageDispatcher::MessageDispatcher(MessageSender& sender) :
     }
 }
 
-void MessageDispatcher::processMessage(uint8_t* msg, int size) {
+void MessageDispatcher::processMessage(uint8_t* msg, int size) const {
     // get message type as offset for handler array
     int messageType = (msg[0] & MSG_TYPE_MASK) >> MSG_TYPE_OFFSET;
     if (messageType > 0 && messageType < MESSAGE_TYPE_COUNT) {
@@ -29,7 +29,7 @@ void MessageDispatcher::processMessage(uint8_t* msg, int size) {
     }
 }
 
-void MessageDispatcher::sendMessage(Message& message) {
+void MessageDispatcher::sendMessage(Message& message) const {
     static uint8_t buffer[MAX_PAYLOAD + 1];
 
     int result = Serializer::serialize(message, buffer, MAX_PAYLOAD + 1);
@@ -38,17 +38,17 @@ void MessageDispatcher::sendMessage(Message& message) {
     }
 }
 
-void MessageDispatcher::sendAcknowledge() {
+void MessageDispatcher::sendAcknowledge() const {
     StatusMessage m(Status::OK);
     sendMessage(m);
 }
 
-void MessageDispatcher::sendInvalid() {
+void MessageDispatcher::sendInvalid() const {
     StatusMessage m(Status::INVALID);
     sendMessage(m);
 }
 
-void MessageDispatcher::sendUnknown() {
+void MessageDispatcher::sendUnknown() const {
     StatusMessage m(Status::UNKNOWN);
     sendMessage(m);
 }

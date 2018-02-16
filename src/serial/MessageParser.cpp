@@ -6,13 +6,12 @@
  * @{
  ******************************************************************************
  */
-
 #include <serial/MessageParser.h>
 #include "serial/Serializer.h"
 #include "util/conversions.h"
 #include "serial/messages/all.h"
 
-#define DEBUG_PARSER
+#include "config.h"
 
 int MessageParser::parseMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
