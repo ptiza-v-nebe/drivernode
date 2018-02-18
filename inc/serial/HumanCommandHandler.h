@@ -13,15 +13,23 @@
 #include <serial/UARTReceiveHandler.h>
 #include "serial/MessageDispatcher.h"
 
+/**
+ * The size of the message buffer
+ */
 constexpr int MSG_BUFFER_SIZE = 50;
+
+/**
+ * The number of message buffers.
+ * Using multiple buffers allows processing of one message while already receiving the next one
+ */
 constexpr int MSG_BUFFER_COUNT = 2;
 
 class HumanCommandHandler: public UARTReceiveHandler {
 private:
-    uint8_t buffers[MSG_BUFFER_COUNT][MSG_BUFFER_SIZE];
-    int currentBuffer = 0;
-    int count = 0;
-    MessageDispatcher& dispatcher;
+    uint8_t buffers[MSG_BUFFER_COUNT][MSG_BUFFER_SIZE]; ///< the buffers.
+    int currentBuffer = 0; ///< which buffer to write to
+    int count = 0; ///< current buffer usage
+    MessageDispatcher& dispatcher; ///< reference to the message dispatcher to which the message is passed
 public:
     HumanCommandHandler(MessageDispatcher& dispatcher);
 

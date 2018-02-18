@@ -13,6 +13,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents the Stop command.
+ * This stops the driving motors.
+ */
 class StopMessage : public Message {
 public:
     static std::experimental::optional<StopMessage> deserialize(const uint8_t* msg, const int size);

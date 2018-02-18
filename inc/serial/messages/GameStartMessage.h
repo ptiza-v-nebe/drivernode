@@ -13,6 +13,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents a GameStart command.
+ * Will start the internal game timer
+ */
 class GameStartMessage : public Message {
 public:
     static std::experimental::optional<GameStartMessage> deserialize(const uint8_t* msg, const int size);

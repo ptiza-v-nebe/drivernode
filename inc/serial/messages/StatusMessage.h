@@ -25,7 +25,9 @@
 
 SMARTENUM_SPECIAL_DEFINE_ENUM(Status, STATUS_VALUES)
 
-
+/**
+ * Represents a status code.
+ */
 class StatusMessage : public Message {
 public:
     static std::experimental::optional<StatusMessage> deserialize(const uint8_t* msg, const int size);
@@ -33,7 +35,7 @@ public:
         return 0x7;
     }
 private:
-    Status status;
+    Status status; ///< the status code
 public:
     StatusMessage(const Status& status);
 

@@ -19,7 +19,7 @@
 
 class HumanSender: public MessageSender {
 private:
-    std::function<void(const uint8_t* msg, const int size)> deserializers[MESSAGE_TYPE_COUNT];
+    std::function<void(const uint8_t* msg, const int size)> deserializers[MESSAGE_TYPE_COUNT]; ///< lookup table for deserialization
 public:
     HumanSender();
     void send(const uint8_t* message, const int size) override;
@@ -33,6 +33,9 @@ private:
 
 void printBytes(const uint8_t* bytes, const int length);
 
+/**
+ * Method-Template to generate and set a deserializer for a given message type.
+ */
 template<class Message>
 inline void HumanSender::setDeseralizer() {
     // get message type as index of handler array

@@ -12,6 +12,9 @@
 
 #include "serial/messages/Message.h"
 
+/**
+ * Provides functionality to serialize a message
+ */
 class Serializer {
 public:
     static int serialize(const Message& message, uint8_t* buffer, const int buffersize);

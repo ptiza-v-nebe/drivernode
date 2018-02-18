@@ -20,7 +20,7 @@
 #include "PositionMessage.h"
 #include "StatusMessage.h"
 #include "ResetOdometryMessage.h"
-// some codes available
+// some codes unused
 #include "GameStartMessage.h"
 #include "SetSpeedMessage.h"
 

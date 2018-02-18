@@ -15,6 +15,13 @@
 class MessageSender {
 public:
     virtual ~MessageSender() = default;
+
+    /**
+     * Send out a message.
+     *
+     * @param buffer the message
+     * @param size   size of the message
+     */
     virtual void send(const uint8_t* buffer, const int size) = 0;
 };
 

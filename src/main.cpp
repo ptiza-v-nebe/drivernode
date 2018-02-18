@@ -10,9 +10,6 @@
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
 
-#include "serial/messages/all.h"
-#include "util/conversions.h"
-
 int main(void) {
     setupHardware();
 #ifdef BLINK_LED

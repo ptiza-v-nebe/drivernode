@@ -15,6 +15,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents a SimpleTurn command.
+ * Will send the robot into an endless turn until another driving related message is received.
+ */
 class SimpleTurnMessage : public Message {
 public:
     static std::experimental::optional<SimpleTurnMessage> deserialize(const uint8_t* msg, const int size);
@@ -22,8 +26,8 @@ public:
         return 0x4;
     }
 private:
-    TurnSpeed speed;
-    TurnDirection direction;
+    TurnSpeed speed; ///< the turn speed
+    TurnDirection direction; ///< the direction of the turn
 public:
     SimpleTurnMessage(const TurnSpeed& speed, const TurnDirection& direction);
 

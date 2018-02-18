@@ -18,8 +18,8 @@
 
 class MessageDispatcher {
 private:
-    std::function<void(uint8_t* msg, int size)> messageHandlers[MESSAGE_TYPE_COUNT];
-    MessageSender& sender;
+    std::function<void(uint8_t* msg, int size)> messageHandlers[MESSAGE_TYPE_COUNT]; ///< lookup table for message handlers
+    MessageSender& sender; ///< reference to the sender used to send messages
 public:
     MessageDispatcher(MessageSender& sender);
 
@@ -39,6 +39,12 @@ private:
     void sendUnknown() const;
 };
 
+/**
+ * Registers a message handler for a specific message type.
+ * Will wrap the message handler in a deserializer and store it in the lookup table.
+ *
+ * @param handler the function to be called when a new message of that type arrives
+ */
 template<class Message>
 inline void MessageDispatcher::registerMessageHandler(
         std::function<void(Message)> handler) {

@@ -13,6 +13,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents a SetSpeed command.
+ * Used in conjunction with SimpleTurn and SimpleDrive - will set the exact speed for the motors.
+ */
 class SetSpeedMessage: public Message {
 public:
     static std::experimental::optional<SetSpeedMessage> deserialize(const uint8_t* msg, const int size);
@@ -20,8 +24,8 @@ public:
         return 0xF;
     }
 private:
-    uint16_t speedLeft;
-    uint16_t speedRight;
+    uint16_t speedLeft; ///< exact speed for left motor
+    uint16_t speedRight; ///< exact speed for right motor
 public:
     SetSpeedMessage(uint16_t speed);
     SetSpeedMessage(uint16_t left, uint16_t right);

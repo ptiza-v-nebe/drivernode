@@ -13,6 +13,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents a Heartbeat Message.
+ * Used to check if the connection is still up and valid
+ */
 class HeartbeatMessage : public Message {
 public:
     static std::experimental::optional<HeartbeatMessage> deserialize(const uint8_t* msg, const int size);

@@ -13,6 +13,10 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+/**
+ * Represents a PositionUpdateMessage.
+ * This is sent by the robot containing the current odometry position and heading
+ */
 class PositionMessage : public Message {
 public:
     static std::experimental::optional<PositionMessage> deserialize(const uint8_t* msg, const int size);
@@ -20,9 +24,9 @@ public:
         return 0x6;
     }
 private:
-    uint16_t x;
-    uint16_t y;
-    float heading;
+    uint16_t x; ///< current x position
+    uint16_t y; ///< current < position
+    float heading; ///< current heading
 public:
     PositionMessage(const uint16_t x, const uint16_t y, const float heading);
 

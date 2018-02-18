@@ -16,6 +16,9 @@
 #include <stm32l4xx.h>
 #include <string>
 
+/**
+ * Wraps the USART2 which is connected to the ST-LINK interface into a C++ Object.
+ */
 class UARTWrapper : public MessageSender {
 public:
     static UARTWrapper& getInstance();

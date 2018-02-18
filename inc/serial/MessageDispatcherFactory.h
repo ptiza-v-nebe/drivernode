@@ -15,26 +15,35 @@
 #include "serial/HumanCommandHandler.h"
 #include "serial/ODROIDCommandHandler.h"
 
+/**
+ * Base class for creating the message dispatcher and associated system.
+ */
 class MessageDispatcherFactory {
 protected:
-    MessageDispatcher dispatcher;
+    MessageDispatcher dispatcher; ///< the message dispatcher
 public:
     MessageDispatcherFactory(MessageSender& sender);
     virtual ~MessageDispatcherFactory() = default;
     MessageDispatcher& getMessageDispatcher();
 };
 
+/**
+ * Specialized MessageDispatcherFactory that sets the system up for interacting with a human on a terminal.
+ */
 class HumanMessageDispatcherFactory : public MessageDispatcherFactory {
 private:
-    HumanSender sender;
-    HumanCommandHandler commandHandler;
+    HumanSender sender; ///< the MessageSender used to send out messages
+    HumanCommandHandler commandHandler; ///< the CommandHandler used to handle incomming messages
 public:
     HumanMessageDispatcherFactory();
 };
 
+/**
+ * Specialized MessageDispatcherFactory that sets the system up for interacting with the main program on an ODROID
+ */
 class ODROIDMessageDispatcherFactory : public MessageDispatcherFactory {
 private:
-    ODROIDCommandHandler commandHandler;
+    ODROIDCommandHandler commandHandler; ///< the CommandHandler used to handle incomming messages
 public:
     ODROIDMessageDispatcherFactory();
 };

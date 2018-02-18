@@ -14,6 +14,9 @@
 
 class Message;
 
+/**
+ * Provides functionality to parse user input into serialized messages
+ */
 class MessageParser {
 public:
     static int parseMessage(const uint8_t *msg, const int size, uint8_t *buffer, const int buffersize);

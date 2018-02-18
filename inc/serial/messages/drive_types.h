@@ -13,6 +13,10 @@
 
 #include "util/enum_to_string.h"
 
+/*
+ * Enums used in the driving related messages
+ */
+
 #define DRIVE_SPEED_VALS(m) \
     m(SLOW) \
     m(FAST)
