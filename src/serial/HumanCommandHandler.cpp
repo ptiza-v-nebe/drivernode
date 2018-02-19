@@ -13,11 +13,19 @@
 #include "serial/MessageParser.h"
 #include <cstdio>
 
+/**
+ * Constructs a HumanCommanHandler.
+ *
+ * @param dispatcher reference to the dispatcher that processes the message
+ */
 HumanCommandHandler::HumanCommandHandler(MessageDispatcher& dispatcher) :
         dispatcher(dispatcher) {
     sendPrompt();
 }
 
+/*
+ * @see - UARTReceiveHandler::processByte()
+ */
 void HumanCommandHandler::processByte(uint8_t byte) {
     if (byte == 0x7F || byte == '\b') {
         // delete or backspace
@@ -53,6 +61,14 @@ void HumanCommandHandler::processByte(uint8_t byte) {
     }
 }
 
+/**
+ * Checks if the enterred character is valid.
+ * Valid characters are a-z, 0-9, SPACE, . and -.
+ * @attention Uppercase letters will be converted to lower case
+ *
+ * @param byte the character to check
+ * @return true if the character is valid
+ */
 bool HumanCommandHandler::isValidCharacter(uint8_t& byte) {
     bool uppercase = (byte >= 'A' && byte <= 'Z');
     if (uppercase) {
@@ -69,15 +85,27 @@ bool HumanCommandHandler::isValidCharacter(uint8_t& byte) {
     return lowercase || number || space || point || minus;
 }
 
+/**
+ * Send a linebreak (CRLF) using printf
+ */
 void HumanCommandHandler::sendLineBreak() {
     printf("\r\n");
 }
 
+/**
+ * Send a prompt using printf.
+ */
 void HumanCommandHandler::sendPrompt() {
     printf("RCHH-Nucleo $ ");
     fflush(stdout);
 }
 
+/**
+ * Process a message that was received.
+ *
+ * @param msg  the mesage
+ * @param size the size of the message
+ */
 void HumanCommandHandler::processMessage(uint8_t* msg, int size) {
     static uint8_t buffer[MAX_PAYLOAD + 1];
     if(size > 0) {

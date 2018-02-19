@@ -11,6 +11,9 @@
 
 #include "serial/messages/all.h"
 
+/**
+ * Constructs a HumanSender.
+ */
 HumanSender::HumanSender() {
     for (int i = 0; i < MESSAGE_TYPE_COUNT; i++) {
         deserializers[i] = [](const uint8_t*, const int) {
@@ -20,6 +23,9 @@ HumanSender::HumanSender() {
     initializeDeserializationTable();
 }
 
+/*
+ * @see - MessageHandler::send(const uint8_t*, const int)
+ */
 void HumanSender::send(const uint8_t* message, const int size) {
     // get message type as offset for handler array
     int messageType = (message[0] & MSG_TYPE_MASK) >> MSG_TYPE_OFFSET;
@@ -29,6 +35,10 @@ void HumanSender::send(const uint8_t* message, const int size) {
     }
 }
 
+/**
+ * Initializes the deserialization table.
+ * Uses template instantiation to transfer most of the work to the compiler :)
+ */
 void HumanSender::initializeDeserializationTable() {
     setDeseralizer<HeartbeatMessage>();
     setDeseralizer<StopMessage>();
@@ -43,6 +53,13 @@ void HumanSender::initializeDeserializationTable() {
     setDeseralizer<SetSpeedMessage>();
 }
 
+/**
+ * Helper function to print raw bytes in hex.
+ * Will print each byte using tow hex digits and seperates the bytes by a space
+ *
+ * @param bytes  buffer to print
+ * @param length size of the buffer
+ */
 void printBytes(const uint8_t* bytes, const int length) {
     for(int i = 0; i < length; i++){
         printf("%02X ", bytes[i]);

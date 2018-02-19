@@ -10,6 +10,16 @@
 #include <serial/Serializer.h>
 #include "serial/messages/message_info.h"
 
+/**
+ * Serialize a message object into a buffer.
+ *
+ * @param message    the message object to be serialized
+ * @param buffer     the buffer
+ * @param buffersize the size of the buffer
+ *
+ * @return  number of bytes used
+ * @retval -1 not enough space
+ */
 int Serializer::serialize(const Message& message, uint8_t* buffer,
         const int buffersize) {
     if (buffersize < 1) {

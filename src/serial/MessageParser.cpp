@@ -13,6 +13,17 @@
 
 #include "config.h"
 
+/**
+ * Parse an ASCII message into the serialized version of a message object.
+ *
+ * @param msg        the ASCII message
+ * @param size       the size of the ASCII message
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
 
@@ -36,12 +47,32 @@ int MessageParser::parseMessage(const uint8_t* msg, const int size,
     }
 }
 
+/**
+ * Parse an ASCII stop message into the serialized version of the StopMessage object.
+ *
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseStopMessage(uint8_t* buffer, const int buffersize) {
     StopMessage sm;
     print(sm);
     return Serializer::serialize(sm, buffer, buffersize);
 }
 
+/**
+ * Parse an ASCII message regarding driving into the serialized version of the proper message object.
+ *
+ * @param msg        the ASCII message
+ * @param size       the size of the ASCII message
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseDriveMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
     if (size >= 2) {
@@ -80,6 +111,17 @@ int MessageParser::parseDriveMessage(const uint8_t* msg, const int size,
     }
 }
 
+/**
+ * Parse an ASCII message regarding turning into the serialized version of the proper message object.
+ *
+ * @param msg        the ASCII message
+ * @param size       the size of the ASCII message
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseTurnMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
     if (size >= 3) {
@@ -124,6 +166,17 @@ int MessageParser::parseTurnMessage(const uint8_t* msg, const int size,
     }
 }
 
+/**
+ * Parse an ASCII message regarding speed into the serialized version of the SetSpeedMessage object.
+ *
+ * @param msg        the ASCII message
+ * @param size       the size of the ASCII message
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseSetSpeedMessage(const uint8_t* msg, const int,
         uint8_t* buffer, const int buffersize) {
     int left, right;
@@ -145,6 +198,17 @@ int MessageParser::parseSetSpeedMessage(const uint8_t* msg, const int,
     }
 }
 
+/**
+ * Parse an ASCII message regarding odometry reset into the serialized version of the ResetOdometryMessage object.
+ *
+ * @param msg        the ASCII message
+ * @param size       the size of the ASCII message
+ * @param buffer     the buffer for the serialized message object
+ * @param buffersize the size of the buffer for the serialized message object
+ *
+ * @return number of bytes used
+ * @retval -1 invalid ASCII message
+ */
 int MessageParser::parseResetMessage(const uint8_t* msg, const int,
         uint8_t* buffer, const int buffersize) {
     uint16_t x, y;
@@ -159,11 +223,18 @@ int MessageParser::parseResetMessage(const uint8_t* msg, const int,
     }
 }
 
-void MessageParser::print(const Message& message) {
+/**
+ * Print the message that was parsed before serializing it.
+ *
+ * @param message the message to be printed
+ */
 #ifdef DEBUG_PARSER
+void MessageParser::print(const Message& message) {
     printf("Received ");
     message.print();
     printf("\r\n");
+#else
+void MessageParser::print(const Message&) {
 #endif
 }
 /** @} */
