@@ -60,8 +60,9 @@ void Task::execute() {
 }
 
 /**
- * **Called from ISR** Tick the task.
+ * Tick the task.
  * Will decrease the delay and reset the task if the delay reaches 0
+ * @attention This is called from an ISR!
  */
 void Task::tick() {
     if (!placeholder) {

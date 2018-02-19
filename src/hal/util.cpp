@@ -55,6 +55,7 @@ static void setupCLK(void) {
 
     // Update SystemCoreCloc Variable
     SystemCoreClockUpdate();
+    HAL_RCC_GetSysClockFreq();
     // Final state: MSI: 4 MHz, PLL-out: 80MHz, SYSCLK: PLL-out
 }
 
@@ -68,7 +69,7 @@ void setupHardware(){
 }
 
 GPIO_InitTypeDef getDefaultGPIO(){
-    GPIO_InitTypeDef gpio = {0};
+    GPIO_InitTypeDef gpio;
     gpio.Pin = 0; // no pins
     gpio.Mode = GPIO_MODE_INPUT;
     gpio.Speed = GPIO_SPEED_MEDIUM;
@@ -77,6 +78,4 @@ GPIO_InitTypeDef getDefaultGPIO(){
 
     return gpio;
 }
-
-
 /** @} */

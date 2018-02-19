@@ -3,3 +3,6 @@
 .cproject
 .project
 .settings
+
+# Prevent commiting line swapping in this file
+NUCLEO-L476RG.xml
