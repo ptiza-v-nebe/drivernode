@@ -9,6 +9,7 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
+#include "hal/HALManagerBigRobot.h"
 
 int main(void) {
     setupHardware();
@@ -33,6 +34,12 @@ int main(void) {
     ODROIDMessageDispatcherFactory factory;
 #endif
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
+
+
+    Encoder& left = HALManagerBigRobot::getInstance().getLeftEncoder();
+    schedule_repeating_task([&left](){
+        printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
+    }, 1000, 250);
 
     start_scheduler();
 
