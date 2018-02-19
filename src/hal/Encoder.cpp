@@ -27,13 +27,13 @@ void Encoder::update() {
     Phase nextPhase = getPhase();
     if (currentPhase != nextPhase) {
         if(nextPhase == phaseAfter(currentPhase)) {
-            // forward
+            // Going forward: Phase A -> B -> C -> D -> A -> B -> ...
             tickBuffers[currentBuffer] += sign;
         } else if(nextPhase == phaseBefore(currentPhase)) {
-            // backward
+            // Going backward: Phase A -> D -> C -> B -> A -> D -> C -> ...
             tickBuffers[currentBuffer] -= sign;
         } else {
-            // TODO: detect invalid
+            // TODO: handle skipped
         }
     }
     currentPhase = nextPhase;
@@ -66,12 +66,12 @@ Phase Encoder::getPhase() {
     bool b = HAL_GPIO_ReadPin(gpio, channelBPin) == GPIO_PIN_SET;
 
     // Explanation of Phase:
-    //             ________          ________
-    // A:     ____|        |________|        |________
-    //                ________          ________
-    // B:     _______|        |________|        |______
-    //
-    // Phase:   A   B   C   D
+    //           |___|___|   |     ________
+    // A:     ___|   |   |___|____|        |________
+    //           |   |___|___|         ________
+    // B:     ___|___|   |   |________|        |______
+    //           |   |   |   |
+    // Phase:  A | B | C | D |
 
     if (a) {
         if (b) {
