@@ -11,6 +11,8 @@
 #include "serial/MessageDispatcherFactory.h"
 #include "hal/HALManagerBigRobot.h"
 
+#include "serial/messages/SetSpeedMessage.h"
+
 int main(void) {
     setupHardware();
 #ifdef BLINK_LED
@@ -36,10 +38,37 @@ int main(void) {
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
 
-    Encoder& left = HALManagerBigRobot::getInstance().getLeftEncoder();
+    /*Encoder& left = HALManagerBigRobot::getInstance().getLeftEncoder();
     schedule_repeating_task([&left](){
         printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
-    }, 1000, 250);
+    }, 1000, 250);*/
+
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_DAC1_CLK_ENABLE();
+    DAC_HandleTypeDef dac;
+    dac.Instance = DAC1;
+
+    GPIO_InitTypeDef gpio_dac = getDefaultGPIO();
+    gpio_dac.Mode = GPIO_MODE_ANALOG;
+    gpio_dac.Pin = GPIO_PIN_4;
+
+//    DAC_ChannelConfTypeDef ch1;
+//    ch1.DAC_
+
+
+    HAL_DAC_Init(&dac);
+    HAL_GPIO_Init(GPIOA, &gpio_dac);
+    //HAL_DAC_ConfigChannel(&dac, &ch1, DAC_CHANNEL_1);
+    HAL_DAC_Start(&dac, DAC_CHANNEL_1);
+
+    HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2048);
+
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>([&dac](SetSpeedMessage ssm) {
+        HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ssm.getSpeedLeft());
+    });
+
 
     start_scheduler();
 
