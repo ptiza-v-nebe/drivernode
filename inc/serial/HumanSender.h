@@ -15,6 +15,7 @@
 #include "util/optional.hpp"
 #include "serial/messages/Message.h"
 #include "serial/messages/message_info.h"
+#include "util/util.h"
 #include <functional>
 
 class HumanSender: public MessageSender {
@@ -30,8 +31,6 @@ private:
     template<class Message>
     void setDeseralizer();
 };
-
-void printBytes(const uint8_t* bytes, const int length);
 
 /**
  * Method-Template to generate and set a deserializer for a given message type.

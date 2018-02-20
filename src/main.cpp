@@ -12,7 +12,8 @@
 #include "hal/HALManagerBigRobot.h"
 
 #include "serial/messages/SetSpeedMessage.h"
-#include "hal/DynamixelUART.h"
+#include "hal/DynamixelCOM.h"
+#include "util/util.h"
 
 int main(void) {
     setupHardware();
@@ -68,34 +69,19 @@ int main(void) {
     });
 #endif
 
-    DynamixelUART dynamixel;
+    DynamixelCOM dynamixel;
 
-    // ping
-    //uint8_t checksum = ~(5 + 2 + 0x01);
-    //uint8_t msg[] = {0xFF, 0xFF, 5, 2, 0x01, checksum};
-    //int size = 6;
+    printf("Sending ping \r\n");
+    dynamixel.sendInstruction(5, DYNAMIXEL_PING);
 
-    // turn on led
-    //uint8_t checksum = ~(5 + 4 + 0x03 + 25 + 1);
-    //uint8_t msg[] = {0xFF, 0xFF, 5, 4, 0x03, 25, 1, checksum};
-    //int size = 8;
-
-    uint8_t checksum = ~(5 + 4 + 0x02 + 42 + 1);
-    uint8_t msg[] = {0xFF, 0xFF, 5, 4, 0x02, 42, 1, checksum};
-    int size = 8;
-
-    printf("Sending \"");
-    printBytes(msg, size);
-    printf("\" to Dynamixel...\r\n");
-    dynamixel.send(msg, size);
-
-    uint8_t buffer[7] = {0};
-    int result = dynamixel.receive(buffer, 7);
+    uint8_t buffer[10] = {0};
+    int result = dynamixel.readStatus(buffer, 10);
     printf("Result is %d\r\n", result);
-    printf("Got response \"");
-    printBytes(buffer, 7);
-    printf("\" from Dynamixel...\r\n");
-    printf("Temp is %d\r\n", buffer[5]);
+    if(result > 0) {
+        printf("Got response \"");
+        printBytes(buffer, result);
+        printf("\" from Dynamixel...\r\n");
+    }
 
     start_scheduler();
 

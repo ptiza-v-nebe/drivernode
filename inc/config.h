@@ -26,5 +26,10 @@
  */
 #define DEBUG_PARSER
 
+/**
+ * Enable to generate more output in the DynamixelCOM class
+ */
+#define DEBUG_DYNAMIXEL_COM
+
 
 #endif /* CONFIG_H_ */
