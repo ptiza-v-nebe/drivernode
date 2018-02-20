@@ -12,6 +12,62 @@
 #include "util/util.h"
 #include "config.h"
 
+static constexpr uint8_t COM_FAIL = (1 << 7);
+
+static constexpr uint8_t DYNAMIXEL_PING = 0x01;
+static constexpr uint8_t DYNAMIXEL_READ = 0x02;
+static constexpr uint8_t DYNAMIXEL_WRITE = 0x03;
+
+uint8_t DynamixelCOM::ping(const uint8_t id) {
+    sendInstruction(id, DYNAMIXEL_PING);
+
+    uint8_t buffer[4];
+    int result = readStatus(buffer, 4);
+    if (result < 0) {
+        return COM_FAIL;
+    }
+    return buffer[2]; // return error code
+}
+
+uint8_t DynamixelCOM::write(const uint8_t id, const uint8_t address,
+        const uint8_t* data, const int dataLength) {
+    // create params
+    int paramCount = dataLength + 1;
+    uint8_t *params = new uint8_t[paramCount];
+    params[0] = address;
+    memcpy(params + 1, data, dataLength);
+
+    sendInstruction(id, DYNAMIXEL_WRITE, params, paramCount);
+
+    uint8_t buffer[4];
+    int result = readStatus(buffer, 4);
+    if (result < 0) {
+        return COM_FAIL;
+    }
+
+    delete[] params;
+    return buffer[2]; // return error code
+}
+
+uint8_t DynamixelCOM::read(const uint8_t id, const uint8_t address,
+        const uint8_t length, uint8_t* buffer) {
+    uint8_t params[] = { address, length };
+    sendInstruction(id, DYNAMIXEL_READ, params, 2);
+
+    int recvLength = length + 4;
+    uint8_t *recvBuf = new uint8_t[recvLength];
+    int result = readStatus(recvBuf, recvLength);
+    if (result < 0) {
+        return COM_FAIL;
+    }
+
+    memcpy(buffer, recvBuf + 3, length);
+    uint8_t errorCode = recvBuf[2];
+
+    delete[] recvBuf;
+    return errorCode;
+}
+
 void DynamixelCOM::sendInstruction(const uint8_t id, const uint8_t instruction,
         const uint8_t* parameters, const int paramCount) {
     uint8_t length = paramCount + 2; // param count + instruction + checksum
@@ -91,5 +147,10 @@ uint8_t DynamixelCOM::calculateChecksum(const uint8_t* msg, const int size) {
         sum += msg[i];
     }
     return ~sum;
+}
+
+uint8_t DynamixelCOM::writeByte(const uint8_t id, const uint8_t address,
+        const uint8_t data) {
+    return write(id, address, &data, 1);
 }
 /** @} */

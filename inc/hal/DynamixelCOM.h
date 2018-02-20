@@ -12,17 +12,17 @@
 
 #include "hal/DynamixelUART.h"
 
-constexpr uint8_t DYNAMIXEL_PING = 0x01;
-constexpr uint8_t DYNAMIXEL_READ = 0x02;
-constexpr uint8_t DYNAMIXEL_WRITE = 0x03;
-
 class DynamixelCOM {
 private:
     DynamixelUART uart;
 public:
-    void sendInstruction(const uint8_t id, const uint8_t instruction, const uint8_t* parameters = nullptr, const int paramCount = 0);
-    int readStatus(uint8_t* buffer = nullptr, int size = 0);
+    uint8_t ping(const uint8_t id);
+    uint8_t writeByte(const uint8_t id, const uint8_t address, const uint8_t data);
+    uint8_t write(const uint8_t id, const uint8_t address, const uint8_t* data, const int dataLength);
+    uint8_t read(const uint8_t id, const uint8_t address, const uint8_t length, uint8_t* buffer);
 private:
+    int readStatus(uint8_t* buffer = nullptr, int size = 0);
+    void sendInstruction(const uint8_t id, const uint8_t instruction, const uint8_t* parameters = nullptr, const int paramCount = 0);
     uint8_t calculateChecksum(const uint8_t* msg, const int size);
 };
 

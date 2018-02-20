@@ -69,19 +69,17 @@ int main(void) {
     });
 #endif
 
+#if 1
     DynamixelCOM dynamixel;
 
     printf("Sending ping \r\n");
-    dynamixel.sendInstruction(5, DYNAMIXEL_PING);
+    dynamixel.ping(5);
 
-    uint8_t buffer[10] = {0};
-    int result = dynamixel.readStatus(buffer, 10);
-    printf("Result is %d\r\n", result);
-    if(result > 0) {
-        printf("Got response \"");
-        printBytes(buffer, result);
-        printf("\" from Dynamixel...\r\n");
-    }
+    dispatcher.registerMessageHandler<SetSpeedMessage>([&dynamixel](SetSpeedMessage ssm){
+        printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
+        dynamixel.writeByte(5, 25, ssm.getSpeedLeft());
+    });
+#endif
 
     start_scheduler();
 
