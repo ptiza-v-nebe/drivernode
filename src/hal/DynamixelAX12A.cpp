@@ -10,7 +10,7 @@
 #include <hal/DynamixelAX12A.h>
 #include "util/conversions.h"
 
-static constexpr uint8_t ENABLE_ADDR = 25;
+static constexpr uint8_t ENABLE_ADDR = 24;
 static constexpr uint8_t PRESENT_POSITION_ADDR = 36;
 static constexpr uint8_t GOAL_POSITION_ADDR = 30;
 static constexpr uint8_t MOVING_SPEED_ADDR = 32;
