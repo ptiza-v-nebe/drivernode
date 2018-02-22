@@ -14,11 +14,13 @@
 #include "serial/messages/SetSpeedMessage.h"
 #include "hal/DynamixelCOM.h"
 #include "util/util.h"
+#include "hal/FaulhaberBLDC.h"
 
 int main(void) {
     setupHardware();
 #ifdef BLINK_LED
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
 
     GPIO_InitTypeDef gpioa = getDefaultGPIO();
     gpioa.Pin = GPIO_PIN_5;
@@ -39,12 +41,10 @@ int main(void) {
 #endif
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
-
     /*Encoder& left = HALManagerBigRobot::getInstance().getLeftEncoder();
-    schedule_repeating_task([&left](){
-        printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
-    }, 1000, 250);*/
-
+     schedule_repeating_task([&left](){
+     printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
+     }, 1000, 250);*/
 
 #if 0
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -63,10 +63,20 @@ int main(void) {
 
     HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2048);
 
-
     dispatcher.registerMessageHandler<SetSpeedMessage>([&dac](SetSpeedMessage ssm) {
-        HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ssm.getSpeedLeft());
-    });
+                HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ssm.getSpeedLeft());
+            });
+#endif
+#if 1
+    FaulhaberBLDC motor(DAC_CHANNEL_1, GPIO_PIN_4);
+    motor.enable();
+    motor.setSpeed(2048);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&motor](SetSpeedMessage ssm) {
+                motor.setSpeed(ssm.getSpeedLeft());
+            });
+
 #endif
 
 #if 1
@@ -75,10 +85,11 @@ int main(void) {
     printf("Sending ping \r\n");
     dynamixel.ping(5);
 
-    dispatcher.registerMessageHandler<SetSpeedMessage>([&dynamixel](SetSpeedMessage ssm){
-        printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
-        dynamixel.writeByte(5, 25, ssm.getSpeedLeft());
-    });
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel](SetSpeedMessage ssm) {
+                printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
+                dynamixel.writeByte(5, 25, ssm.getSpeedLeft());
+            });
 #endif
 
     start_scheduler();
