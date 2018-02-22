@@ -10,6 +10,12 @@
 #define CONFIG_H_
 
 /**
+ * Select Robot (only one!!!)
+ */
+#define BIG_ROBOT
+//#define SMALL_ROBOT
+
+/**
  * Should the LED blink to signal that the Scheduler is running
  */
 #define BLINK_LED

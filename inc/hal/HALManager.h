@@ -10,15 +10,32 @@
 #ifndef HAL_HALMANAGER_H_
 #define HAL_HALMANAGER_H_
 
-class Encoder;
+#include "config.h"
 
-class HALManager {
+#ifdef BIG_ROBOT
+#include "hal/Encoder.h"
+#include "hal/FaulhaberBLDC.h"
+
+class HALManager  {
 public:
-    virtual ~HALManager() = default;
-
-    virtual Encoder& getLeftEncoder() = 0;
-    virtual Encoder& getRightEncoder() = 0;
+    static HALManager& getInstance();
+private:
+    Encoder leftEncoder;
+    Encoder rightEncoder;
+    FaulhaberBLDC leftMotor;
+    FaulhaberBLDC rightMotor;
+private:
+    HALManager();
+public:
+    Encoder& getLeftEncoder();
+    Encoder& getRightEncoder();
+    Motor& getLeftMotor();
+    Motor& getRightMotor();
+private:
+    void initializeHal();
+    void initializeEncoders();
 };
+#endif
 
 #endif /* HAL_HALMANAGER_H_ */
 /** @} */

@@ -9,7 +9,7 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
-#include "hal/HALManagerBigRobot.h"
+#include "hal/HALManager.h"
 
 #include "serial/messages/SetSpeedMessage.h"
 #include "hal/DynamixelCOM.h"
@@ -41,7 +41,7 @@ int main(void) {
 #endif
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
-    /*Encoder& left = HALManagerBigRobot::getInstance().getLeftEncoder();
+    /*Encoder& left = HALManager::getInstance().getLeftEncoder();
      schedule_repeating_task([&left](){
      printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
      }, 1000, 250);*/
@@ -68,7 +68,7 @@ int main(void) {
             });
 #endif
 #if 1
-    FaulhaberBLDC motor(DAC_CHANNEL_1, GPIO_PIN_4, GPIOA, GPIO_PIN_10);
+    Motor& motor = HALManager::getInstance().getLeftMotor();
     motor.enable();
     motor.setSpeed(2048);
 
