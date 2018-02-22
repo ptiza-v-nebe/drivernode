@@ -68,7 +68,7 @@ int main(void) {
             });
 #endif
 #if 1
-    FaulhaberBLDC motor(DAC_CHANNEL_1, GPIO_PIN_4);
+    FaulhaberBLDC motor(DAC_CHANNEL_1, GPIO_PIN_4, GPIOA, GPIO_PIN_10);
     motor.enable();
     motor.setSpeed(2048);
 
