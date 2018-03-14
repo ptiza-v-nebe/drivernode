@@ -11,13 +11,35 @@
 #include "serial/MessageDispatcherFactory.h"
 #include "hal/HALManager.h"
 
-#include "serial/messages/SetSpeedMessage.h"
+#include "serial/messages/all.h"
 #include "hal/DynamixelCOM.h"
 #include "util/util.h"
 #include "hal/FaulhaberBLDC.h"
 
 int main(void) {
     setupHardware();
+
+    // ////////////////////////////////////////////
+    // Setup Objects
+    // ////////////////////////////////////////////
+
+#ifdef HUMAN_MODE
+    HumanMessageDispatcherFactory factory;
+#else
+    ODROIDMessageDispatcherFactory factory;
+#endif
+    MessageDispatcher& dispatcher = factory.getMessageDispatcher();
+
+    HALManager& hal = HALManager::getInstance();
+
+    // ////////////////////////////////////////////
+    // Setup MessageHandlers
+    // ////////////////////////////////////////////
+
+    // ////////////////////////////////////////////
+    // Setup Tasks
+    // ////////////////////////////////////////////
+
 #ifdef BLINK_LED
     __HAL_RCC_GPIOA_CLK_ENABLE()
     ;
@@ -33,18 +55,6 @@ int main(void) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     }, 500);
 #endif
-
-#ifdef HUMAN_MODE
-    HumanMessageDispatcherFactory factory;
-#else
-    ODROIDMessageDispatcherFactory factory;
-#endif
-    MessageDispatcher& dispatcher = factory.getMessageDispatcher();
-
-    /*Encoder& left = HALManager::getInstance().getLeftEncoder();
-     schedule_repeating_task([&left](){
-     printf("Encoder tick delta is: %d\r\n", left.getTickAndReset());
-     }, 1000, 250);*/
 
 #if 0
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -67,7 +77,7 @@ int main(void) {
                 HAL_DAC_SetValue(&dac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ssm.getSpeedLeft());
             });
 #endif
-#if 1
+#if 0
     Motor& motor = HALManager::getInstance().getLeftMotor();
     motor.enable();
     motor.setSpeed(2048);
@@ -79,19 +89,60 @@ int main(void) {
 
 #endif
 
+#if 0
+    DynamixelUART dynamixel;
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel](SetSpeedMessage) {
+        // turn on led
+        //uint8_t checksum = ~(5 + 4 + 0x03 + 25 + 1);
+        //uint8_t msg[] = {0xFF, 0xFF, 5, 4, 0x03, 25, 1, checksum};
+        //int size = 8;
+
+
+
+                uint8_t id = 5;
+                uint8_t checksum = ~(id + 4 + 0x03 + 25 + 1);
+                uint8_t msg[] = {0xFF, 0xFF, id, 4, 0x03, 25, 1, checksum};
+                constexpr int size = 8;
+                uint8_t answer[size] = {0};
+
+                dynamixel.send(msg, size);
+                int result = dynamixel.receive(answer, 6);
+
+                printf("Sent ");
+                printBytes(msg, size);
+                printf(" and got (%d) ", result);
+                printBytes(answer, size);
+                printf("\r\n");
+            });
+
+#endif
+
 #if 1
     DynamixelCOM dynamixel;
 
+    int id = 5;
+
     printf("Sending ping \r\n");
-    dynamixel.ping(5);
+    dynamixel.ping(id);
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
-            [&dynamixel](SetSpeedMessage ssm) {
+            [&dynamixel, id](SetSpeedMessage ssm) {
                 printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
-                dynamixel.writeByte(5, 25, ssm.getSpeedLeft());
+                dynamixel.writeByte(id, 25, ssm.getSpeedLeft());
+
+                //uint16_t speed = ssm.getSpeedLeft();
+                //printf("Setting GoalPosition to %d \r\n", speed);
+
+                //uint8_t data[] = {};
+                //dynamixel.write();
+                //dynamixel.writeByte(id, 25, ssm.getSpeedLeft());
             });
 #endif
 
+    // ////////////////////////////////////////////
+    // Start Scheduler and execute Tasks
+    // ////////////////////////////////////////////
     start_scheduler();
 
     for (;;)

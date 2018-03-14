@@ -10,8 +10,8 @@
 #include "hal/DynamixelUART.h"
 #include "hal/util.h"
 
-static constexpr int TRANSMIT_TIMEOUT_MS = 10;
-static constexpr int RECEIVE_TIMEOUT_MS = 10;
+static constexpr int TRANSMIT_TIMEOUT_MS = 20;
+static constexpr int RECEIVE_TIMEOUT_MS = 20;
 
 DynamixelUART::DynamixelUART() {
     init();
@@ -61,7 +61,6 @@ void DynamixelUART::init() {
     uart_gpio.Pin = GPIO_PIN_9; // PA9: USART1_TX
     uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART1;
-    uart_gpio.Pull = GPIO_PULLUP;
 
     __HAL_RCC_GPIOA_CLK_ENABLE()
     ;
