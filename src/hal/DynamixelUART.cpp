@@ -60,7 +60,7 @@ void DynamixelUART::init() {
     uart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
     uart_gpio = getDefaultGPIO();
-    uart_gpio.Pin = GPIO_PIN_9; // PA9: USART1_TX //PB10: USART3_TX
+    uart_gpio.Pin = GPIO_PIN_9; // PA9: USART1_TX
     uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART1;
     uart_gpio.Speed = GPIO_SPEED_HIGH;

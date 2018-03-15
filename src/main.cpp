@@ -30,7 +30,7 @@ int main(void) {
 #endif
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
-    HALManager& hal = HALManager::getInstance();
+    //HALManager& hal = HALManager::getInstance();
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -56,7 +56,7 @@ int main(void) {
     }, 500);
 #endif
 
-#if 1
+#if 0
     DynamixelUART dynamixel;
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&dynamixel](SetSpeedMessage ssm) {
@@ -85,25 +85,24 @@ int main(void) {
 
 #endif
 
-#if 0
+#if 1
     DynamixelCOM dynamixel;
 
-    int id = 5;
+    int id = 7;
 
     printf("Sending ping \r\n");
     dynamixel.ping(id);
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&dynamixel, id](SetSpeedMessage ssm) {
-                printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
-                dynamixel.writeByte(id, 25, ssm.getSpeedLeft());
-
-                //uint16_t speed = ssm.getSpeedLeft();
-                //printf("Setting GoalPosition to %d \r\n", speed);
-
-                //uint8_t data[] = {};
-                //dynamixel.write();
+                //printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
                 //dynamixel.writeByte(id, 25, ssm.getSpeedLeft());
+
+                uint16_t speed = ssm.getSpeedLeft();
+                printf("Setting GoalPosition to %d \r\n", speed);
+
+                uint8_t data[] = { static_cast<uint8_t>(speed & 0xFF), static_cast<uint8_t>(((speed & 0xFF00) >> 8) & 0xFF) };
+                dynamixel.write(id, 30, data, 2);
             });
 #endif
 
