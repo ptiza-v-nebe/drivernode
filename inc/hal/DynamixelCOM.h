@@ -18,8 +18,10 @@ private:
 public:
     uint8_t ping(const uint8_t id);
     uint8_t writeByte(const uint8_t id, const uint8_t address, const uint8_t data);
-    uint8_t write16Bit(const uint8_t id, const uint8_t address, const uint16_t data);
+    uint8_t writeWord(const uint8_t id, const uint8_t address, const uint16_t data);
     uint8_t write(const uint8_t id, const uint8_t address, const uint8_t* data, const int dataLength);
+    uint8_t readByte(const uint8_t id, const uint8_t address, uint8_t& value);
+    uint8_t readWord(const uint8_t id, const uint8_t address, uint16_t& value);
     uint8_t read(const uint8_t id, const uint8_t address, const uint8_t length, uint8_t* buffer);
 private:
     int readStatus(uint8_t* buffer = nullptr, int size = 0);

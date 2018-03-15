@@ -154,9 +154,22 @@ uint8_t DynamixelCOM::writeByte(const uint8_t id, const uint8_t address,
     return write(id, address, &data, 1);
 }
 
-uint8_t DynamixelCOM::write16Bit(const uint8_t id, const uint8_t address,
+uint8_t DynamixelCOM::writeWord(const uint8_t id, const uint8_t address,
         const uint16_t data) {
     uint8_t dataArr[] = { static_cast<uint8_t>(data & 0xFF), static_cast<uint8_t>((data >> 8) & 0xFF) };
     return write(id, address, dataArr, 2);
+}
+
+uint8_t DynamixelCOM::readByte(const uint8_t id, const uint8_t address,
+        uint8_t& value) {
+    return read(id, address, 1, &value);
+}
+
+uint8_t DynamixelCOM::readWord(const uint8_t id, const uint8_t address,
+        uint16_t& value) {
+    uint8_t data[2] = {0};
+    uint8_t retVal = read(id, address, 2, data);
+    value = data[0] | (static_cast<uint16_t>(data[1]) << 8);
+    return retVal;
 }
 /** @} */
