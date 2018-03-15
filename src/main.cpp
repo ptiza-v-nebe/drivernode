@@ -59,7 +59,7 @@ int main(void) {
 #if 1
     DynamixelUART dynamixel;
     dispatcher.registerMessageHandler<SetSpeedMessage>(
-            [&dynamixel](SetSpeedMessage) {
+            [&dynamixel](SetSpeedMessage ssm) {
         // turn on led
         //uint8_t checksum = ~(5 + 4 + 0x03 + 25 + 1);
         //uint8_t msg[] = {0xFF, 0xFF, 5, 4, 0x03, 25, 1, checksum};
@@ -67,9 +67,9 @@ int main(void) {
 
 
 
-                uint8_t id = 5;
-                uint8_t checksum = ~(id + 4 + 0x03 + 25 + 1);
-                uint8_t msg[] = {0xFF, 0xFF, id, 4, 0x03, 25, 1, checksum};
+                uint8_t id = 7;
+                uint8_t checksum = ~(id + 4 + 0x03 + 25 + ssm.getSpeedLeft());
+                uint8_t msg[] = {0xFF, 0xFF, id, 4, 0x03, 25, static_cast<uint8_t>(ssm.getSpeedLeft()), checksum};
                 constexpr int size = 8;
                 uint8_t answer[size] = {0};
 

@@ -10,7 +10,7 @@
 #include "hal/DynamixelUART.h"
 #include "hal/util.h"
 
-static constexpr int TRANSMIT_TIMEOUT_MS = 200;
+static constexpr int TRANSMIT_TIMEOUT_MS = 20;
 static constexpr int RECEIVE_TIMEOUT_MS = 20;
 
 DynamixelUART::DynamixelUART() {
@@ -55,7 +55,9 @@ void DynamixelUART::init() {
     uart.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     uart.Init.WordLength = UART_WORDLENGTH_8B;
     uart.Init.OneBitSampling = UART_ONEBIT_SAMPLING_ENABLED;
-    uart.Init.OverSampling = UART_OVERSAMPLING_16;
+    uart.Init.OverSampling = UART_OVERSAMPLING_8;
+
+    uart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
     uart_gpio = getDefaultGPIO();
     uart_gpio.Pin = GPIO_PIN_9; // PA9: USART1_TX //PB10: USART3_TX
