@@ -62,7 +62,7 @@ void DynamixelUART::init() {
     uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART1;
     uart_gpio.Speed = GPIO_SPEED_HIGH;
-    uart_gpio.Pull = GPIO_PULLUP;
+    uart_gpio.Pull = GPIO_NOPULL;
 
     __HAL_RCC_GPIOA_CLK_ENABLE()
     ;
