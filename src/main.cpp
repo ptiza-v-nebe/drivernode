@@ -101,8 +101,9 @@ int main(void) {
                 uint16_t speed = ssm.getSpeedLeft();
                 printf("Setting GoalPosition to %d \r\n", speed);
 
-                uint8_t data[] = { static_cast<uint8_t>(speed & 0xFF), static_cast<uint8_t>(((speed & 0xFF00) >> 8) & 0xFF) };
-                dynamixel.write(id, 30, data, 2);
+                dynamixel.write16Bit(7, 30, speed);
+                dynamixel.write16Bit(2, 30, speed);
+                dynamixel.write16Bit(5, 30, speed);
             });
 #endif
 
