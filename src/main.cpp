@@ -15,6 +15,7 @@
 #include "hal/DynamixelCOM.h"
 #include "util/util.h"
 #include "hal/FaulhaberBLDC.h"
+#include "hal/DynamixelAX12A.h"
 
 int main(void) {
     setupHardware();
@@ -85,7 +86,7 @@ int main(void) {
 
 #endif
 
-#if 1
+#if 0
     DynamixelCOM dynamixel;
 
     int id = 7;
@@ -112,6 +113,35 @@ int main(void) {
 
 
             });
+#endif
+
+#if 1
+    DynamixelCOM dynamixelCom;
+    DynamixelAX12A dynamixel(7, dynamixelCom);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel](SetSpeedMessage ssm) {
+
+                bool enable = ssm.getSpeedLeft();
+
+                printf("%s Dynamixel\r\n", enable ? "Enabling" : "Disabling");
+                if(enable){
+                    dynamixel.enable();
+                } else {
+                    dynamixel.disableAndStop();
+                }
+
+
+            });
+    dispatcher.registerMessageHandler<ResetOdometryMessage>(
+               [&dynamixel](ResetOdometryMessage rom) {
+                   float heading = rom.getHeading();
+
+                   printf("Setting Angle to %.2f \r\n", heading);
+                   dynamixel.moveTo(heading);
+
+
+               });
 #endif
 
     // ////////////////////////////////////////////

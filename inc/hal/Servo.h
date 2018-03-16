@@ -19,14 +19,14 @@ public:
     virtual ~Servo() = default;
 
     /**
-     * @return the current position in radians
+     * @return the current angle in radians
      */
-    virtual float getPosition() = 0;
+    virtual float getAngle() = 0;
 
     /**
      * Move to a specific angle
      *
-     * @param angle the angle to move to
+     * @param angle the angle to move to in radians
      */
     virtual void moveTo(float angle) = 0;
 

@@ -14,18 +14,18 @@
 #include "hal/DynamixelCOM.h"
 #include <cstdint>
 
-class Dynamixel_AX12A: public Servo {
+class DynamixelAX12A: public Servo {
 private:
     const uint8_t id; ///< the ID of the servo
     bool enabled; ///< is the servo enabled
     DynamixelCOM& com; ///< reference to the COM object
 public:
-    Dynamixel_AX12A(uint8_t id, DynamixelCOM& com);
+    DynamixelAX12A(uint8_t id, DynamixelCOM& com);
 
     virtual void enable() override;
     virtual void disableAndStop() override;
 
-    virtual float getPosition() override;
+    virtual float getAngle() override;
     virtual void moveTo(float angle) override;
     virtual void setRPM(float rpm) override;
 };
