@@ -100,10 +100,17 @@ int main(void) {
 
                 uint16_t speed = ssm.getSpeedLeft();
                 printf("Setting GoalPosition to %d \r\n", speed);
+                dynamixel.writeWord(id, 30, speed);
+                dynamixel.writeByte(id, 25, speed < 500);
 
-                dynamixel.writeWord(7, 30, speed);
-                dynamixel.writeWord(2, 30, speed);
-                dynamixel.writeWord(5, 30, speed);
+                uint16_t presPos;
+                uint8_t volt;
+                dynamixel.readByte(id, 42, volt);
+                dynamixel.readWord(id, 36, presPos);
+
+                printf("Present Position is %d, Voltage is %d\r\n", presPos, volt);
+
+
             });
 #endif
 
