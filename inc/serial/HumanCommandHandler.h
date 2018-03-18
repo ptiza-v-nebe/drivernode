@@ -38,9 +38,9 @@ public:
 private:
     bool isValidCharacter(uint8_t& byte);
     void sendLineBreak();
-    void sendPrompt();
-
-    void processMessage(uint8_t *msg, int size);
+protected:
+    virtual void sendPrompt();
+    virtual void processMessage(uint8_t *msg, int size);
 };
 
 #endif /* SERIAL_HUMANCOMMANDHANDLER_H_ */

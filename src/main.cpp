@@ -9,6 +9,7 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
+#include "position/PositionParameterCalibration.h"
 #include "hal/HALManager.h"
 
 #include "serial/messages/all.h"
@@ -21,14 +22,18 @@ int main(void) {
     // Setup Objects
     // ////////////////////////////////////////////
 
+    HALManager& hal = HALManager::getInstance();
+
+#ifdef CALIBRATION
+    CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
+#else
 #ifdef HUMAN_MODE
     HumanMessageDispatcherFactory factory;
 #else
     ODROIDMessageDispatcherFactory factory;
-#endif
+#endif /*HUMAN_MODE*/
+#endif /*CALIBRATION*/
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
-
-    //HALManager& hal = HALManager::getInstance();
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers

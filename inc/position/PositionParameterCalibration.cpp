@@ -10,22 +10,17 @@
 #include "config.h"
 #include <position/PositionParameterCalibration.h>
 #include "position/Angle.h" // for PI
+#include "serial/UARTWrapper.h"
 #include <cmath>
 
 static constexpr int METERS_TRAVELLED = 1;
 static constexpr int ROTATIONS = 5;
 
-#ifdef CALIBRATION
-#ifndef HUMAN_MODE
-#error "Calibration requires HUMAN_MODE!"
-#endif
-#endif
-
 SMARTENUM_DEFINE_NAMES(CalibrationState, CALIBRATION_STATE_VALS)
 
 PositionParameterCalibration::PositionParameterCalibration(Encoder& left,
-        Encoder& right) :
-        state(CalibrationState::Idle), left(left), right(right), umPerTickLeft(0), umPerTickRight(0) {
+        Encoder& right, MessageDispatcher& m) :
+        HumanCommandHandler(m), state(CalibrationState::Idle), left(left), right(right), umPerTickLeft(0), umPerTickRight(0) {
     printf("Please prepare robot for calibration of the wheels.\r\n");
     printf("Press [Enter] to start");
 }
@@ -92,5 +87,22 @@ void PositionParameterCalibration::calculateAndDisplayTrackWidth() {
     printf("\n");
     printf("TRACK_WIDTH_UM = %.8f;\r\n", trackWidth);
     printf("\n");
+}
+
+void PositionParameterCalibration::sendPrompt() {
+    return; // do not send prompt
+}
+
+void PositionParameterCalibration::processMessage(uint8_t*, int) {
+    transition(); // transition on every message
+}
+
+/**
+ * Constructs a CalibrationMessageDispatcherFactory.
+ */
+CalibrationMessageDispatcherFactory::CalibrationMessageDispatcherFactory(Encoder& left,
+        Encoder& right) :
+        MessageDispatcherFactory(sender), commandHandler(left, right, dispatcher) {
+    UARTWrapper::getInstance().setReceiveHandler(&commandHandler);
 }
 /** @} */
