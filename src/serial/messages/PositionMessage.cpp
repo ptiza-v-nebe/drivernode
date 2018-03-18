@@ -9,7 +9,6 @@
 
 #include <serial/messages/PositionMessage.h>
 #include "serial/messages/util.h"
-#include "util/conversions.h"
 #include <cstdio>
 
 /**
@@ -37,7 +36,7 @@ std::experimental::optional<PositionMessage> PositionMessage::deserialize(const 
     serialToSystem(msg + 2, y);
     serialToSystem(msg + 4, heading);
 
-    return {PositionMessage(x,y,heading)};
+    return {PositionMessage({x,y},heading)};
 }
 
 /**
@@ -47,9 +46,9 @@ std::experimental::optional<PositionMessage> PositionMessage::deserialize(const 
  * @param y       the current y position
  * @param heading the current heading
  */
-PositionMessage::PositionMessage(const uint16_t x, const uint16_t y,
-        const float heading) :
-        Message(getMessageType()), x(x), y(y), heading(heading) {
+PositionMessage::PositionMessage(const Position position,
+        const Angle heading) :
+        Message(getMessageType()), position(position), heading(heading) {
 }
 
 /*
@@ -60,13 +59,13 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) const {
         return -1;
     }
 
-    if (systemToSerial(x, buffer, 2) < 0) {
+    if (systemToSerial(position.x, buffer, 2) < 0) {
         return -1;
     }
-    if (systemToSerial(y, buffer + 2, 2) < 0) {
+    if (systemToSerial(position.y, buffer + 2, 2) < 0) {
         return -1;
     }
-    if (systemToSerial(heading, buffer + 4, 4) < 0) {
+    if (systemToSerial(heading.getAngleInRadian(), buffer + 4, 4) < 0) {
         return -1;
     }
     return PAYLOAD_SIZE;
@@ -76,28 +75,21 @@ int PositionMessage::serialize(uint8_t* buffer, int buffersize) const {
  * @see - Message::print()
  */
 void PositionMessage::print() const {
-    printf("PositionMessage[position=(%d, %d), heading=%.2f°]", x, y,
-            radiansToDegrees(heading));
+    printf("PositionMessage[position=(%d, %d), heading=%.2f°]", position.x, position.y,
+            heading.getAngleInDegrees());
 }
 
 /**
- * @return the current x position
+ * @return the current position
  */
-uint16_t PositionMessage::getX() {
-    return x;
-}
-
-/**
- * @return the current y position
- */
-uint16_t PositionMessage::getY() {
-    return y;
+const Position& PositionMessage::getPosition() {
+    return position;
 }
 
 /**
  * @return the current heading
  */
-float PositionMessage::getHeading() {
+const Angle& PositionMessage::getHeading() {
     return heading;
 }
 /** @} */

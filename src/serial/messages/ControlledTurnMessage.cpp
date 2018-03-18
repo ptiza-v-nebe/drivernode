@@ -9,7 +9,6 @@
 
 #include <serial/messages/ControlledTurnMessage.h>
 #include "serial/messages/util.h"
-#include "util/conversions.h"
 #include <cstdio>
 
 /**
@@ -50,7 +49,7 @@ std::experimental::optional<ControlledTurnMessage> ControlledTurnMessage::deseri
  * @param targetHeading the target heading
  */
 ControlledTurnMessage::ControlledTurnMessage(const TurnSpeed& speed,
-        const float targetHeading) :
+        const Angle targetHeading) :
         Message(getMessageType()), speed(speed), targetHeading(targetHeading) {
 }
 
@@ -63,7 +62,7 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) const {
     }
 
     buffer[0] = static_cast<uint8_t>(speed);
-    systemToSerial(targetHeading, buffer + 1, 4);
+    systemToSerial(targetHeading.getAngleInRadian(), buffer + 1, 4);
 
     return PAYLOAD_SIZE;
 }
@@ -73,7 +72,7 @@ int ControlledTurnMessage::serialize(uint8_t* buffer, int buffersize) const {
  */
 void ControlledTurnMessage::print() const {
     printf("ControlledTurnCommand[speed=%s, target=%.2f°]", enumToString(speed),
-            radiansToDegrees(targetHeading));
+            targetHeading.getAngleInDegrees());
 }
 
 /**
@@ -86,7 +85,7 @@ const TurnSpeed& ControlledTurnMessage::getSpeed() {
 /**
  * @return the target heading after the turn
  */
-float ControlledTurnMessage::getTargetHeading() {
+const Angle& ControlledTurnMessage::getTargetHeading() {
     return targetHeading;
 }
 /** @} */

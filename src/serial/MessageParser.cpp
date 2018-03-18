@@ -8,7 +8,6 @@
  */
 #include <serial/MessageParser.h>
 #include "serial/Serializer.h"
-#include "util/conversions.h"
 #include "serial/messages/all.h"
 
 #include "config.h"
@@ -96,7 +95,7 @@ int MessageParser::parseDriveMessage(const uint8_t* msg, const int size,
                 if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hu %hu",
                         &x, &y) == 2) {
                     // successfully parsed two unsigned ints
-                    ControlledDriveMessage cdm(DriveSpeed::SLOW, x, y);
+                    ControlledDriveMessage cdm(DriveSpeed::SLOW, {x, y});
                     print(cdm);
                     return Serializer::serialize(cdm, buffer, buffersize);
                 } else {
@@ -151,7 +150,7 @@ int MessageParser::parseTurnMessage(const uint8_t* msg, const int size,
                         &degrees) == 1) {
                     // successfully parsed float
                     ControlledTurnMessage ctm(TurnSpeed::SLOW,
-                            degreesToRadians(degrees));
+                            Angle::getFromDegrees(degrees));
                     print(ctm);
                     return Serializer::serialize(ctm, buffer, buffersize);
                 } else {
@@ -215,7 +214,7 @@ int MessageParser::parseResetMessage(const uint8_t* msg, const int,
     float degrees;
     if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hu %hu %f", &x, &y, &degrees) == 3) {
         // successfully parsed float
-        ResetOdometryMessage rom(x, y, degreesToRadians(degrees));
+        ResetOdometryMessage rom({x, y}, Angle::getFromDegrees(degrees));
         print(rom);
         return Serializer::serialize(rom, buffer, buffersize);
     } else {

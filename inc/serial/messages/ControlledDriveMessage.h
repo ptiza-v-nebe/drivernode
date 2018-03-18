@@ -14,6 +14,7 @@
 
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
+#include "position/Position.h"
 
 /**
  * Represents a ControlledDriveCommand.
@@ -27,17 +28,15 @@ public:
     }
 private:
     DriveSpeed speed; ///< the speed of the drive
-    uint16_t x; ///< the target x position
-    uint16_t y; ///< the target y position
+    Position position; ///< the target position
 public:
-    ControlledDriveMessage(const DriveSpeed& speed, const uint16_t x, const uint16_t y);
+    ControlledDriveMessage(const DriveSpeed& speed, const Position position);
 
     int serialize(uint8_t* buffer, int buffersize) const override;
     void print() const override;
 
     const DriveSpeed& getSpeed();
-    uint16_t getX();
-    uint16_t getY();
+    const Position& getPosition();
 };
 
 #endif /* SERIAL_MESSAGES_CONTROLLEDDRIVEMESSAGE_H_ */

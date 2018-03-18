@@ -12,6 +12,8 @@
 
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
+#include "position/Position.h"
+#include "position/Angle.h"
 
 /**
  * Represents a ResetOdometryCommand.
@@ -24,18 +26,16 @@ public:
         return 0x8;
     }
 private:
-    uint16_t x; ///< odometry x position
-    uint16_t y; ///< odometry y position
-    float heading; ///< odometry heading
+    Position position; ///< odometry position
+    Angle heading; ///< odometry heading
 public:
-    ResetOdometryMessage(const uint16_t x, const uint16_t y, const float heading);
+    ResetOdometryMessage(const Position position, const Angle heading);
 
     int serialize(uint8_t* buffer, int buffersize) const override;
     void print() const override;
 
-    uint16_t getX();
-    uint16_t getY();
-    float getHeading();
+    const Position& getPosition();
+    const Angle& getHeading();
 };
 
 #endif /* SERIAL_MESSAGES_RESETODOMETRYMESSAGE_H_ */

@@ -9,7 +9,6 @@
 
 #include <serial/messages/ResetOdometryMessage.h>
 #include "serial/messages/util.h"
-#include "util/conversions.h"
 #include <cstdio>
 
 /**
@@ -38,7 +37,7 @@ std::experimental::optional<ResetOdometryMessage> ResetOdometryMessage::deserial
     serialToSystem(msg + 2, y);
     serialToSystem(msg + 4, heading);
 
-    return {ResetOdometryMessage(x,y,heading)};
+    return {ResetOdometryMessage({x,y},heading)};
 }
 
 /**
@@ -48,9 +47,9 @@ std::experimental::optional<ResetOdometryMessage> ResetOdometryMessage::deserial
  * @param y       the new y position
  * @param heading the new heading
  */
-ResetOdometryMessage::ResetOdometryMessage(const uint16_t x, const uint16_t y,
-        const float heading) :
-        Message(getMessageType()), x(x), y(y), heading(heading) {
+ResetOdometryMessage::ResetOdometryMessage(const Position position,
+        const Angle heading) :
+        Message(getMessageType()), position(position), heading(heading) {
 }
 
 /*
@@ -61,13 +60,13 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) const {
         return -1;
     }
 
-    if (systemToSerial(x, buffer, 2) < 0) {
+    if (systemToSerial(position.x, buffer, 2) < 0) {
         return -1;
     }
-    if (systemToSerial(y, buffer + 2, 2) < 0) {
+    if (systemToSerial(position.y, buffer + 2, 2) < 0) {
         return -1;
     }
-    if (systemToSerial(heading, buffer + 4, 4) < 0) {
+    if (systemToSerial(heading.getAngleInRadian(), buffer + 4, 4) < 0) {
         return -1;
     }
     return PAYLOAD_SIZE;
@@ -77,28 +76,21 @@ int ResetOdometryMessage::serialize(uint8_t* buffer, int buffersize) const {
  * @see - Message::print()
  */
 void ResetOdometryMessage::print() const {
-    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f°]", x, y,
-            radiansToDegrees(heading));
+    printf("ResetOdometryCommand[position=(%d, %d), heading=%.2f°]", position.x, position.y,
+            heading.getAngleInDegrees());
 }
 
 /**
- * @return the new x position
+ * @return the new position
  */
-uint16_t ResetOdometryMessage::getX() {
-    return x;
-}
-
-/**
- * @return the new y position
- */
-uint16_t ResetOdometryMessage::getY() {
-    return y;
+const Position& ResetOdometryMessage::getPosition() {
+    return position;
 }
 
 /**
  * @return the new heading
  */
-float ResetOdometryMessage::getHeading() {
+const Angle& ResetOdometryMessage::getHeading() {
     return heading;
 }
 
