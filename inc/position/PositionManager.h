@@ -13,11 +13,14 @@
 #include <cstdint>
 #include "hal/Encoder.h"
 
+#include "position/Angle.h"
+#include "position/Position.h"
+
 class PositionManager {
 private:
     float xum;
     float yum;
-    float heading;
+    Angle heading;
 
     Encoder& left;
     Encoder& right;
@@ -25,12 +28,11 @@ public:
     PositionManager(Encoder& left, Encoder& right);
 
 
-    void reset(uint16_t x, uint16_t y, float heading);
+    void reset(const Position& position, const Angle& heading);
     void update();
 
-    uint16_t getX();
-    uint16_t getY();
-    float getHeading();
+    Position getPosition() const;
+    const Angle& getHeading() const;
 };
 
 #endif /* POSITION_POSITIONMANAGER_H_ */
