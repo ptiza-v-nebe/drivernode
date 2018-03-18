@@ -25,6 +25,10 @@
  */
 #define HUMAN_MODE
 
+/**
+ * Enables calibration
+ */
+#define CALIBRATION
 
 /**
  * Enable to generate more output in the MessageParser.
