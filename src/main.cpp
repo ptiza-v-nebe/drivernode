@@ -4,13 +4,13 @@
  * @file
  ******************************************************************************
  */
+#include <hal/SRF08.h>
 #include "config.h"
 
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
 
-#include "srf_08/srf08.h"
 
 static void InitI2C(I2C_HandleTypeDef& hi2c1);
 

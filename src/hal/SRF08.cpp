@@ -6,7 +6,7 @@
  */
 
 
-#include "srf_08/srf08.h"
+#include "hal/SRF08.h"
 
 //initializierungsliste für i2c und address
 SRF08::SRF08(I2C_HandleTypeDef *i2c, uint8_t address) : i2c(i2c), address(address)
