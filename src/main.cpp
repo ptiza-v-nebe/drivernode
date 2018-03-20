@@ -18,7 +18,8 @@ int main(void) {
 	setupHardware();
 
 #ifdef BLINK_LED
-	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE()
+	;
 
 	GPIO_InitTypeDef gpioa = getDefaultGPIO();
 	gpioa.Pin = GPIO_PIN_5;
@@ -38,18 +39,21 @@ int main(void) {
 	ODROIDMessageDispatcherFactory factory;
 #endif
 	MessageDispatcher& dispatcher = factory.getMessageDispatcher();
-
+	/* SRF08 Messung Funktionen*/
 	I2C_HandleTypeDef i2c;
 	InitI2C(i2c);
 
 	SRF08 srf08(&i2c, 0xE2);
-	schedule_repeating_task([&srf08](){
-		printf("Measuring...\r\n");
-		srf08.startRanging();
+	schedule_repeating_task([&srf08]() {
 		uint16_t cm = srf08.getRange();
-		printf("Range is %d cm\r\n", cm);
-	}, 1000);
-
+		if(cm < 10){
+			printf("Warnung %d cm\r\n", cm);
+		}
+//		printf("Range is %d cm\r\n", cm);
+//		printf("Measuring...\r\n");
+		srf08.startRanging();
+		srf08.rangingFinished();
+	}, 100);
 
 	start_scheduler();
 
@@ -58,9 +62,8 @@ int main(void) {
 }
 
 /* I2C1 init function */
-void InitI2C(I2C_HandleTypeDef& hi2c1)
-{
-	hi2c1.Instance = I2C1;
+void InitI2C(I2C_HandleTypeDef& hi2c1) {
+	hi2c1.Instance = I2C2;
 	hi2c1.Init.Timing = 0x10909CEC;
 	hi2c1.Init.OwnAddress1 = 0;
 	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -70,35 +73,22 @@ void InitI2C(I2C_HandleTypeDef& hi2c1)
 	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
-	__HAL_RCC_I2C1_CLK_ENABLE();
-	if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-	{
+	__HAL_RCC_I2C2_CLK_ENABLE()
+	;
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
 		//TODO: error handling
+		while (1)
+			;
 	}
-
-	/**Configure Analogue filter
-	 */
-	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-	{
-		//TODO: error handling
-	}
-
-	/**Configure Digital filter
-	 */
-	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-	{
-		//TODO: error handling
-	}
-
 
 	GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
-	i2cGPIO.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+	i2cGPIO.Pin = GPIO_PIN_13 | GPIO_PIN_14;
 	i2cGPIO.Mode = GPIO_MODE_AF_OD;
-	i2cGPIO.Alternate = GPIO_AF4_I2C1;
+	i2cGPIO.Alternate = GPIO_AF4_I2C2;
 
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE()
+	;
 	HAL_GPIO_Init(GPIOB, &i2cGPIO);
 
 }
-
 
