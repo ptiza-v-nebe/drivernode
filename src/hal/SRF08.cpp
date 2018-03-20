@@ -1,160 +1,135 @@
-/*
- * SRF08.cpp
+/** ***************************************************************************
+ * Eurobot 2018 - RCHH
  *
- *  Created on: 17.03.2018
- *      Author: chef
+ * @file
+ * @author Cagri Erdogan
+ * @author Moritz Höwer
+ * \addtogroup HAL
+ * @{
+ ******************************************************************************
  */
-
 
 #include "hal/SRF08.h"
 
-//initializierungsliste für i2c und address
-SRF08::SRF08(I2C_HandleTypeDef *i2c, uint8_t address) : i2c(i2c), address(address)
-{
+static constexpr int TIMEOUT_MS = 1; // TODO: check if this is enough!
+
+/**
+ * Constructs an abstraction for a SRF08 Ultrasonic sensor
+ *
+ * @param i2c     the handle for controlling the I²C
+ * @param address the address of the sensor
+ */
+SRF08::SRF08(I2C_HandleTypeDef *i2c, uint8_t address) :
+        i2c(i2c), address(address) {
 
 }
 
-/*
- * Function:    startRanging
- * Args:        void
- * Returns:     void
- * Description: Sends command to module to start ranging.
+/**
+ * Send the command to start measuring
  */
 void SRF08::startRanging() {
-	uint8_t command[] = {0x00, 0x51};
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 10);
-	}
+    uint8_t command[] = { 0x00, 0x51 }; // Write command 0x51 to command register (0)
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS);
+}
 
-/*
- * Function:    rangingFinished
- * Args:        void
- * Returns:     Bool: whether ranging is finished
- * Description: Checks if the ranging process on the module is finished
+/**
+ * Checks if the ranging has finished.
+ * @attention Currently this function is broken!!
+ *
+ * @return true if ranging has finished and the sensor
  */
 bool SRF08::rangingFinished() {
-	uint8_t command[] = {0x00};
-	uint8_t response;
-	HAL_I2C_Master_Transmit(i2c, address, command, 1, 10);
-	HAL_I2C_Master_Receive(i2c, address, &response, 1, 10);
-	return response != 0xFF;
+    uint8_t command[] = { 0x00 };
+    uint8_t response = 0xFF; // TODO: testen, ob das hilft
+
+    // read version id (register 0)
+    HAL_I2C_Master_Transmit(i2c, address, command, 1, TIMEOUT_MS);
+    HAL_I2C_Master_Receive(i2c, address, &response, 1, TIMEOUT_MS);
+
+    // if sensor is busy, result should be 0xFF
+    // so result != 0xFF --> sensor is ready
+    return response != 0xFF;
 }
 
-/*
- * Function:    getRange
- * Args:        voidint
- * Returns:     int range
- * Description: Range in cm. This function should only be called when ranging is finished, otherwise previous value is returned
+/**
+ * Read the measured range from the sensor.
+ *
+ * @return the measured range in cm
  */
 uint16_t SRF08::getRange() {
+    while (!rangingFinished()) { // TODO: get rid of loop
+        HAL_Delay(1);
+    } //Wait until ranging is finished
 
-	while (!rangingFinished()){
-		HAL_Delay(1);
-	} //Wait until ranging is finished
-	uint8_t command[]  = {0x02};           //Address of range register
-	uint8_t response[] = {0x00, 0x00};
-	HAL_I2C_Master_Transmit(i2c, address, command, 1, 10); //Send command
-	HAL_I2C_Master_Receive(i2c, address, response, 2, 10);   //Read 16bits result
-	uint16_t range = (static_cast <uint16_t>(response[0])<<8) | response[1]; //Shift two bytes into int 16 bit
-	return range;                             //Return int range
+    uint8_t command[] = { 0x02 };
+    uint8_t response[] = { 0x00, 0x00 };
+
+    // read range (register 2 + 3)
+    HAL_I2C_Master_Transmit(i2c, address, command, 1, TIMEOUT_MS); //Send register
+    HAL_I2C_Master_Receive(i2c, address, response, 2, TIMEOUT_MS); //Read 16bits result
+
+    //Shift two bytes into 16 bit
+    uint16_t range = (static_cast<uint16_t>(response[0]) << 8) | response[1];
+    return range;
 }
 
-/*
- * Function:    readLightIntensity
- * Args:        void
- * Returns:     int lightIntensity
- * Description: Reads the lightIntensity from the module
- *              The light intensity is updated if a range command is sent, so don't use
- *              this function only
+/**
+ * Reads the measured light intensity from the sensor.
+ *
+ * @return the measured light intensity
  */
 uint8_t SRF08::getLightIntensity() {
-	uint8_t command[] = {0x01};           //Light intensity register
-	uint8_t response[] = {0x00};
-	HAL_I2C_Master_Transmit(i2c, address, command, 1, 1); //Send command
-	HAL_I2C_Master_Receive(i2c, address, response, 2, 10);    //Read response
-	return response[0];
+    uint8_t command[] = { 0x01 };
+    uint8_t lightValue = 0;
+
+    // read light value (register 1)
+    HAL_I2C_Master_Transmit(i2c, address, command, 1, TIMEOUT_MS); //Send command
+    HAL_I2C_Master_Receive(i2c, address, &lightValue, 1, TIMEOUT_MS); //Read response
+
+    return lightValue;
 }
 
-/*
- * Function:    setRangeRegister
- * Args:        rangeVal
- * Returns:     void
- * Description: Sets the maximum range for which the module waits for an echo
- *              The range is ((rangeVal x 43mm) + 43mm)
- *              The max range is about six meters
+/**
+ * Set the max range of the sensor.
+ *
+ * @param range the maximum range that can be measured in mm
  */
-void SRF08::setRange(uint16_t range) {
-	uint8_t rohrange = (range - 43)/43;
-	while (!rangingFinished()){
-			HAL_Delay(1);
-		} //Wait until ranging is finished
-	uint8_t command[] = {0x02, rohrange};       //Range register
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 1);    //Send command
+void SRF08::setMaxRange(uint16_t range) {
+    uint8_t rohrange = (range - 43) / 43; // formula from datasheet
+    uint8_t command[] = { 0x02, rohrange };
+
+    // write range (register 2)
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS); //Send command
 }
 
-
-//Function setMaxGainRegister
+/**
+ * Set the value of the max gain register.
+ *
+ * @param gainVal the value to set (refer to datasheet for explanation)
+ */
 void SRF08::setMaxGainRegister(uint8_t gainVal) {
-	while (!rangingFinished()){
-				HAL_Delay(1);
-			} //Wait until ranging is finished
-	uint8_t command[] = {0x01, gainVal};        //Max gain register
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 1);    //Send command
+    uint8_t command[] = { 0x01, gainVal };
+
+    // write gain register (register 1)
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS); //Send command
 }
 
-
-/*
- * Function:    setAddress
- * Args:        address
- * Returns:     void
- * Description: Sets the address of the module on the I2C bus. The factory default address is 0x0E (224)
- *                  The address can have the following values:
- *                      E0 | E2 | E4 | E6 ... FC | FE
+/**
+ * Change the address of the SRF08
+ *
+ * @param newAddress the new address
  */
 void SRF08::setAddress(uint8_t newAddress) {
-	//Send address change sequence
-	uint8_t command[] = {0x00, 0xA0};
-	HAL_I2C_Master_Transmit(i2c,  address, command, 2, 1);
-	command[1] = 0xAA;
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 1);
-	command[1] = 0xA5;
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 1);
-	command[1] = newAddress;
-	HAL_I2C_Master_Transmit(i2c, address, command, 2, 1);
-	//Save the updated address
-	address = newAddress;
+    //Send address change sequence
+    uint8_t command[] = { 0x00, 0xA0 };
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS);
+    command[1] = 0xAA;
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS);
+    command[1] = 0xA5;
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS);
+    command[1] = newAddress;
+    HAL_I2C_Master_Transmit(i2c, address, command, 2, TIMEOUT_MS);
+    //Save the updated address
+    address = newAddress;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/** @} */
