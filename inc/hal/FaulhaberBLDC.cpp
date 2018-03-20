@@ -10,17 +10,14 @@
 #include <hal/FaulhaberBLDC.h>
 #include "hal/util.h"
 
-static constexpr uint16_t MAX_SPEED = 4095;
-#define MOTOR_GPIO GPIOA
-#define MOTOR_DAC DAC1
+static constexpr int16_t MAX_SPEED = 13000;
+static constexpr int16_t MIN_SPEED = -13000;
 
-FaulhaberBLDC::FaulhaberBLDC(uint8_t dac_channel, uint16_t dac_pin,
-        GPIO_TypeDef* direction_gpio, uint16_t direction_pin,
-        bool reverseDirection) :
-        enabled(true), dac_channel(dac_channel), dac_pin(dac_pin), direction_gpio(
-                direction_gpio), direction_pin(direction_pin), reverseDirection(
-                reverseDirection) {
-    init();
+static constexpr int ID_MAXLENGTH = 3;
+static constexpr int SPEED_MAXLENGTH = 6;
+
+FaulhaberBLDC::FaulhaberBLDC(UART_HandleTypeDef* uart, uint8_t id, bool reverseDirection) :
+        uart(uart), id(id), reverseDirection(reverseDirection) {
     disableAndStop();
 }
 
@@ -28,6 +25,7 @@ FaulhaberBLDC::FaulhaberBLDC(uint8_t dac_channel, uint16_t dac_pin,
  * @see - Actor::enable()
  */
 void FaulhaberBLDC::enable() {
+    sendCommand("en", 2);
     enabled = true;
 }
 
@@ -36,6 +34,7 @@ void FaulhaberBLDC::enable() {
  */
 void FaulhaberBLDC::disableAndStop() {
     stop();
+    sendCommand("di", 2);
     enabled = false;
 }
 
@@ -87,28 +86,6 @@ void FaulhaberBLDC::stop() {
     setSpeed(0);
 }
 
-/**
- * Initializes the underlying CubeHAL
- */
-void FaulhaberBLDC::init() {
-    // init DAC
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_DAC1_CLK_ENABLE();
-    dac.Instance = MOTOR_DAC;
-
-    GPIO_InitTypeDef gpio_dac = getDefaultGPIO();
-    gpio_dac.Mode = GPIO_MODE_ANALOG;
-    gpio_dac.Pin = dac_pin;
-
-    HAL_DAC_Init(&dac);
-    HAL_GPIO_Init(MOTOR_GPIO, &gpio_dac);
-    HAL_DAC_Start(&dac, dac_channel);
-
-    // init direction
-    GPIO_InitTypeDef gpio_dir = getDefaultGPIO();
-    gpio_dir.Mode = GPIO_MODE_OUTPUT_PP;
-    gpio_dir.Pin = direction_pin;
-
-    HAL_GPIO_Init(direction_gpio, &gpio_dir);
+void FaulhaberBLDC::sendCommand(const char* data, const int size) {
 }
 /** @} */

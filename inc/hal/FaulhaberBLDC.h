@@ -16,24 +16,18 @@
 class FaulhaberBLDC: public Motor {
 private:
     bool enabled; ///< is the motor enabled
-    DAC_HandleTypeDef dac; ///< handle for accessing the dac
-    uint8_t dac_channel; ///< which DAC channel to use
-    uint16_t dac_pin; ///< which GPIO Pin to use
-    GPIO_TypeDef *direction_gpio; ///< the GPIO bank used for direction output
-    uint16_t direction_pin; ///< the pin used for direction control
-    bool reverseDirection; ///< should the direction pin be inverted
+    UART_HandleTypeDef *uart; ///< handle for accessing the UART
+    uint8_t id; ///< the id of the motor
+    bool reverseDirection; ///< should the direction be inverted
 public:
-    FaulhaberBLDC(uint8_t dac_channel, uint16_t dac_pin,
-            GPIO_TypeDef *direction_gpio, uint16_t direction_pin,
-            bool reverseDirection = false);
+    FaulhaberBLDC(UART_HandleTypeDef *uart, uint8_t id, bool reverseDirection = false);
 
     virtual void enable() override;
     virtual void disableAndStop() override;
-    virtual void setSpeed(uint16_t speed) override;
-    virtual void setDirection(DriveDirection direction) override;
+    virtual void setSpeed(int16_t speed) override;
     virtual void stop() override;
 private:
-    void init();
+    void sendCommand(const char *data, const int size);
 };
 
 #endif /* HAL_FAULHABERBLDC_H_ */

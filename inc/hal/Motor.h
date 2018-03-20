@@ -25,14 +25,7 @@ public:
      *
      * @param speed the speed to set
      */
-    virtual void setSpeed(uint16_t speed) = 0;
-
-    /**
-     * Set the direction of the motor.
-     *
-     * @param direction the direction in which the motor should turn
-     */
-    virtual void setDirection(DriveDirection direction) = 0;
+    virtual void setSpeed(int16_t speed) = 0;
 
     /**
      * Stop the motor
