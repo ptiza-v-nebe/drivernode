@@ -99,6 +99,8 @@ void UARTWrapper::init() {
     uart.Init.OneBitSampling = UART_ONEBIT_SAMPLING_ENABLED;
     uart.Init.OverSampling = UART_OVERSAMPLING_16;
 
+    uart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+
     uart_gpio = getDefaultGPIO();
     uart_gpio.Pin = GPIO_PIN_2 | GPIO_PIN_3;
     uart_gpio.Mode = GPIO_MODE_AF_PP;

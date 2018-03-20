@@ -10,6 +10,12 @@
 #define CONFIG_H_
 
 /**
+ * Select Robot (only one!!!)
+ */
+#define BIG_ROBOT
+//#define SMALL_ROBOT
+
+/**
  * Should the LED blink to signal that the Scheduler is running
  */
 #define BLINK_LED
@@ -25,6 +31,11 @@
  * only effective if HUMAN_MODE is enabled
  */
 #define DEBUG_PARSER
+
+/**
+ * Enable to generate more output in the DynamixelCOM class
+ */
+//#define DEBUG_DYNAMIXEL_COM
 
 
 #endif /* CONFIG_H_ */
