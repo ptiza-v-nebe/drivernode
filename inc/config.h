@@ -37,5 +37,10 @@
  */
 //#define DEBUG_DYNAMIXEL_COM
 
+/**
+ * Enable to generate more output in the DynamixelCOM class
+ */
+#define DEBUG_MOTOR_UART
+
 
 #endif /* CONFIG_H_ */

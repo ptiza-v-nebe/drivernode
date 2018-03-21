@@ -9,6 +9,7 @@
 
 #include <hal/FaulhaberBLDC.h>
 #include "hal/util.h"
+#include "config.h"
 #include "constants.h"
 
 static constexpr int16_t MAX_SPEED = 13000;
@@ -66,6 +67,9 @@ void FaulhaberBLDC::setSpeed(int16_t speed) {
     int chars = snprintf(buffer, SPEED_COMMAND_BUFFERSIZE, "v%d", speed);
     if(chars >= SPEED_COMMAND_BUFFERSIZE) {
         // too many characters
+#ifdef HUMAN_MODE
+        printf("WARNING, speed command too long!\r\n");
+#endif
         return;
     }
     sendCommand(buffer);
@@ -83,8 +87,15 @@ void FaulhaberBLDC::sendCommand(const char* command) {
     int chars = snprintf(buffer, COMMAND_BUFFERSIZE, "%d%s\r", id, command);
     if(chars >= COMMAND_BUFFERSIZE) {
         // too long
+#ifdef HUMAN_MODE
+        printf("WARNING, message too long!\r\n");
+#endif
         return;
     }
+
+#ifdef DEBUG_MOTOR_UART
+    printf("Sending command %s\n", buffer);
+#endif
 
     uint8_t *data = reinterpret_cast<uint8_t*>(buffer);
     HAL_UART_Transmit(uart, data, chars, DEFAULT_TIMEOUT_MS);
