@@ -61,6 +61,9 @@ int main(void) {
     Motor& left = hal.getLeftMotor();
     Motor& right = hal.getRightMotor();
 
+    left.enable();
+    right.enable();
+
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&left, &right](SetSpeedMessage ssm) {
                 left.setSpeed(ssm.getSpeedLeft());
