@@ -13,13 +13,13 @@
 #include "hal/interupts.h"
 
 #define LEFT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
-static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
+static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_4; // changing this might require another IRQ!
+static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_5; // changing this might require another IRQ!
 
 //TODO: right encoder
 #define RIGHT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
-static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_4; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_5; // changing this might require another IRQ!
 
 static constexpr uint8_t LEFT_MOTOR_ID = 1;
 static constexpr uint8_t RIGHT_MOTOR_ID = 2;
@@ -29,8 +29,8 @@ static constexpr bool RIGHT_MOTOR_INVERT = true;
 // TODO: Werte richtig einstellen
 // Change USART and GPIO Port in initializeMotorUART();
 static constexpr uint32_t MOTOR_UART_BAUDRATE = 38400;
-static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_0;
-static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_1;
+static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_10;
+static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_11;
 
 extern "C" {
 void EXTI15_10_IRQHandler() {
@@ -122,10 +122,10 @@ void HALManager::initializeMotorUART() {
     uart_gpio.Mode = GPIO_MODE_AF_PP;
     uart_gpio.Alternate = GPIO_AF7_USART3;
 
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_USART3_CLK_ENABLE();
 
-    HAL_GPIO_Init(GPIOB, &uart_gpio);
+    HAL_GPIO_Init(GPIOC, &uart_gpio);
     HAL_UART_Init (&motorUART);
 }
 

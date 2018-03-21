@@ -24,17 +24,17 @@ public:
         return 0xF;
     }
 private:
-    uint16_t speedLeft; ///< exact speed for left motor
-    uint16_t speedRight; ///< exact speed for right motor
+    int16_t speedLeft; ///< exact speed for left motor
+    int16_t speedRight; ///< exact speed for right motor
 public:
-    SetSpeedMessage(uint16_t speed);
-    SetSpeedMessage(uint16_t left, uint16_t right);
+    SetSpeedMessage(int16_t speed);
+    SetSpeedMessage(int16_t left, int16_t right);
 
     int serialize(uint8_t* buffer, int buffersize) const override;
     void print() const override;
 
-    uint16_t getSpeedLeft();
-    uint16_t getSpeedRight();
+    int16_t getSpeedLeft();
+    int16_t getSpeedRight();
 
 private:
     int serializeEqual(uint8_t* buffer, int buffersize) const;

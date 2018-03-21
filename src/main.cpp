@@ -28,7 +28,7 @@ int main(void) {
 #endif
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
-    //HALManager& hal = HALManager::getInstance();
+    HALManager& hal = HALManager::getInstance();
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -58,8 +58,19 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
+    Motor& left = hal.getLeftMotor();
+    Motor& right = hal.getRightMotor();
 
-
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&left, &right](SetSpeedMessage ssm) {
+                left.setSpeed(ssm.getSpeedLeft());
+                right.setSpeed(ssm.getSpeedRight());
+            });
+    dispatcher.registerMessageHandler<StopMessage>(
+            [&left, &right](StopMessage) {
+                left.stop();
+                right.stop();
+            });
 
     // ////////////////////////////////////////////
     // END TEST AREA

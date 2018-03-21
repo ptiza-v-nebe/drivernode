@@ -40,6 +40,36 @@ int systemToSerial(const uint16_t number, uint8_t* bytes, int size) {
 }
 
 /**
+ * Converts serial bytes to a 16 bit unsigned.
+ *
+ * @param bytes the **2**(!) bytes that were received
+ * @param out   the corresponding 16bit signed integer
+ */
+void serialToSystem(const uint8_t* bytes, int16_t& out) {
+    out = (((uint16_t) bytes[0]) << 8) | bytes[1];
+}
+
+/**
+ * Converts 16bit signed to serial representation
+ *
+ * @param number the number to convert
+ * @param bytes  buffer for the bytes (2 required)
+ * @param size   available size
+ *
+ * @return the number of bytes used
+ * @retval -1 insufficient size
+ */
+int systemToSerial(const int16_t number, uint8_t* bytes, int size) {
+    if (size < 2) {
+        return -1;
+    }
+
+    bytes[0] = (uint8_t) (number >> 8);
+    bytes[1] = (uint8_t) number;
+    return 2;
+}
+
+/**
  * Converts serial bytes to a 32 bit floating point number.
  *
  * @param bytes the **4**(!) bytes that were received
