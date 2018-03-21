@@ -21,16 +21,16 @@ static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_11; // changing this might r
 static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
 static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
 
-#define LEFT_MOTOR_DIRECTION_GPIO GPIOA
-static constexpr uint16_t LEFT_MOTOR_DIRECTION_PIN = GPIO_PIN_10;
-static constexpr uint8_t LEFT_MOTOR_DAC_CHANNEL = DAC_CHANNEL_1;
-static constexpr uint16_t LEFT_MOTOR_DAC_PIN = GPIO_PIN_4;
+static constexpr uint8_t LEFT_MOTOR_ID = 1;
+static constexpr uint8_t RIGHT_MOTOR_ID = 2;
+static constexpr bool LEFT_MOTOR_INVERT = false;
+static constexpr bool RIGHT_MOTOR_INVERT = true;
 
-// TODO: right motor
-#define RIGHT_MOTOR_DIRECTION_GPIO GPIOA
-static constexpr uint16_t RIGHT_MOTOR_DIRECTION_PIN = GPIO_PIN_10;
-static constexpr uint8_t RIGHT_MOTOR_DAC_CHANNEL = DAC_CHANNEL_1;
-static constexpr uint16_t RIGHT_MOTOR_DAC_PIN = GPIO_PIN_4;
+// TODO: Werte richtig einstellen
+// Change USART and GPIO Port in initializeMotorUART();
+static constexpr uint32_t MOTOR_UART_BAUDRATE = 38400;
+static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_0;
+static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_1;
 
 extern "C" {
 void EXTI15_10_IRQHandler() {
@@ -59,10 +59,8 @@ HALManager& HALManager::getInstance() {
 HALManager::HALManager() :
         leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B), //
         rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B), //
-        leftMotor(LEFT_MOTOR_DAC_CHANNEL, LEFT_MOTOR_DAC_PIN, //
-                LEFT_MOTOR_DIRECTION_GPIO, LEFT_MOTOR_DIRECTION_PIN), //
-        rightMotor(RIGHT_MOTOR_DAC_CHANNEL, RIGHT_MOTOR_DAC_PIN, //
-                RIGHT_MOTOR_DIRECTION_GPIO, RIGHT_MOTOR_DIRECTION_PIN) { //
+        leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
+        rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT) { //
     initializeHal();
 }
 
@@ -76,6 +74,7 @@ Encoder& HALManager::getRightEncoder() {
 
 void HALManager::initializeHal() {
     initializeEncoders();
+    initializeMotorUART();
 }
 
 Motor& HALManager::getLeftMotor() {
@@ -104,5 +103,31 @@ void HALManager::initializeEncoders() {
             ENCODERS_SUB_PRIORITY);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
+
+void HALManager::initializeMotorUART() {
+    motorUART.Instance = USART3;
+    motorUART.Init.BaudRate = MOTOR_UART_BAUDRATE;
+    motorUART.Init.Parity = UART_PARITY_NONE;
+    motorUART.Init.Mode = UART_MODE_TX_RX;
+    motorUART.Init.StopBits = UART_STOPBITS_1;
+    motorUART.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    motorUART.Init.WordLength = UART_WORDLENGTH_8B;
+    motorUART.Init.OneBitSampling = UART_ONEBIT_SAMPLING_ENABLED;
+    motorUART.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    motorUART.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+
+    GPIO_InitTypeDef uart_gpio = getDefaultGPIO();
+    uart_gpio.Pin = MOTOR_UART_TX | MOTOR_UART_RX;
+    uart_gpio.Mode = GPIO_MODE_AF_PP;
+    uart_gpio.Alternate = GPIO_AF7_USART3;
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_USART3_CLK_ENABLE();
+
+    HAL_GPIO_Init(GPIOB, &uart_gpio);
+    HAL_UART_Init (&motorUART);
+}
+
 #endif
 /** @} */

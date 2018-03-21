@@ -27,7 +27,7 @@ public:
     virtual void setSpeed(int16_t speed) override;
     virtual void stop() override;
 private:
-    void sendCommand(const char *data, const int size);
+    void sendCommand(const char *command);
 };
 
 #endif /* HAL_FAULHABERBLDC_H_ */

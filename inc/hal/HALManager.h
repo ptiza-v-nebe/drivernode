@@ -24,6 +24,8 @@ private:
     Encoder rightEncoder;
     FaulhaberBLDC leftMotor;
     FaulhaberBLDC rightMotor;
+
+    UART_HandleTypeDef motorUART;
 private:
     HALManager();
 public:
@@ -34,6 +36,7 @@ public:
 private:
     void initializeHal();
     void initializeEncoders();
+    void initializeMotorUART();
 };
 #endif
 
