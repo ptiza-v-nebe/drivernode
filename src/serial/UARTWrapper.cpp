@@ -11,8 +11,7 @@
 
 #include "hal/util.h"
 #include "hal/interupts.h"
-
-static constexpr int TRANSMIT_TIMEOUT_MS = 10;
+#include "constants.h"
 
 // ////////////////////////////////////////////////////////
 // ISRs and other C-Stuff
@@ -129,6 +128,6 @@ void UARTWrapper::init() {
  */
 void UARTWrapper::send(const uint8_t* buffer, const int size) {
     HAL_UART_Transmit(&uart, const_cast<uint8_t*>(buffer), size,
-            TRANSMIT_TIMEOUT_MS);
+            DEFAULT_TIMEOUT_MS);
 }
 /** @} */

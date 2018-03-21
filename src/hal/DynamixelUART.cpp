@@ -9,9 +9,7 @@
 
 #include "hal/DynamixelUART.h"
 #include "hal/util.h"
-
-static constexpr int TRANSMIT_TIMEOUT_MS = 20;
-static constexpr int RECEIVE_TIMEOUT_MS = 20;
+#include "constants.h"
 
 DynamixelUART::DynamixelUART() {
     init();
@@ -26,7 +24,7 @@ DynamixelUART::DynamixelUART() {
 void DynamixelUART::send(const uint8_t* buffer, const int size) {
     HAL_HalfDuplex_EnableTransmitter(&uart);
     HAL_UART_Transmit(&uart, const_cast<uint8_t*>(buffer), size,
-            TRANSMIT_TIMEOUT_MS);
+            DEFAULT_TIMEOUT_MS);
     HAL_HalfDuplex_EnableReceiver(&uart);
 }
 
@@ -38,7 +36,7 @@ void DynamixelUART::send(const uint8_t* buffer, const int size) {
  */
 int DynamixelUART::receive(uint8_t* buffer, const int size) {
     // assuming receiver is already enabled
-    auto result = HAL_UART_Receive(&uart, buffer, size, RECEIVE_TIMEOUT_MS);
+    auto result = HAL_UART_Receive(&uart, buffer, size, DEFAULT_TIMEOUT_MS);
     return ((result == HAL_OK) ? 0 : -1);
 }
 
