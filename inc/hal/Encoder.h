@@ -45,7 +45,6 @@ public:
     int getTickAndReset();
 private:
     Phase getPhase();
-    int getDiff(const Phase& p1, const Phase& p2);
 };
 
 #endif /* HAL_ENCODER_H_ */
