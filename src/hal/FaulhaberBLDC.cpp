@@ -11,6 +11,7 @@
 #include "hal/util.h"
 #include "config.h"
 #include "constants.h"
+#include "util/util.h"
 
 static constexpr int16_t MAX_SPEED = 13000;
 static constexpr int16_t MIN_SPEED = -13000;
@@ -93,11 +94,13 @@ void FaulhaberBLDC::sendCommand(const char* command) {
         return;
     }
 
+    uint8_t *data = reinterpret_cast<uint8_t*>(buffer);
 #ifdef DEBUG_MOTOR_UART
-    printf("Sending command %s\n", buffer);
+    printf("Sending command (%d) ", chars);
+    printBytes(data, chars);
+    printf(" = %s\n", buffer);
 #endif
 
-    uint8_t *data = reinterpret_cast<uint8_t*>(buffer);
     HAL_UART_Transmit(uart, data, chars, DEFAULT_TIMEOUT_MS);
 }
 /** @} */

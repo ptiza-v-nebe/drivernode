@@ -26,7 +26,6 @@ static constexpr uint8_t RIGHT_MOTOR_ID = 2;
 static constexpr bool LEFT_MOTOR_INVERT = false;
 static constexpr bool RIGHT_MOTOR_INVERT = true;
 
-// TODO: Werte richtig einstellen
 // Change USART and GPIO Port in initializeMotorUART();
 static constexpr uint32_t MOTOR_UART_BAUDRATE = 38400;
 static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_10;
@@ -119,7 +118,7 @@ void HALManager::initializeMotorUART() {
 
     GPIO_InitTypeDef uart_gpio = getDefaultGPIO();
     uart_gpio.Pin = MOTOR_UART_TX | MOTOR_UART_RX;
-    uart_gpio.Mode = GPIO_MODE_AF_PP;
+    uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART3;
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
