@@ -11,7 +11,7 @@
 
 #include "hal/SRF08.h"
 
-static constexpr int TIMEOUT_MS = 1; // TODO: check if this is enough!
+static constexpr int TIMEOUT_MS = 10; // TODO: check if this is enough!
 
 /**
  * Constructs an abstraction for a SRF08 Ultrasonic sensor
@@ -75,7 +75,6 @@ uint16_t SRF08::getRange() {
 
 /**
  * Reads the measured light intensity from the sensor.
- *
  * @return the measured light intensity
  */
 uint8_t SRF08::getLightIntensity() {
