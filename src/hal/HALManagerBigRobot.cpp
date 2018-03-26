@@ -59,7 +59,9 @@ HALManager::HALManager() :
         leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B), //
         rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B), //
         leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
-        rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT) { //
+        rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
+        srf08(
+                { { &i2c, 0xEE }, { &i2c, 0xE2 }, { &i2c, 0xF2 }, { &i2c, 0xF2 } }) { //
     initializeHal();
 
     leftMotor.disableAndStop();
@@ -75,8 +77,9 @@ Encoder& HALManager::getRightEncoder() {
 }
 
 void HALManager::initializeHal() {
-    initializeEncoders();
     initializeMotorUART();
+    initializeEncoders();
+    initializeI2C();
 }
 
 Motor& HALManager::getLeftMotor() {
@@ -85,6 +88,10 @@ Motor& HALManager::getLeftMotor() {
 
 Motor& HALManager::getRightMotor() {
     return rightMotor;
+}
+
+SRF08* HALManager::getSRF08s() {
+    return srf08;
 }
 
 void HALManager::initializeEncoders() {
@@ -99,7 +106,7 @@ void HALManager::initializeEncoders() {
     gpio_right.Pin = RIGHT_ENCODER_A | RIGHT_ENCODER_B;
 
     HAL_GPIO_Init(LEFT_ENCODER_GPIO, &gpio_left);
-    //HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right); //TODO: right encoder
+//HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right); //TODO: right encoder
 
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
             ENCODERS_SUB_PRIORITY);
@@ -124,11 +131,42 @@ void HALManager::initializeMotorUART() {
     uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART3;
 
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_USART3_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE()
+    ;
+    __HAL_RCC_USART3_CLK_ENABLE()
+    ;
 
     HAL_GPIO_Init(GPIOC, &uart_gpio);
-    HAL_UART_Init (&motorUART);
+    HAL_UART_Init(&motorUART);
+}
+
+void HALManager::initializeI2C() {
+    i2c.Instance = I2C2;
+    i2c.Init.Timing = 0x10909CEC;
+    i2c.Init.OwnAddress1 = 0;
+    i2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    i2c.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    i2c.Init.OwnAddress2 = 0;
+    i2c.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    i2c.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    i2c.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+    __HAL_RCC_I2C2_CLK_ENABLE()
+    ;
+    if (HAL_I2C_Init(&i2c) != HAL_OK) {
+        //TODO: error handling
+        while (1)
+            ;
+    }
+
+    GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
+    i2cGPIO.Pin = GPIO_PIN_13 | GPIO_PIN_14;
+    i2cGPIO.Mode = GPIO_MODE_AF_OD;
+    i2cGPIO.Alternate = GPIO_AF4_I2C2;
+
+    __HAL_RCC_GPIOB_CLK_ENABLE()
+    ;
+    HAL_GPIO_Init(GPIOB, &i2cGPIO);
 }
 
 #endif

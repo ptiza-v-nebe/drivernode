@@ -15,6 +15,9 @@
 #ifdef BIG_ROBOT
 #include "hal/Encoder.h"
 #include "hal/FaulhaberBLDC.h"
+#include "hal/SRF08.h"
+
+constexpr int SRF08_COUNT = 4;
 
 class HALManager  {
 public:
@@ -24,8 +27,11 @@ private:
     Encoder rightEncoder;
     FaulhaberBLDC leftMotor;
     FaulhaberBLDC rightMotor;
+    SRF08 srf08[SRF08_COUNT];
 
+    I2C_HandleTypeDef i2c;
     UART_HandleTypeDef motorUART;
+
 private:
     HALManager();
 public:
@@ -33,10 +39,12 @@ public:
     Encoder& getRightEncoder();
     Motor& getLeftMotor();
     Motor& getRightMotor();
+    SRF08* getSRF08s();
 private:
     void initializeHal();
     void initializeEncoders();
     void initializeMotorUART();
+    void initializeI2C();
 };
 #endif
 
