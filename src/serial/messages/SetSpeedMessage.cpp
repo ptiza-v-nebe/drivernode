@@ -32,11 +32,11 @@ static constexpr int PAYLOAD_SIZE_BOTH = 4;
 std::experimental::optional<SetSpeedMessage> SetSpeedMessage::deserialize(const uint8_t* msg, const int size) {
     switch (size) {
         case PAYLOAD_SIZE_EQUAL:
-            uint16_t speed;
+            int16_t speed;
             serialToSystem(msg, speed);
             return {SetSpeedMessage(speed)};
         case PAYLOAD_SIZE_BOTH:
-            uint16_t left, right;
+            int16_t left, right;
             serialToSystem(msg, left);
             serialToSystem(msg + 2, right);
             return {SetSpeedMessage(left, right)};
@@ -50,7 +50,7 @@ std::experimental::optional<SetSpeedMessage> SetSpeedMessage::deserialize(const 
  *
  * @param speed the speed to be set for both motors.
  */
-SetSpeedMessage::SetSpeedMessage(uint16_t speed) :
+SetSpeedMessage::SetSpeedMessage(int16_t speed) :
         SetSpeedMessage(speed, speed) {
 }
 
@@ -60,7 +60,7 @@ SetSpeedMessage::SetSpeedMessage(uint16_t speed) :
  * @param left  speed for the left motor
  * @param right speed for the right motor
  */
-SetSpeedMessage::SetSpeedMessage(uint16_t left, uint16_t right) :
+SetSpeedMessage::SetSpeedMessage(int16_t left, int16_t right) :
         Message(getMessageType()), speedLeft(left), speedRight(right) {
 }
 
@@ -132,14 +132,14 @@ void SetSpeedMessage::print() const {
 /**
  * @return the speed for the left motor
  */
-uint16_t SetSpeedMessage::getSpeedLeft() {
+int16_t SetSpeedMessage::getSpeedLeft() {
     return speedLeft;
 }
 
 /**
  * @return the speed for the right motor
  */
-uint16_t SetSpeedMessage::getSpeedRight() {
+int16_t SetSpeedMessage::getSpeedRight() {
     return speedRight;
 }
 /** @} */

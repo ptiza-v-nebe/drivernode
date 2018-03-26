@@ -9,11 +9,38 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
+#include "hal/HALManager.h"
+
+#include "serial/messages/all.h"
+#include "util/util.h"
 
 int main(void) {
     setupHardware();
+
+    // ////////////////////////////////////////////
+    // Setup Objects
+    // ////////////////////////////////////////////
+
+#ifdef HUMAN_MODE
+    HumanMessageDispatcherFactory factory;
+#else
+    ODROIDMessageDispatcherFactory factory;
+#endif
+    MessageDispatcher& dispatcher = factory.getMessageDispatcher();
+
+    HALManager& hal = HALManager::getInstance();
+
+    // ////////////////////////////////////////////
+    // Setup MessageHandlers
+    // ////////////////////////////////////////////
+
+    // ////////////////////////////////////////////
+    // Setup Tasks
+    // ////////////////////////////////////////////
+
 #ifdef BLINK_LED
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
 
     GPIO_InitTypeDef gpioa = getDefaultGPIO();
     gpioa.Pin = GPIO_PIN_5;
@@ -27,13 +54,17 @@ int main(void) {
     }, 500);
 #endif
 
-#ifdef HUMAN_MODE
-    HumanMessageDispatcherFactory factory;
-#else
-    ODROIDMessageDispatcherFactory factory;
-#endif
-    MessageDispatcher& dispatcher = factory.getMessageDispatcher();
+    // ////////////////////////////////////////////
+    // BEGIN TEST AREA
+    // ////////////////////////////////////////////
 
+    // ////////////////////////////////////////////
+    // END TEST AREA
+    // ////////////////////////////////////////////
+
+    // ////////////////////////////////////////////
+    // Start Scheduler and execute Tasks
+    // ////////////////////////////////////////////
     start_scheduler();
 
     for (;;)
