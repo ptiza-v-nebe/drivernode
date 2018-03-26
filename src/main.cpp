@@ -43,7 +43,6 @@ int main(void) {
 	I2C_HandleTypeDef i2c;
 	InitI2C(i2c);
 
-	//SRF08 srf08(&i2c, 0xE2);
 	SRF08 srf08(&i2c, 0xE2);
 	schedule_repeating_task([&srf08]() {
 		uint16_t cm = srf08.getRange();

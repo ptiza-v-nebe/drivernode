@@ -12,10 +12,6 @@
 
 #include <hal/Motor.h>
 #include <stm32l4xx.h>
-#include "stm32l4xx_hal_conf.h"
-#include "stm32l4xx_hal_def.h"
-#include "stm32l4xx_hal_dac.h"
-#include "stm32l4xx_nucleo.h"
 
 class FaulhaberBLDC: public Motor {
 private:

@@ -9,7 +9,6 @@
 
 #include <hal/FaulhaberBLDC.h>
 #include "hal/util.h"
-#include "stm32l4xx_hal.h"
 
 static constexpr uint16_t MAX_SPEED = 4095;
 #define MOTOR_GPIO GPIOA

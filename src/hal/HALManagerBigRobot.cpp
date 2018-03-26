@@ -12,8 +12,6 @@
 #include "hal/util.h"
 #include "hal/interupts.h"
 
-#include "stm32l4xx_hal_dac.h"
-
 #define LEFT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
 static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
 static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
