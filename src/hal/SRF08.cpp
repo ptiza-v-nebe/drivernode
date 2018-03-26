@@ -11,7 +11,7 @@
 
 #include "hal/SRF08.h"
 
-static constexpr int TIMEOUT_MS = 1; // TODO: check if this is enough!
+static constexpr int TIMEOUT_MS = 1;
 
 /**
  * Constructs an abstraction for a SRF08 Ultrasonic sensor
@@ -40,7 +40,7 @@ void SRF08::startRanging() {
  */
 bool SRF08::rangingFinished() {
     uint8_t command[] = { 0x00 };
-    uint8_t response = 0xFF; // TODO: testen, ob das hilft
+    uint8_t response = 0xFF;
 
     // read version id (register 0)
     HAL_I2C_Master_Transmit(i2c, address, command, 1, TIMEOUT_MS);
@@ -57,12 +57,8 @@ bool SRF08::rangingFinished() {
  * @return the measured range in cm
  */
 uint16_t SRF08::getRange() {
-    while (!rangingFinished()) { // TODO: get rid of loop
-        HAL_Delay(1);
-    } //Wait until ranging is finished
-
     uint8_t command[] = { 0x02 };
-    uint8_t response[] = { 0x00, 0x00 };
+    uint8_t response[] = { 0xFF, 0xFF };
 
     // read range (register 2 + 3)
     HAL_I2C_Master_Transmit(i2c, address, command, 1, TIMEOUT_MS); //Send register
@@ -75,7 +71,6 @@ uint16_t SRF08::getRange() {
 
 /**
  * Reads the measured light intensity from the sensor.
- *
  * @return the measured light intensity
  */
 uint8_t SRF08::getLightIntensity() {
