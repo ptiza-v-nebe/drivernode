@@ -16,6 +16,8 @@
 static constexpr int16_t MAX_SPEED = 13000;
 static constexpr int16_t MIN_SPEED = -13000;
 
+static constexpr int UART_TIMEOUT_MS = 5;
+
 static constexpr int ID_MAXLENGTH = 3;
 static constexpr int SPEED_MAXLENGTH = 6;
 static constexpr int SPEED_COMMAND_LENGTH = 1;
@@ -24,8 +26,7 @@ static constexpr int SPEED_COMMAND_BUFFERSIZE = SPEED_COMMAND_LENGTH + SPEED_MAX
 static constexpr int COMMAND_BUFFERSIZE = ID_MAXLENGTH + SPEED_COMMAND_BUFFERSIZE + 1;
 
 FaulhaberBLDC::FaulhaberBLDC(UART_HandleTypeDef* uart, uint8_t id, bool reverseDirection) :
-        uart(uart), id(id), reverseDirection(reverseDirection) {
-    disableAndStop();
+        enabled(true), uart(uart), id(id), reverseDirection(reverseDirection) {
 }
 
 /*
@@ -101,6 +102,6 @@ void FaulhaberBLDC::sendCommand(const char* command) {
     printf(" = %s\n", buffer);
 #endif
 
-    HAL_UART_Transmit(uart, data, chars, DEFAULT_TIMEOUT_MS);
+    HAL_UART_Transmit(uart, data, chars, UART_TIMEOUT_MS);
 }
 /** @} */

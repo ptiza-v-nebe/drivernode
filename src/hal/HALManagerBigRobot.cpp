@@ -61,6 +61,9 @@ HALManager::HALManager() :
         leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
         rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT) { //
     initializeHal();
+
+    leftMotor.disableAndStop();
+    rightMotor.disableAndStop();
 }
 
 Encoder& HALManager::getLeftEncoder() {
