@@ -63,8 +63,12 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
+    Encoder& left = hal.getLeftEncoder();
+    Encoder& right = hal.getRightEncoder();
 
-
+    schedule_repeating_task([&left, &right](){
+        printf("Links: %d, Rechts: %d\r\n", left.getTick(), right.getTick());
+    }, 500);
 
     // ////////////////////////////////////////////
     // END TEST AREA

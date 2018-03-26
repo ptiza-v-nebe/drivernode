@@ -13,13 +13,14 @@
 #include "hal/interupts.h"
 
 #define LEFT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
-static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
+static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_12; // changing this might require another IRQ!
+static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_13; // changing this might require another IRQ!
+static constexpr int LEFT_ENCODER_SIGN = 1;
 
-//TODO: right encoder
 #define RIGHT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_10; // changing this might require another IRQ!
-static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_11; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_14; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_15; // changing this might require another IRQ!
+static constexpr int RIGHT_ENCODER_SIGN = -1;
 
 #define LEFT_MOTOR_DIRECTION_GPIO GPIOA
 static constexpr uint16_t LEFT_MOTOR_DIRECTION_PIN = GPIO_PIN_10;
@@ -34,21 +35,20 @@ static constexpr uint16_t RIGHT_MOTOR_DAC_PIN = GPIO_PIN_4;
 
 extern "C" {
 void EXTI15_10_IRQHandler() {
-    // handles left encoder
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A);
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_B);
-
-    //TODO: right encoder
+    // handles left encoder A+B and Right aencoder A + B
+    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B | RIGHT_ENCODER_A | RIGHT_ENCODER_B);
 }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t pin) {
-    if (pin == LEFT_ENCODER_A || pin == LEFT_ENCODER_B) {
+    if ((pin & LEFT_ENCODER_A) || (pin & LEFT_ENCODER_B)) {
         // update left encoder
         HALManager::getInstance().getLeftEncoder().update();
     }
-
-    //TODO: right encoder
+    if ((pin & RIGHT_ENCODER_A) || (pin & RIGHT_ENCODER_B)) {
+        // update right encoder
+        HALManager::getInstance().getRightEncoder().update();
+    }
 }
 
 HALManager& HALManager::getInstance() {
@@ -57,8 +57,8 @@ HALManager& HALManager::getInstance() {
 }
 
 HALManager::HALManager() :
-        leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B), //
-        rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B), //
+        leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B, LEFT_ENCODER_SIGN), //
+        rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B, RIGHT_ENCODER_SIGN), //
         leftMotor(LEFT_MOTOR_DAC_CHANNEL, LEFT_MOTOR_DAC_PIN, //
                 LEFT_MOTOR_DIRECTION_GPIO, LEFT_MOTOR_DIRECTION_PIN), //
         rightMotor(RIGHT_MOTOR_DAC_CHANNEL, RIGHT_MOTOR_DAC_PIN, //
@@ -98,7 +98,7 @@ void HALManager::initializeEncoders() {
     gpio_right.Pin = RIGHT_ENCODER_A | RIGHT_ENCODER_B;
 
     HAL_GPIO_Init(LEFT_ENCODER_GPIO, &gpio_left);
-    //HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right); //TODO: right encoder
+    HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right);
 
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
             ENCODERS_SUB_PRIORITY);
