@@ -17,7 +17,7 @@ static Phase phaseBefore(const Phase& p) {
     return static_cast<Phase>((static_cast<int>(p) + static_cast<int>(Phase::_Count) - 1) % static_cast<int>(Phase::_Count));
 }
 
-Encoder::Encoder(GPIO_TypeDef* gpio, uint32_t channelAPin, uint32_t channelBPin, int sign) :
+Encoder::Encoder(GPIO_TypeDef* gpio, uint16_t channelAPin, uint16_t channelBPin, int sign) :
         currentBuffer(0), gpio(gpio), channelAPin(channelAPin), channelBPin(
                 channelBPin), sign(sign) {
     currentPhase = getPhase();

@@ -103,7 +103,7 @@ void HumanCommandHandler::sendPrompt() {
 /**
  * Process a message that was received.
  *
- * @param msg  the mesage
+ * @param msg  the message
  * @param size the size of the message
  */
 void HumanCommandHandler::processMessage(uint8_t* msg, int size) {

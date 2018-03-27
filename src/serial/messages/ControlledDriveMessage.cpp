@@ -36,11 +36,11 @@ std::experimental::optional<ControlledDriveMessage> ControlledDriveMessage::dese
         return std::experimental::nullopt;
     }
     DriveSpeed speed = static_cast<DriveSpeed>(msg[0]);
-    uint16_t x, y;
+    int16_t x, y;
     serialToSystem(msg + 1, x);
     serialToSystem(msg + 3, y);
 
-    return {ControlledDriveMessage(speed, x, y)};
+    return {ControlledDriveMessage(speed, {x, y})};
 }
 
 /**
@@ -51,9 +51,9 @@ std::experimental::optional<ControlledDriveMessage> ControlledDriveMessage::dese
  * @param y     the target y position
  */
 ControlledDriveMessage::ControlledDriveMessage(const DriveSpeed& speed,
-        const uint16_t x, const uint16_t y) :
+        const Position position) :
         Message(getMessageType()),
-        speed(speed), x(x), y(y) {
+        speed(speed), position(position) {
 }
 
 /*
@@ -65,10 +65,10 @@ int ControlledDriveMessage::serialize(uint8_t* buffer, int buffersize) const {
     }
 
     buffer[0] = static_cast<uint8_t>(speed);
-    if (systemToSerial(x, buffer + 1, 2) < 0) {
+    if (systemToSerial(position.x, buffer + 1, 2) < 0) {
         return -1;
     }
-    if (systemToSerial(y, buffer + 3, 2) < 0) {
+    if (systemToSerial(position.y, buffer + 3, 2) < 0) {
         return -1;
     }
 
@@ -79,7 +79,7 @@ int ControlledDriveMessage::serialize(uint8_t* buffer, int buffersize) const {
  * @see - Message::print()
  */
 void ControlledDriveMessage::print() const {
-    printf("ControlledDriveCommand[speed=%s, target=(%d, %d)]", enumToString(speed), x, y);
+    printf("ControlledDriveCommand[speed=%s, target=(%d, %d)]", enumToString(speed), position.x, position.y);
 }
 
 /**
@@ -90,16 +90,9 @@ const DriveSpeed& ControlledDriveMessage::getSpeed() {
 }
 
 /**
- * @return the target x
+ * @return the target position
  */
-uint16_t ControlledDriveMessage::getX() {
-    return x;
-}
-
-/**
- * @return the target y
- */
-uint16_t ControlledDriveMessage::getY() {
-    return y;
+const Position& ControlledDriveMessage::getPosition() {
+    return position;
 }
 /** @} */

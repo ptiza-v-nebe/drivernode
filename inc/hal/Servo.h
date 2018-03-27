@@ -12,6 +12,7 @@
 #define HAL_SERVO_H_
 
 #include "hal/Actor.h"
+#include "position/Angle.h"
 
 class Servo : public Actor {
 public:
@@ -21,14 +22,14 @@ public:
     /**
      * @return the current angle in radians
      */
-    virtual float getAngle() = 0;
+    virtual Angle getAngle() = 0;
 
     /**
      * Move to a specific angle
      *
      * @param angle the angle to move to in radians
      */
-    virtual void moveTo(float angle) = 0;
+    virtual void moveTo(const Angle& angle) = 0;
 
     /**
      * Set movement speed.

@@ -9,7 +9,9 @@
 #include "hal/util.h"
 #include "scheduler/Scheduler.h"
 #include "serial/MessageDispatcherFactory.h"
+#include "position/PositionParameterCalibration.h"
 #include "hal/HALManager.h"
+#include "position/PositionManager.h"
 
 #include "serial/messages/all.h"
 #include "util/util.h"
@@ -21,22 +23,37 @@ int main(void) {
     // Setup Objects
     // ////////////////////////////////////////////
 
+    HALManager& hal = HALManager::getInstance();
+
+#ifdef CALIBRATION
+    CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
+#else
 #ifdef HUMAN_MODE
     HumanMessageDispatcherFactory factory;
 #else
     ODROIDMessageDispatcherFactory factory;
-#endif
+#endif /*HUMAN_MODE*/
+#endif /*CALIBRATION*/
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
-    HALManager& hal = HALManager::getInstance();
+    PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
     // ////////////////////////////////////////////
+    dispatcher.registerMessageHandler<ResetOdometryMessage>(
+            [&pm](ResetOdometryMessage rom) {
+                pm.reset(rom.getPosition(), rom.getHeading());
+            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+#ifndef CALIBRATION
+    schedule_repeating_task([&pm]() {
+        pm.update();
+    }, 5);
+#endif
 
 #ifdef BLINK_LED
     __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -57,6 +74,12 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
+
+    schedule_repeating_task([&pm]() {
+        printf("Position: (%d, %d), Facing %.2f degrees.\r\n",
+                pm.getPosition().x, pm.getPosition().y,
+                pm.getHeading().getAngleInDegrees());
+    }, 800);
 
     // ////////////////////////////////////////////
     // END TEST AREA

@@ -25,8 +25,8 @@ public:
     virtual void enable() override;
     virtual void disableAndStop() override;
 
-    virtual float getAngle() override;
-    virtual void moveTo(float angle) override;
+    virtual Angle getAngle() override;
+    virtual void moveTo(const Angle& angle) override;
     virtual void setRPM(float rpm) override;
 };
 

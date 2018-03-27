@@ -26,12 +26,12 @@ private:
     int currentBuffer;
 
     GPIO_TypeDef *gpio;
-    uint32_t channelAPin;
-    uint32_t channelBPin;
+    uint16_t channelAPin;
+    uint16_t channelBPin;
     Phase currentPhase;
     const int sign;
 public:
-    Encoder(GPIO_TypeDef *gpio, uint32_t channelAPin, uint32_t channelBPin, int sign = 1);
+    Encoder(GPIO_TypeDef *gpio, uint16_t channelAPin, uint16_t channelBPin, int sign = 1);
 
     // prevent move and copy
     Encoder(const Encoder&) = delete;

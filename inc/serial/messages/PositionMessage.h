@@ -13,6 +13,9 @@
 #include "serial/messages/Message.h"
 #include "util/optional.hpp"
 
+#include "position/Position.h"
+#include "position/Angle.h"
+
 /**
  * Represents a PositionUpdateMessage.
  * This is sent by the robot containing the current odometry position and heading
@@ -24,18 +27,16 @@ public:
         return 0x6;
     }
 private:
-    uint16_t x; ///< current x position
-    uint16_t y; ///< current < position
-    float heading; ///< current heading
+    Position position; ///< current position
+    Angle heading; ///< current heading
 public:
-    PositionMessage(const uint16_t x, const uint16_t y, const float heading);
+    PositionMessage(const Position position, const Angle heading);
 
     int serialize(uint8_t* buffer, int buffersize) const override;
     void print() const override;
 
-    uint16_t getX();
-    uint16_t getY();
-    float getHeading();
+    const Position& getPosition();
+    const Angle& getHeading();
 };
 
 #endif /* SERIAL_MESSAGES_POSITIONMESSAGE_H_ */
