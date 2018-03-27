@@ -11,6 +11,7 @@
 #include "serial/MessageDispatcherFactory.h"
 #include "position/PositionParameterCalibration.h"
 #include "hal/HALManager.h"
+#include "position/PositionManager.h"
 
 #include "serial/messages/all.h"
 #include "util/util.h"
@@ -35,13 +36,24 @@ int main(void) {
 #endif /*CALIBRATION*/
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
+    PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
+
     // ////////////////////////////////////////////
     // Setup MessageHandlers
     // ////////////////////////////////////////////
+    dispatcher.registerMessageHandler<ResetOdometryMessage>(
+            [&pm](ResetOdometryMessage rom) {
+                pm.reset(rom.getPosition(), rom.getHeading());
+            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+#ifndef CALIBRATION
+    schedule_repeating_task([&pm]() {
+        pm.update();
+    }, 5);
+#endif
 
 #ifdef BLINK_LED
     __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -63,12 +75,19 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    Encoder& left = hal.getLeftEncoder();
-    Encoder& right = hal.getRightEncoder();
+    /*Encoder& left = hal.getLeftEncoder();
+     Encoder& right = hal.getRightEncoder();
 
-    schedule_repeating_task([&left, &right](){
-        printf("Links: %d, Rechts: %d\r\n", left.getTick(), right.getTick());
-    }, 500);
+     schedule_repeating_task([&left, &right](){
+     printf("Links: %d, Rechts: %d\r\n", left.getTick(), right.getTick());
+     }, 500);*/
+
+    schedule_repeating_task(
+            [&pm]() {
+                printf("Position: (%d, %d), Facing %.2f degrees.\r\n",
+                        pm.getPosition().x, pm.getPosition().y,
+                        pm.getHeading().getAngleInDegrees());
+            }, 800);
 
     // ////////////////////////////////////////////
     // END TEST AREA

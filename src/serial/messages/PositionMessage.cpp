@@ -29,7 +29,7 @@ std::experimental::optional<PositionMessage> PositionMessage::deserialize(const 
         return std::experimental::nullopt;
     }
 
-    uint16_t x, y;
+    int16_t x, y;
     float heading;
 
     serialToSystem(msg, x);

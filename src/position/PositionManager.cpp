@@ -56,7 +56,7 @@ void PositionManager::update() {
 }
 
 Position PositionManager::getPosition() const {
-    return {(xum / 1000), (yum / 1000)};
+    return {static_cast<uint16_t>(xum / 1000), static_cast<uint16_t>(yum / 1000)};
 }
 
 const Angle& PositionManager::getHeading() const {

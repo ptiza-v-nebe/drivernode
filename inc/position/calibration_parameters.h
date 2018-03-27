@@ -17,9 +17,9 @@
 // Parameters for big robot
 // /////////////////////////
 #ifdef BIG_ROBOT
-static constexpr float TRACK_WIDTH_UM = 22*10*1000;
-static constexpr float UM_PER_TICK_L = 94;
-static constexpr float UM_PER_TICK_R = 94;
+static constexpr float TRACK_WIDTH_UM = 300691.375; // calibrated 27.03.18
+static constexpr float UM_PER_TICK_L = 49.58842; // calibrated 27.03.18
+static constexpr float UM_PER_TICK_R = 48.53662; // calibrated 27.03.18
 #endif
 
 // /////////////////////////

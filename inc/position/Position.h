@@ -22,11 +22,11 @@ class Vector;
  */
 class Position {
 public:
-    uint16_t x; ///< the x Position
-    uint16_t y; ///< the y Position
+    int16_t x; ///< the x Position
+    int16_t y; ///< the y Position
 
     Position();
-    Position(uint16_t x, uint16_t y);
+    Position(int16_t x, int16_t y);
     virtual ~Position() = default;
 
     float distanceTo(const Position &other) const;

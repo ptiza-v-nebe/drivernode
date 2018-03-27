@@ -28,7 +28,7 @@
 /**
  * Enables calibration
  */
-#define CALIBRATION
+//#define CALIBRATION
 
 /**
  * Enable to generate more output in the MessageParser.

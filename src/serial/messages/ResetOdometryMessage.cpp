@@ -30,7 +30,7 @@ std::experimental::optional<ResetOdometryMessage> ResetOdometryMessage::deserial
         return std::experimental::nullopt;
     }
 
-    uint16_t x, y;
+    int16_t x, y;
     float heading;
 
     serialToSystem(msg, x);

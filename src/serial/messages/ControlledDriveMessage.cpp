@@ -36,7 +36,7 @@ std::experimental::optional<ControlledDriveMessage> ControlledDriveMessage::dese
         return std::experimental::nullopt;
     }
     DriveSpeed speed = static_cast<DriveSpeed>(msg[0]);
-    uint16_t x, y;
+    int16_t x, y;
     serialToSystem(msg + 1, x);
     serialToSystem(msg + 3, y);
 

@@ -67,8 +67,8 @@ void PositionParameterCalibration::calculateAndDisplayWheelParameters() {
     umPerTickRight = DISTANCE_UM / ticksRight;
 
     printf("\n");
-    printf("UM_PER_TICK_L = %.8f;\r\n", umPerTickLeft);
-    printf("UM_PER_TICK_R = %.8f;\r\n", umPerTickRight);
+    printf("UM_PER_TICK_L = %.5f;\r\n", umPerTickLeft);
+    printf("UM_PER_TICK_R = %.5f;\r\n", umPerTickRight);
     printf("\n");
 }
 
@@ -85,7 +85,7 @@ void PositionParameterCalibration::calculateAndDisplayTrackWidth() {
     float trackWidth = avgCircumference / PI;
 
     printf("\n");
-    printf("TRACK_WIDTH_UM = %.8f;\r\n", trackWidth);
+    printf("TRACK_WIDTH_UM = %.5f;\r\n", trackWidth);
     printf("\n");
 }
 

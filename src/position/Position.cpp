@@ -21,7 +21,7 @@ Position::Position() :
  * @param x the x value
  * @param y the y value
  */
-Position::Position(uint16_t x, uint16_t y) :
+Position::Position(int16_t x, int16_t y) :
         x(x), y(y) {
 }
 
