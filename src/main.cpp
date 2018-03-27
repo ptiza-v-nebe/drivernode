@@ -14,6 +14,8 @@
 #include "serial/messages/all.h"
 #include "util/util.h"
 
+#include "hal/DynamixelCOM.h"
+
 int main(void) {
     setupHardware();
 
@@ -57,6 +59,35 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
+
+    DynamixelCOM dynamixel;
+
+    int id = 254;
+
+    printf("Searching Dynamixel...\r\n");
+    for(int i = 0; i < 254; i++) {
+        if(dynamixel.ping(i) == 0){
+            printf("Found Dynamixel with ID %d\r\n", i);
+            id = i;
+            break;
+        }
+    }
+
+    printf("Switching to Wheel Mode...\r\n");
+    dynamixel.writeWord(id, 32, 0); // speed 0
+    dynamixel.writeWord(id, 6, 0); // cw limit 0
+    dynamixel.writeWord(id, 8, 0); // ccw limit 0
+    // both limits 0 --> wheel mode
+
+    dynamixel.writeByte(id, 24, 1);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel, id](SetSpeedMessage ssm) {
+                uint16_t speed = ssm.getSpeedLeft();
+                printf("Setting MovementSpeed to %d \r\n", speed);
+                dynamixel.writeWord(id, 32, speed);
+                dynamixel.writeByte(id, 25, (speed < 1023));
+            });
 
     // ////////////////////////////////////////////
     // END TEST AREA
