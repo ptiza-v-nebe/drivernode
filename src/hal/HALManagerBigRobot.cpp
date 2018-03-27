@@ -18,8 +18,8 @@ static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_13; // changing this might r
 static constexpr int LEFT_ENCODER_SIGN = 1;
 
 #define RIGHT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_14; // changing this might require another IRQ!
-static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_15; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_2; // changing this might require another IRQ!
+static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_3; // changing this might require another IRQ!
 static constexpr int RIGHT_ENCODER_SIGN = -1;
 
 #define LEFT_MOTOR_DIRECTION_GPIO GPIOA
@@ -35,17 +35,25 @@ static constexpr uint16_t RIGHT_MOTOR_DAC_PIN = GPIO_PIN_4;
 
 extern "C" {
 void EXTI15_10_IRQHandler() {
-    // handles left encoder A+B and Right aencoder A + B
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B | RIGHT_ENCODER_A | RIGHT_ENCODER_B);
+    // handles left encoder A+B
+    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B);
+}
+void EXTI2_IRQHandler() {
+    // handle right encoder A
+    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_A);
+}
+void EXTI3_IRQHandler() {
+    // handles right encoder B
+    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_B);
 }
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t pin) {
-    if ((pin & LEFT_ENCODER_A) || (pin & LEFT_ENCODER_B)) {
+void HAL_GPIO_EXTI_Callback(uint16_t pins) {
+    if ((pins & LEFT_ENCODER_A) || (pins & LEFT_ENCODER_B)) {
         // update left encoder
         HALManager::getInstance().getLeftEncoder().update();
     }
-    if ((pin & RIGHT_ENCODER_A) || (pin & RIGHT_ENCODER_B)) {
+    if ((pins & RIGHT_ENCODER_A) || (pins & RIGHT_ENCODER_B)) {
         // update right encoder
         HALManager::getInstance().getRightEncoder().update();
     }
@@ -103,6 +111,12 @@ void HALManager::initializeEncoders() {
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
             ENCODERS_SUB_PRIORITY);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+                ENCODERS_SUB_PRIORITY);
+        HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+        HAL_NVIC_SetPriority(EXTI3_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+                    ENCODERS_SUB_PRIORITY);
+            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 }
 #endif
 /** @} */
