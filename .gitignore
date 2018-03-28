@@ -3,6 +3,7 @@
 .cproject
 .project
 .settings
+.pioenvs
 
 # Prevent commiting line swapping in this file
 NUCLEO-L476RG.xml
