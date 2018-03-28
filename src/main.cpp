@@ -14,8 +14,6 @@
 #include "serial/messages/all.h"
 #include "util/util.h"
 
-#include "hal/DynamixelMX12W.h"
-
 int main(void) {
     setupHardware();
 
@@ -59,42 +57,6 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
-
-    DynamixelCOM dynamixel;
-
-    DynamixelMX12W mx12w(13, dynamixel);
-
-    /*int id = 254;
-
-     printf("Searching Dynamixel...\r\n");
-     for(int i = 0; i < 254; i++) {
-     if(dynamixel.ping(i) == 0){
-     printf("Found Dynamixel with ID %d\r\n", i);
-     id = i;
-     break;
-     }
-     }*/
-
-    /*printf("Switching to Wheel Mode...\r\n");
-     dynamixel.writeWord(id, 32, 0); // speed 0
-     dynamixel.writeWord(id, 6, 0); // cw limit 0
-     dynamixel.writeWord(id, 8, 0); // ccw limit 0
-     // both limits 0 --> wheel mode*/
-
-    dispatcher.registerMessageHandler<ResetOdometryMessage>(
-            [&mx12w](ResetOdometryMessage rom) {
-                float rpm = rom.getHeading() * 180.0 / 3.141592;
-                mx12w.setRPM(rpm);
-                printf("Setting RPM to %.2f \r\n", rpm);
-            });
-
-    dispatcher.registerMessageHandler<StopMessage>([&mx12w](StopMessage) {
-        mx12w.disableAndStop();
-    });
-
-    dispatcher.registerMessageHandler<SetSpeedMessage>([&mx12w](SetSpeedMessage) {
-        mx12w.enable();
-    });
 
     // ////////////////////////////////////////////
     // END TEST AREA
