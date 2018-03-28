@@ -17,8 +17,8 @@ static constexpr uint16_t MAX_SPEED = 500; //1023 according to specification, bu
 static constexpr uint16_t CW_OFFSET = 1024;
 static constexpr float SPEED_TO_RPM = 0.916;
 
-DynamixelMX12W::DynamixelMX12W(uint8_t id, DynamixelCOM& com) :
-        id(id), enabled(false), com(com) {
+DynamixelMX12W::DynamixelMX12W(uint8_t id, DynamixelCOM& com, int directionSign) :
+        id(id), directionSign(directionSign), enabled(false), com(com) {
     enable();
 }
 
@@ -37,6 +37,7 @@ void DynamixelMX12W::setRPM(float rpm) {
         return;
     }
 
+    rpm *= directionSign; // potentially invert the direction
     uint16_t speed = static_cast<uint16_t>(std::fabs(rpm) / SPEED_TO_RPM);
     if (speed > MAX_SPEED) {
         speed = MAX_SPEED;
