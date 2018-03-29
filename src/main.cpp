@@ -16,6 +16,8 @@
 #include "serial/messages/all.h"
 #include "util/util.h"
 
+#include "hal/PWM.h"
+
 int main(void) {
     setupHardware();
 
@@ -75,11 +77,35 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    schedule_repeating_task([&pm]() {
-        printf("Position: (%d, %d), Facing %.2f degrees.\r\n",
-                pm.getPosition().x, pm.getPosition().y,
-                pm.getHeading().getAngleInDegrees());
-    }, 800);
+    TIM_HandleTypeDef timer = {0};
+    //TIM_OC_InitTypeDef channel = {0};
+    GPIO_InitTypeDef gpio = getDefaultGPIO();
+
+    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Period = 1000 - 1;
+    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
+    timer.Instance = TIM2;
+
+    /*channel.Pulse = 333;
+    channel.OCMode = TIM_OCMODE_PWM1;*/
+
+    gpio.Alternate = GPIO_AF1_TIM2;
+    gpio.Mode = GPIO_MODE_AF_PP;
+    gpio.Pin = GPIO_PIN_0;
+
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    HAL_TIM_PWM_Init(&timer);
+    //HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    //HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
+
+    PWM pwm(&timer, TIM_CHANNEL_1);
+    pwm.enable();
+
+    TIM2->CCR1 = TIM2->ARR / 4;
 
     // ////////////////////////////////////////////
     // END TEST AREA
