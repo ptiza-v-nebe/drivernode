@@ -102,9 +102,18 @@ int main(void) {
 
     HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
 
-    PWM pwm(&TIM2->ARR, &TIM2->PSC, &TIM2->CCR1);
+    PWM pwm(TIM2, TIM_CHANNEL_1);
     pwm.setFrequency(1);
     pwm.setDutyCycle(0.25);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>([&pwm](SetSpeedMessage ssm){
+       if(ssm.getSpeedLeft()) {
+           pwm.enable();
+
+       } else {
+           pwm.disable();
+       }
+    });
 
     // ////////////////////////////////////////////
     // END TEST AREA
