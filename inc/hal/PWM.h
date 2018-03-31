@@ -10,26 +10,20 @@
 #ifndef HAL_PWM_H_
 #define HAL_PWM_H_
 
-#include <stm32l4xx.h>
+#include <cstdint>
 
 class PWM {
 private:
-    TIM_HandleTypeDef *timer;
-    TIM_OC_InitTypeDef ocHandle;
-    uint32_t channel;
+    volatile uint32_t *arr;
+    volatile uint32_t *prescale;
+    volatile uint32_t *ccr;
     float dutyCycle;
 public:
-    PWM(TIM_HandleTypeDef *timer, uint32_t channel);
+    PWM(volatile uint32_t *arr, volatile uint32_t *prescale, volatile uint32_t *ccr);
 
     void setFrequency(int hz);
     void setPrescale(uint16_t prescale);
     void setDutyCycle(float percent);
-
-    void enable();
-    void disable();
-
-private:
-    void init();
 };
 
 #endif /* HAL_PWM_H_ */

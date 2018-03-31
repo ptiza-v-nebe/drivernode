@@ -78,7 +78,7 @@ int main(void) {
     // ////////////////////////////////////////////
 
     TIM_HandleTypeDef timer = {0};
-    //TIM_OC_InitTypeDef channel = {0};
+    TIM_OC_InitTypeDef channel = {0};
     GPIO_InitTypeDef gpio = getDefaultGPIO();
 
     timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -87,8 +87,8 @@ int main(void) {
     timer.Init.CounterMode = TIM_COUNTERMODE_UP;
     timer.Instance = TIM2;
 
-    /*channel.Pulse = 333;
-    channel.OCMode = TIM_OCMODE_PWM1;*/
+    channel.Pulse = 500;
+    channel.OCMode = TIM_OCMODE_PWM1;
 
     gpio.Alternate = GPIO_AF1_TIM2;
     gpio.Mode = GPIO_MODE_AF_PP;
@@ -97,15 +97,14 @@ int main(void) {
     __HAL_RCC_TIM2_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     HAL_TIM_PWM_Init(&timer);
-    //HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
     HAL_GPIO_Init(GPIOA, &gpio);
 
-    //HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
 
-    PWM pwm(&timer, TIM_CHANNEL_1);
-    pwm.enable();
-
-    TIM2->CCR1 = TIM2->ARR / 4;
+    PWM pwm(&TIM2->ARR, &TIM2->PSC, &TIM2->CCR1);
+    pwm.setFrequency(1);
+    pwm.setDutyCycle(0.25);
 
     // ////////////////////////////////////////////
     // END TEST AREA
