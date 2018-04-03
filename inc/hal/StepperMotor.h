@@ -24,7 +24,7 @@ private:
     GPIO_TypeDef *gpio;
     bool enabled;
 public:
-    StepperMotor(PWM step, GPIO_TypeDef *gpio, uint16_t directionPin,
+    StepperMotor(PWM& step, GPIO_TypeDef *gpio, uint16_t directionPin,
             uint16_t enablePin, bool invertDirection = false,
             bool invertEnable = false);
 

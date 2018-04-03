@@ -9,7 +9,7 @@
 
 #include <hal/StepperMotor.h>
 
-StepperMotor::StepperMotor(PWM step, GPIO_TypeDef* gpio, uint16_t directionPin,
+StepperMotor::StepperMotor(PWM& step, GPIO_TypeDef* gpio, uint16_t directionPin,
         uint16_t enablePin, bool invertDirection, bool invertEnable) :
         step(step), directionPin(directionPin), invertDirection(
                 invertDirection), enablePin(enablePin), invertEnable(

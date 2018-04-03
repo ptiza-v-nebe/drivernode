@@ -23,7 +23,7 @@ Task::Task() :
  * @param delay    the initial delay to wait before first execution
  * @param period   the repetition period (0 if one-shot task)
  */
-Task::Task(std::function<void(void)> function, int delay, int period) :
+Task::Task(const std::function<void(void)>& function, int delay, int period) :
         placeholder(false), function(function), delay(delay), period(period), execCounter(
                 0) {
     if (delay == 0) {
