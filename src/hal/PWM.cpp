@@ -39,9 +39,17 @@ PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
 }
 
 void PWM::setFrequency(unsigned int hz) {
+    if(hz == 0){
+        return; // TODO: error handling
+    }
+
     float frequency = static_cast<float>(HAL_RCC_GetSysClockFreq())
             / (timer->PSC + 1);
     uint32_t divider = static_cast<uint32_t>(frequency / hz);
+
+    if(divider == 0) {
+        return; // TODO: error handling
+    }
     timer->ARR = divider - 1;
     setDutyCycle(dutyCycle);
 }
