@@ -14,7 +14,7 @@
 
 class DynamixelCOM {
 private:
-    DynamixelUART uart;
+    DynamixelUART uart; ///< the UART to be used
 public:
 
     // prevent copy and move

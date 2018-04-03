@@ -22,16 +22,16 @@ enum class Phase {
 
 class Encoder {
 private:
-    int tickBuffers[TICK_BUFFER_COUNT];
-    int currentBuffer;
+    int32_t tickBuffers[TICK_BUFFER_COUNT]; ///< buffers for interrupt safe reset
+    int currentBuffer; ///< pointer to the buffer that is currently written
 
-    GPIO_TypeDef *gpio;
-    uint16_t channelAPin;
-    uint16_t channelBPin;
-    Phase currentPhase;
-    const int sign;
+    GPIO_TypeDef *gpio; ///< which gpio bank is used
+    uint16_t channelAPin; ///< which pin is connected to encoder channel a
+    uint16_t channelBPin; ///< which pin is connected to encoder channel b
+    Phase currentPhase; ///< the current phase
+    const int sign; ///< used to invert the encoder
 public:
-    Encoder(GPIO_TypeDef *gpio, uint16_t channelAPin, uint16_t channelBPin, int sign = 1);
+    Encoder(GPIO_TypeDef *gpio, uint16_t channelAPin, uint16_t channelBPin, bool invert = false);
 
     // prevent move and copy
     Encoder(const Encoder&) = delete;
@@ -40,9 +40,9 @@ public:
     Encoder& operator=(Encoder&&) = delete;
 
     void update();
-    int getTick() const;
+    int32_t getTick() const;
     void reset();
-    int getTickAndReset();
+    int32_t getTickAndReset();
 private:
     Phase getPhase();
 };

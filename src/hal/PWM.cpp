@@ -11,6 +11,12 @@
 #include <cmath>
 #include <stm32l4xx.h>
 
+/**
+ * Constructs a PWM abstraction.
+ *
+ * @param timer   the timer to be used
+ * @param channel the channel to be used
+ */
 PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
         timer(timer), ccr(nullptr), enableMask(0), dutyCycle(0.5) {
     switch (channel) {
@@ -38,6 +44,12 @@ PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
     setDutyCycle(0.5);
 }
 
+/**
+ * Sets the PWM frequency.
+ * @attention this affects ALL PWM signals that share this timer!!
+ *
+ * @param hz the frequency in hz
+ */
 void PWM::setFrequency(unsigned int hz) {
     if(hz == 0){
         return; // TODO: error handling
@@ -54,10 +66,21 @@ void PWM::setFrequency(unsigned int hz) {
     setDutyCycle(dutyCycle);
 }
 
+/**
+ * Set the prescaler.
+ * @attention This affects frequency of all PWM signals that share this timer!!
+ *
+ * @param prescale the new prescale
+ */
 void PWM::setPrescale(uint16_t prescale) {
     timer->PSC = prescale - 1;
 }
 
+/**
+ * Sets the duty cycle of the PWM signal in percent.
+ *
+ * @param percent the duty cycle in percent (between 0 and 1)
+ */
 void PWM::setDutyCycle(float percent) {
     if (percent > 1 || percent < 0) {
         return;
@@ -66,10 +89,16 @@ void PWM::setDutyCycle(float percent) {
     *ccr = std::round(timer->ARR * dutyCycle);
 }
 
+/**
+ * enable the PWM signal
+ */
 void PWM::enable() {
     SET_BIT(timer->CCER, enableMask);
 }
 
+/**
+ * disable the PWM signal
+ */
 void PWM::disable() {
     CLEAR_BIT(timer->CCER, enableMask);
 }

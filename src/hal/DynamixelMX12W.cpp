@@ -10,43 +10,101 @@
 #include <hal/DynamixelMX12W.h>
 #include <cmath>
 
+/**
+ * address of the enable register
+ */
 static constexpr uint8_t ENABLE_ADDR = 24;
+
+/**
+ * address of the movement speed register
+ */
 static constexpr uint8_t MOVING_SPEED_ADDR = 32;
 
+/**
+ * maximum valid speed
+ */
 static constexpr uint16_t MAX_SPEED = 500; //1023 according to specification, but physical max speed is around 500
+
+/**
+ * offset for turning backwards
+ */
 static constexpr uint16_t CW_OFFSET = 1024;
+
+/**
+ * conversion factor from RPM to speed
+ */
 static constexpr float SPEED_TO_RPM = 0.916;
 
-DynamixelMX12W::DynamixelMX12W(uint8_t id, DynamixelCOM& com, int directionSign) :
-        id(id), directionSign(directionSign), enabled(false), com(com) {
-    enable();
+/**
+ * Constructs an abstraction for a Dynamixel MX12W servo
+ * @attention DynamixelMX12W is DISABLED by default.
+ *
+ * @param id     the ID of the servo
+ * @param com    reference to the com object used to send commands
+ * @param invert should the direction be inverted?
+ */
+DynamixelMX12W::DynamixelMX12W(uint8_t id, DynamixelCOM& com, bool invert) :
+        id(id), invert(invert), enabled(false), com(com) {
+    disableAndStop();
 }
 
+/*
+ * @see - Actor::enable()
+ */
 void DynamixelMX12W::enable() {
     com.writeByte(id, ENABLE_ADDR, 1); // TODO: error handling
     enabled = true;
 }
 
+/*
+ * @see - Actor::disableAndStop()
+ */
 void DynamixelMX12W::disableAndStop() {
     com.writeByte(id, ENABLE_ADDR, 0); // TODO: error handling
     enabled = false;
 }
 
+/**
+ * Sets a specific RPM as movement speed.
+ *
+ * @param rpm the rpm to set
+ */
 void DynamixelMX12W::setRPM(float rpm) {
     if(!enabled) {
         return;
     }
 
-    rpm *= directionSign; // potentially invert the direction
-    uint16_t speed = static_cast<uint16_t>(std::fabs(rpm) / SPEED_TO_RPM);
-    if (speed > MAX_SPEED) {
-        speed = MAX_SPEED;
+    if(invert){
+        rpm *= -1;
+    }
+    setSpeed(static_cast<int16_t>(rpm / SPEED_TO_RPM));
+}
+
+/*
+ * @see - Motor::setSpeed(uint16_t)
+ */
+void DynamixelMX12W::setSpeed(int16_t speed) {
+    if(!enabled) {
+        return;
     }
 
-    if(rpm < 0){
+    if(speed > MAX_SPEED) {
+        speed = MAX_SPEED;
+    } else if (speed < -MAX_SPEED) {
+        speed = -MAX_SPEED;
+    }
+
+    if(speed < 0) {
         speed += CW_OFFSET;
     }
 
     com.writeWord(id, MOVING_SPEED_ADDR, speed); // TODO: error handling
+}
+
+/*
+ * @see - Motor::stop()
+ */
+void DynamixelMX12W::stop() {
+    setSpeed(0);
 }
 /** @} */

@@ -22,10 +22,11 @@ static void setupCLK(void) {
     CLEAR_BIT(RCC->CR, RCC_CR_PLLON);
 
     // Wait for PLL to stop (PLLREADY cleared)
-    while(READ_BIT(RCC->CR, RCC_CR_PLLRDY)){}
+    while (READ_BIT(RCC->CR, RCC_CR_PLLRDY)) {
+    }
 
     // Modify PLL
-    MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC, RCC_PLLCFGR_PLLSRC_MSI); // source = MSI
+    MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC, RCC_PLLCFGR_PLLSRC_MSI);// source = MSI
     MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM, 0 << RCC_PLLCFGR_PLLM_Pos); // PLL_M = 1;
     MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLN, 40 << RCC_PLLCFGR_PLLN_Pos); // PLL_N = 40;
     MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLR, 0 << RCC_PLLCFGR_PLLR_Pos); // PLL_R = 2;
@@ -39,15 +40,17 @@ static void setupCLK(void) {
     SET_BIT(RCC->PLLCFGR, RCC_PLLCFGR_PLLREN);
 
     // Wait for PLL to become locked (PLLREADY set)
-    while(!READ_BIT(RCC->CR, RCC_CR_PLLRDY)){}
+    while (!READ_BIT(RCC->CR, RCC_CR_PLLRDY)) {
+    }
 
     // Adjust Flash latency for higher clock
     MODIFY_REG(FLASH->ACR, FLASH_ACR_LATENCY, FLASH_ACR_LATENCY_4WS);
 
     // Check if Flash latency is set correctly
-    if((READ_REG(FLASH->ACR) & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_4WS){
+    if ((READ_REG(FLASH->ACR) & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_4WS) {
         // Error
-        while(1){}
+        while (1) {
+        }
     }
 
     // Select PLL as SYSCLK Source
@@ -63,12 +66,16 @@ static void setupCLK(void) {
  * Setup the Hardware.
  * This should be the first call in main()
  */
-void setupHardware(){
+void setupHardware() {
     setupCLK();
     HAL_Init();
 }
 
-GPIO_InitTypeDef getDefaultGPIO(){
+/**
+ * @return an initialized GPIO_InitTypeDef with sensible defaults.
+ * No pin, Input Mode, Medium Speed, No Pullup/down and no Alternate function.
+ */
+GPIO_InitTypeDef getDefaultGPIO() {
     GPIO_InitTypeDef gpio;
     gpio.Pin = 0; // no pins
     gpio.Mode = GPIO_MODE_INPUT;

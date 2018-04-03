@@ -13,20 +13,59 @@
 #include "constants.h"
 #include "util/util.h"
 
+/**
+ * the maximum speed of the motor
+ */
 static constexpr int16_t MAX_SPEED = 13000;
+
+/**
+ * the minimum speed of the motor
+ */
 static constexpr int16_t MIN_SPEED = -13000;
 
+/**
+ * timeout for the UART transmission
+ */
 static constexpr int UART_TIMEOUT_MS = 5;
 
+/**
+ * maximum number of characters for ID (max ID is 254)
+ */
 static constexpr int ID_MAXLENGTH = 3;
+
+/**
+ * maximum number of characters for speed (max speed is -13.000)
+ */
 static constexpr int SPEED_MAXLENGTH = 6;
+
+/**
+ * length of the command (command is v)
+ */
 static constexpr int SPEED_COMMAND_LENGTH = 1;
 
+/**
+ * required buffer size for the speed command.
+ * command + speed + \0
+ */
 static constexpr int SPEED_COMMAND_BUFFERSIZE = SPEED_COMMAND_LENGTH + SPEED_MAXLENGTH + 1;
+
+/**
+ * required buffer size for entire command
+ * id + speed command + carriage return
+ */
 static constexpr int COMMAND_BUFFERSIZE = ID_MAXLENGTH + SPEED_COMMAND_BUFFERSIZE + 1;
 
+/**
+ * Constructs an abstraction for a FaulhaberBLDC
+ * @attention FaulhaberBLDC is DISABLED by default
+ *
+ * @param uart             reference to the UART to be used
+ * @param id               the ID of the motor
+ * @param reverseDirection should the direction be reversed
+ */
 FaulhaberBLDC::FaulhaberBLDC(UART_HandleTypeDef* uart, uint8_t id, bool reverseDirection) :
         enabled(true), uart(uart), id(id), reverseDirection(reverseDirection) {
+    disableAndStop();
 }
 
 /*
@@ -84,6 +123,12 @@ void FaulhaberBLDC::stop() {
     setSpeed(0);
 }
 
+/**
+ * Sends a command to the motor.
+ * Will prefix the id and append \r
+ *
+ * @param command the command to be sent
+ */
 void FaulhaberBLDC::sendCommand(const char* command) {
     char buffer[COMMAND_BUFFERSIZE] = {0};
     int chars = snprintf(buffer, COMMAND_BUFFERSIZE, "%d%s\r", id, command);

@@ -11,6 +11,9 @@
 #include "hal/util.h"
 #include "constants.h"
 
+/**
+ * Constructs a DynamixelUART
+ */
 DynamixelUART::DynamixelUART() :
         uart { }, uart_gpio { } {
     init();

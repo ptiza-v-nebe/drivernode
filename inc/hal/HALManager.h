@@ -19,18 +19,18 @@
 
 constexpr int SRF08_COUNT = 4;
 
-class HALManager  {
+class HALManager {
 public:
     static HALManager& getInstance();
 private:
-    Encoder leftEncoder;
-    Encoder rightEncoder;
-    FaulhaberBLDC leftMotor;
-    FaulhaberBLDC rightMotor;
-    SRF08 srf08[SRF08_COUNT];
+    Encoder leftEncoder; ///< the left encoder used for odometry
+    Encoder rightEncoder; ///< the right encoder used for odometry
+    FaulhaberBLDC leftMotor; ///< the left motor used for driving
+    FaulhaberBLDC rightMotor; ///< the right motor used for driving
+    SRF08 srf08[SRF08_COUNT]; ///< the ultrasonic sensor used for enemy detection when driving backwards
 
-    I2C_HandleTypeDef i2c;
-    UART_HandleTypeDef motorUART;
+    I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
+    UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
 
 private:
     HALManager();
