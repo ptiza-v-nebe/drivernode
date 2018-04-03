@@ -77,8 +77,8 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    TIM_HandleTypeDef timer = {0};
-    TIM_OC_InitTypeDef channel = {0};
+    TIM_HandleTypeDef timer = {};
+    TIM_OC_InitTypeDef channel = {};
     GPIO_InitTypeDef gpio = getDefaultGPIO();
 
     timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;

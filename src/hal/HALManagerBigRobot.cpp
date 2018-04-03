@@ -71,7 +71,8 @@ HALManager::HALManager() :
         leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
         rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
         srf08(
-                { { &i2c, 0xEE }, { &i2c, 0xE2 }, { &i2c, 0xF2 }, { &i2c, 0xF2 } }) { //
+                { { &i2c, 0xEE }, { &i2c, 0xE2 }, { &i2c, 0xF2 }, { &i2c, 0xF2 } }), //
+        i2c { }, motorUART { } { //
     initializeHal();
 
     leftMotor.disableAndStop();

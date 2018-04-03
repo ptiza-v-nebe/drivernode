@@ -30,7 +30,8 @@ Angle::Angle() :
  *
  * @param radian the angle
  */
-Angle::Angle(float radian) {
+Angle::Angle(float radian) :
+        radian(0) {
     setRadian(radian);
 }
 
@@ -170,7 +171,7 @@ Angle operator-(const Angle& left, float right) {
     return left - Angle(right);
 }
 
-Angle Angle::operator=(float radian) {
+Angle& Angle::operator=(float radian) {
     setRadian(radian);
     return *this;
 }

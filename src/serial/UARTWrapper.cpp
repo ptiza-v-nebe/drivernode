@@ -59,7 +59,7 @@ UARTWrapper& UARTWrapper::getInstance() {
  * Constructs the UARTWrapper
  */
 UARTWrapper::UARTWrapper() :
-        receiveHandler(nullptr) {
+        uart {}, uart_gpio {}, receiveHandler(nullptr) {
     init();
 }
 

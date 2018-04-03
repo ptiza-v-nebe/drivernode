@@ -43,7 +43,7 @@ public:
 	void add(const Angle& other);
 	void subtract(const Angle& other);
 
-	Angle operator=(float radians);
+	Angle& operator=(float radians);
 	Angle operator-() const;
 
 private:

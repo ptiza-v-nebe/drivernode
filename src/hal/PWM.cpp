@@ -12,7 +12,7 @@
 #include <stm32l4xx.h>
 
 PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
-        timer(timer) {
+        timer(timer), ccr(nullptr), enableMask(0), dutyCycle(0.5) {
     switch (channel) {
         case TIM_CHANNEL_1:
             ccr = &(timer->CCR1);
