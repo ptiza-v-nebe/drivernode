@@ -23,6 +23,13 @@ private:
 public:
     SRF08(I2C_HandleTypeDef *i2c, uint8_t address);
 
+    // prevent copy
+    SRF08(const SRF08&) = delete;
+    SRF08& operator=(const SRF08&) = delete;
+
+    SRF08(SRF08&& other) = default;
+    SRF08& operator=(SRF08&& other) = default;
+
     void startRanging();
     bool rangingFinished();
 

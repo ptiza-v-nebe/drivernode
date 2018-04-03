@@ -22,6 +22,12 @@ private:
 public:
     DynamixelAX12A(uint8_t id, DynamixelCOM& com);
 
+    // prevent copy and move
+    DynamixelAX12A(const DynamixelAX12A&) = delete;
+    DynamixelAX12A(DynamixelAX12A&&) = delete;
+    DynamixelAX12A& operator=(const DynamixelAX12A&) = delete;
+    DynamixelAX12A& operator=(DynamixelAX12A&&) = delete;
+
     virtual void enable() override;
     virtual void disableAndStop() override;
 

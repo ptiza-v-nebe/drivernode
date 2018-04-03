@@ -13,7 +13,7 @@
 #include "hal/Actor.h"
 #include "hal/DynamixelCOM.h"
 
-class DynamixelMX12W : public Actor {
+class DynamixelMX12W: public Actor {
 private:
     const uint8_t id; ///< the ID of the servo
     int directionSign; ///< used to invert the direction
@@ -21,6 +21,12 @@ private:
     DynamixelCOM& com; ///< reference to the COM object
 public:
     DynamixelMX12W(uint8_t id, DynamixelCOM& com, int directionSign = 1);
+
+    // prevent copy and move
+    DynamixelMX12W(const DynamixelMX12W&) = delete;
+    DynamixelMX12W(DynamixelMX12W&&) = delete;
+    DynamixelMX12W& operator=(const DynamixelMX12W&) = delete;
+    DynamixelMX12W& operator=(DynamixelMX12W&&) = delete;
 
     virtual void enable() override;
     virtual void disableAndStop() override;

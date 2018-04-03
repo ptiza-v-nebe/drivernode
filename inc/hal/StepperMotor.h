@@ -28,6 +28,12 @@ public:
             uint16_t enablePin, bool invertDirection = false,
             bool invertEnable = false);
 
+    // prevent copy and move
+    StepperMotor(const StepperMotor&) = delete;
+    StepperMotor(StepperMotor&&) = delete;
+    StepperMotor& operator=(const StepperMotor&) = delete;
+    StepperMotor& operator=(StepperMotor) = delete;
+
     void enable() override;
     void disableAndStop() override;
 
