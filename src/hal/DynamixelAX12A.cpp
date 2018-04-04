@@ -8,6 +8,7 @@
  */
 
 #include <hal/DynamixelAX12A.h>
+#include "error.h"
 
 /**
  * address of the enable register
@@ -65,7 +66,10 @@ DynamixelAX12A::DynamixelAX12A(uint8_t id, DynamixelCOM& com) :
  * @see - Actor::enable()
  */
 void DynamixelAX12A::enable() {
-    com.writeByte(id, ENABLE_ADDR, 1); // TODO: error handling
+    uint8_t result = com.writeByte(id, ENABLE_ADDR, 1);
+    if (result) {
+        ERROR("Failed to enable Dynamixel %d - Result is %x", id, result);
+    }
     enabled = true;
 }
 
@@ -73,7 +77,10 @@ void DynamixelAX12A::enable() {
  * @see - Actor::disableAndStop()
  */
 void DynamixelAX12A::disableAndStop() {
-    com.writeByte(id, ENABLE_ADDR, 0); // TODO: error handling
+    uint8_t result = com.writeByte(id, ENABLE_ADDR, 0);
+    if (result) {
+        ERROR("Failed to disable Dynamixel %d - Result is %x", id, result);
+    }
     enabled = false;
 }
 
@@ -82,7 +89,11 @@ void DynamixelAX12A::disableAndStop() {
  */
 Angle DynamixelAX12A::getAngle() {
     uint16_t position;
-    com.readWord(id, PRESENT_POSITION_ADDR, position); // TODO: error handling
+    uint8_t result = com.readWord(id, PRESENT_POSITION_ADDR, position);
+    if (result) {
+        ERROR("Failed to read angle from Dynamixel %d - Result is %x", id,
+                result);
+    }
 
     return Angle::getFromDegrees(POSITION_TO_DEGREES * position);
 }
@@ -94,18 +105,26 @@ void DynamixelAX12A::moveTo(const Angle& angle) {
     if (!enabled) {
         return;
     }
-    uint16_t position = static_cast<uint16_t>(angle.getAngleInDegrees() / POSITION_TO_DEGREES);
+    uint16_t position = static_cast<uint16_t>(angle.getAngleInDegrees()
+            / POSITION_TO_DEGREES);
     if (position > MAX_POSITION) {
-        return; // TODO: error handling
+        position = MAX_POSITION;
     }
-    com.writeWord(id, GOAL_POSITION_ADDR, position); // TODO: error handling
+    uint8_t result = com.writeWord(id, GOAL_POSITION_ADDR, position);
+    if (result) {
+        ERROR("Failed to send angle to Dynamixel %d - Result is %x", id, result);
+    }
 }
 
 void DynamixelAX12A::setRPM(float rpm) {
     uint16_t speed = static_cast<uint16_t>(rpm / SPEED_TO_RPM);
     if (speed > MAX_SPEED) {
-        return; // TODO: error handling
+        speed = MAX_SPEED;
     }
-    com.writeWord(id, MOVING_SPEED_ADDR, speed); // TODO: error handling
+    uint8_t result = com.writeWord(id, MOVING_SPEED_ADDR, speed);
+
+    if (result) {
+        ERROR("Failed to send speed to Dynamixel %d - Result is %x", id, result);
+    }
 }
 /** @} */

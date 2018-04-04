@@ -17,6 +17,8 @@
 #include "util/util.h"
 
 #include "hal/PWM.h"
+#include "hal/DynamixelAX12A.h"
+#include "error.h"
 
 int main(void) {
     setupHardware();

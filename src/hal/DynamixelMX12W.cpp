@@ -9,6 +9,7 @@
 
 #include <hal/DynamixelMX12W.h>
 #include <cmath>
+#include "error.h"
 
 /**
  * address of the enable register
@@ -52,7 +53,10 @@ DynamixelMX12W::DynamixelMX12W(uint8_t id, DynamixelCOM& com, bool invert) :
  * @see - Actor::enable()
  */
 void DynamixelMX12W::enable() {
-    com.writeByte(id, ENABLE_ADDR, 1); // TODO: error handling
+    uint8_t result = com.writeByte(id, ENABLE_ADDR, 1);
+    if (result) {
+        ERROR("Failed to enable Dynamixel %d - Result is %x", id, result);
+    }
     enabled = true;
 }
 
@@ -60,7 +64,10 @@ void DynamixelMX12W::enable() {
  * @see - Actor::disableAndStop()
  */
 void DynamixelMX12W::disableAndStop() {
-    com.writeByte(id, ENABLE_ADDR, 0); // TODO: error handling
+    uint8_t result = com.writeByte(id, ENABLE_ADDR, 0);
+    if (result) {
+        ERROR("Failed to disable Dynamixel %d - Result is %x", id, result);
+    }
     enabled = false;
 }
 
@@ -70,11 +77,11 @@ void DynamixelMX12W::disableAndStop() {
  * @param rpm the rpm to set
  */
 void DynamixelMX12W::setRPM(float rpm) {
-    if(!enabled) {
+    if (!enabled) {
         return;
     }
 
-    if(invert){
+    if (invert) {
         rpm *= -1;
     }
     setSpeed(static_cast<int16_t>(rpm / SPEED_TO_RPM));
@@ -84,21 +91,24 @@ void DynamixelMX12W::setRPM(float rpm) {
  * @see - Motor::setSpeed(uint16_t)
  */
 void DynamixelMX12W::setSpeed(int16_t speed) {
-    if(!enabled) {
+    if (!enabled) {
         return;
     }
 
-    if(speed > MAX_SPEED) {
+    if (speed > MAX_SPEED) {
         speed = MAX_SPEED;
     } else if (speed < -MAX_SPEED) {
         speed = -MAX_SPEED;
     }
 
-    if(speed < 0) {
+    if (speed < 0) {
         speed += CW_OFFSET;
     }
 
-    com.writeWord(id, MOVING_SPEED_ADDR, speed); // TODO: error handling
+    uint8_t result = com.writeWord(id, MOVING_SPEED_ADDR, speed);
+    if (result) {
+        ERROR("Failed to send speed to Dynamixel %d - Result is %x", id, result);
+    }
 }
 
 /*

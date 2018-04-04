@@ -11,6 +11,7 @@
 #ifdef BIG_ROBOT
 #include "hal/util.h"
 #include "hal/interupts.h"
+#include "error.h"
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Hardware configuration
@@ -337,7 +338,7 @@ void HALManager::initializeMotorUART() {
     ;
 
     HAL_GPIO_Init(MOTOR_GPIO, &uart_gpio);
-    HAL_UART_Init(&motorUART);
+    TRY(HAL_UART_Init(&motorUART));
 }
 
 /**
@@ -356,11 +357,7 @@ void HALManager::initializeI2C() {
 
     __HAL_RCC_I2C2_CLK_ENABLE()
     ;
-    if (HAL_I2C_Init(&i2c) != HAL_OK) {
-        //TODO: error handling
-        while (1)
-            ;
-    }
+    TRY(HAL_I2C_Init(&i2c));
 
     GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
     i2cGPIO.Pin = SRF08_SCL | SRF08_SDA;

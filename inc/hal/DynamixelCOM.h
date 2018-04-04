@@ -17,6 +17,8 @@ private:
     DynamixelUART uart; ///< the UART to be used
 public:
 
+    DynamixelCOM();
+
     // prevent copy and move
     DynamixelCOM(const DynamixelCOM&) = delete;
     DynamixelCOM(DynamixelCOM&&) = delete;

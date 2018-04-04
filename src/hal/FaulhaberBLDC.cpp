@@ -11,6 +11,7 @@
 #include "hal/util.h"
 #include "config.h"
 #include "constants.h"
+#include "error.h"
 #include "util/util.h"
 
 /**
@@ -64,8 +65,7 @@ static constexpr int COMMAND_BUFFERSIZE = ID_MAXLENGTH + SPEED_COMMAND_BUFFERSIZ
  * @param reverseDirection should the direction be reversed
  */
 FaulhaberBLDC::FaulhaberBLDC(UART_HandleTypeDef* uart, uint8_t id, bool reverseDirection) :
-        enabled(true), uart(uart), id(id), reverseDirection(reverseDirection) {
-    disableAndStop();
+        enabled(false), uart(uart), id(id), reverseDirection(reverseDirection) {
 }
 
 /*
@@ -108,9 +108,7 @@ void FaulhaberBLDC::setSpeed(int16_t speed) {
     int chars = snprintf(buffer, SPEED_COMMAND_BUFFERSIZE, "v%d", speed);
     if(chars >= SPEED_COMMAND_BUFFERSIZE) {
         // too many characters
-#ifdef HUMAN_MODE
-        printf("WARNING, speed command too long!\r\n");
-#endif
+        ERROR("Speed comand to long!");
         return;
     }
     sendCommand(buffer);
@@ -134,9 +132,7 @@ void FaulhaberBLDC::sendCommand(const char* command) {
     int chars = snprintf(buffer, COMMAND_BUFFERSIZE, "%d%s\r", id, command);
     if(chars >= COMMAND_BUFFERSIZE) {
         // too long
-#ifdef HUMAN_MODE
-        printf("WARNING, message too long!\r\n");
-#endif
+        ERROR("Message too long!");
         return;
     }
 
@@ -147,6 +143,6 @@ void FaulhaberBLDC::sendCommand(const char* command) {
     printf(" = %s\n", buffer);
 #endif
 
-    HAL_UART_Transmit(uart, data, chars, UART_TIMEOUT_MS);
+    TRY(HAL_UART_Transmit(uart, data, chars, UART_TIMEOUT_MS));
 }
 /** @} */

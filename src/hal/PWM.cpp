@@ -10,6 +10,7 @@
 #include <hal/PWM.h>
 #include <cmath>
 #include <stm32l4xx.h>
+#include "error.h"
 
 /**
  * Constructs a PWM abstraction.
@@ -37,8 +38,7 @@ PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
             enableMask = TIM_CCER_CC4E;
             break;
         default:
-            // TODO: error handling
-            while(1) {}
+            ERROR("Invalid Channel!");
     }
 
     setDutyCycle(0.5);
@@ -52,7 +52,8 @@ PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
  */
 void PWM::setFrequency(unsigned int hz) {
     if(hz == 0){
-        return; // TODO: error handling
+        ERROR("0 Hz is not a valid frequency!");
+        return;
     }
 
     float frequency = static_cast<float>(HAL_RCC_GetSysClockFreq())
@@ -60,7 +61,8 @@ void PWM::setFrequency(unsigned int hz) {
     uint32_t divider = static_cast<uint32_t>(frequency / hz);
 
     if(divider == 0) {
-        return; // TODO: error handling
+        ERROR("Frequency is too big for current prescale value!");
+        return;
     }
     timer->ARR = divider - 1;
     setDutyCycle(dutyCycle);

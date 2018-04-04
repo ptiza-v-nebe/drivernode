@@ -8,6 +8,7 @@
  */
 
 #include <hal/Encoder.h>
+#include "error.h"
 
 /**
  * Calculate the next phase, assuming forward movement.
@@ -61,7 +62,7 @@ void Encoder::update() {
             // Going backward: Phase A -> D -> C -> B -> A -> D -> C -> ...
             tickBuffers[currentBuffer] -= sign;
         } else {
-            // TODO: handle skipped
+            ERROR("Skipped a tick!");
         }
     }
     currentPhase = nextPhase;

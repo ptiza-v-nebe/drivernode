@@ -11,6 +11,7 @@
 
 #include "hal/SRF08.h"
 #include "constants.h"
+#include "error.h"
 
 /**
  * Constructs an abstraction for a SRF08 Ultrasonic sensor
@@ -28,7 +29,7 @@ SRF08::SRF08(I2C_HandleTypeDef *i2c, uint8_t address) :
  */
 void SRF08::startRanging() {
     uint8_t command[] = { 0x00, 0x51 }; // Write command 0x51 to command register (0)
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS));
 }
 
 /**
@@ -42,8 +43,8 @@ bool SRF08::rangingFinished() {
     uint8_t response = 0xFF;
 
     // read version id (register 0)
-    HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS);
-    HAL_I2C_Master_Receive(i2c, address, &response, 1, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS));
+    TRY(HAL_I2C_Master_Receive(i2c, address, &response, 1, DEFAULT_TIMEOUT_MS));
 
     // if sensor is busy, result should be 0xFF
     // so result != 0xFF --> sensor is ready
@@ -60,8 +61,8 @@ uint16_t SRF08::getRange() {
     uint8_t response[] = { 0xFF, 0xFF };
 
     // read range (register 2 + 3)
-    HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS); //Send register
-    HAL_I2C_Master_Receive(i2c, address, response, 2, DEFAULT_TIMEOUT_MS); //Read 16bits result
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS)); //Send register
+    TRY(HAL_I2C_Master_Receive(i2c, address, response, 2, DEFAULT_TIMEOUT_MS)); //Read 16bits result
 
     //Shift two bytes into 16 bit
     uint16_t range = (static_cast<uint16_t>(response[0]) << 8) | response[1];
@@ -77,8 +78,8 @@ uint8_t SRF08::getLightIntensity() {
     uint8_t lightValue = 0;
 
     // read light value (register 1)
-    HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS); //Send command
-    HAL_I2C_Master_Receive(i2c, address, &lightValue, 1, DEFAULT_TIMEOUT_MS); //Read response
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 1, DEFAULT_TIMEOUT_MS)); //Send command
+    TRY(HAL_I2C_Master_Receive(i2c, address, &lightValue, 1, DEFAULT_TIMEOUT_MS)); //Read response
 
     return lightValue;
 }
@@ -93,7 +94,7 @@ void SRF08::setMaxRange(uint16_t range) {
     uint8_t command[] = { 0x02, rohrange };
 
     // write range (register 2)
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS); //Send command
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS)); //Send command
 }
 
 /**
@@ -105,7 +106,7 @@ void SRF08::setMaxGainRegister(uint8_t gainVal) {
     uint8_t command[] = { 0x01, gainVal };
 
     // write gain register (register 1)
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS); //Send command
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS)); //Send command
 }
 
 /**
@@ -116,13 +117,13 @@ void SRF08::setMaxGainRegister(uint8_t gainVal) {
 void SRF08::setAddress(uint8_t newAddress) {
     //Send address change sequence
     uint8_t command[] = { 0x00, 0xA0 };
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS));
     command[1] = 0xAA;
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS));
     command[1] = 0xA5;
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS));
     command[1] = newAddress;
-    HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS);
+    TRY(HAL_I2C_Master_Transmit(i2c, address, command, 2, DEFAULT_TIMEOUT_MS));
     //Save the updated address
     address = newAddress;
 }

@@ -32,6 +32,13 @@ static constexpr uint8_t DYNAMIXEL_READ = 0x02;
  */
 static constexpr uint8_t DYNAMIXEL_WRITE = 0x03;
 
+
+/**
+ * Constructs a DynamixelCOM
+ */
+DynamixelCOM::DynamixelCOM() : uart() {
+}
+
 /**
  * Ping the dynamixel.
  *
