@@ -13,7 +13,8 @@
  * Constructs a placeholder Task.
  */
 Task::Task() :
-        Task([]() {}, 0, 0) {
+        placeholder(true), function([]() {}), delay(0), period(0), execCounter(
+                0) {
 }
 
 /**
