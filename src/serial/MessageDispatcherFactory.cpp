@@ -15,7 +15,8 @@
  *
  * @param sender the MessageSender to be used for sending
  */
-MessageDispatcherFactory::MessageDispatcherFactory(MessageSender& sender) : dispatcher(sender){
+MessageDispatcherFactory::MessageDispatcherFactory(MessageSender& sender) :
+        dispatcher(sender) {
 }
 
 /**
@@ -29,7 +30,7 @@ MessageDispatcher& MessageDispatcherFactory::getMessageDispatcher() {
  * Constructs a HumanMessageDispatcherFactory.
  */
 HumanMessageDispatcherFactory::HumanMessageDispatcherFactory() :
-        MessageDispatcherFactory(sender), commandHandler(dispatcher) {
+        MessageDispatcherFactory(sender), sender(), commandHandler(dispatcher) {
     UARTWrapper::getInstance().setReceiveHandler(&commandHandler);
 }
 
@@ -37,7 +38,8 @@ HumanMessageDispatcherFactory::HumanMessageDispatcherFactory() :
  * Constructs an ODROIDMessageDispatcherFactory.
  */
 ODROIDMessageDispatcherFactory::ODROIDMessageDispatcherFactory() :
-        MessageDispatcherFactory(UARTWrapper::getInstance()), commandHandler(dispatcher) {
+        MessageDispatcherFactory(UARTWrapper::getInstance()), commandHandler(
+                dispatcher) {
     UARTWrapper::getInstance().setReceiveHandler(&commandHandler);
 }
 

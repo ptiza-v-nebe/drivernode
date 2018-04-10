@@ -20,7 +20,8 @@ SMARTENUM_DEFINE_NAMES(CalibrationState, CALIBRATION_STATE_VALS)
 
 PositionParameterCalibration::PositionParameterCalibration(Encoder& left,
         Encoder& right, MessageDispatcher& m) :
-        HumanCommandHandler(m), state(CalibrationState::Idle), left(left), right(right), umPerTickLeft(0), umPerTickRight(0) {
+        HumanCommandHandler(m), state(CalibrationState::Idle), left(left), right(
+                right), umPerTickLeft(0), umPerTickRight(0) {
     printf("Please prepare robot for calibration of the wheels.\r\n");
     printf("Press [Enter] to start");
 }
@@ -30,7 +31,8 @@ void PositionParameterCalibration::transition() {
         case CalibrationState::Idle:
             left.reset();
             right.reset();
-            printf("Please move robot straight forward for %dm.\r\n", METERS_TRAVELLED);
+            printf("Please move robot straight forward for %dm.\r\n",
+                    METERS_TRAVELLED);
             printf("Press [Enter] when finished");
             state = CalibrationState::CalibrateWheels;
             break;
@@ -61,7 +63,7 @@ void PositionParameterCalibration::calculateAndDisplayWheelParameters() {
     int ticksLeft = left.getTick();
     int ticksRight = right.getTick();
 
-    const float DISTANCE_UM = METERS_TRAVELLED * 1000 /*mm/m*/ * 1000 /*um/mm*/;
+    const float DISTANCE_UM = METERS_TRAVELLED * 1000 /*mm/m*/* 1000 /*um/mm*/;
 
     umPerTickLeft = DISTANCE_UM / ticksLeft;
     umPerTickRight = DISTANCE_UM / ticksRight;
@@ -100,9 +102,10 @@ void PositionParameterCalibration::processMessage(uint8_t*, int) {
 /**
  * Constructs a CalibrationMessageDispatcherFactory.
  */
-CalibrationMessageDispatcherFactory::CalibrationMessageDispatcherFactory(Encoder& left,
-        Encoder& right) :
-        MessageDispatcherFactory(sender), commandHandler(left, right, dispatcher) {
+CalibrationMessageDispatcherFactory::CalibrationMessageDispatcherFactory(
+        Encoder& left, Encoder& right) :
+        MessageDispatcherFactory(sender), sender(), commandHandler(left, right,
+                dispatcher) {
     UARTWrapper::getInstance().setReceiveHandler(&commandHandler);
 }
 /** @} */

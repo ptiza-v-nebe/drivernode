@@ -18,6 +18,13 @@ private:
     GPIO_InitTypeDef uart_gpio; ///< low level gpio handle
 public:
     DynamixelUART();
+
+    // prevent copy and move
+    DynamixelUART(const DynamixelUART&) = delete;
+    DynamixelUART(DynamixelUART&&) = delete;
+    DynamixelUART& operator=(const DynamixelUART&) = delete;
+    DynamixelUART& operator=(DynamixelUART&&) = delete;
+
     void send(const uint8_t* buffer, const int size);
     int receive(uint8_t* buffer, const int size);
 private:

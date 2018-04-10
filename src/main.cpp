@@ -17,6 +17,8 @@
 #include "util/util.h"
 
 #include "hal/PWM.h"
+#include "hal/DynamixelAX12A.h"
+#include "error.h"
 
 int main(void) {
     setupHardware();
@@ -77,8 +79,8 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    TIM_HandleTypeDef timer = {0};
-    TIM_OC_InitTypeDef channel = {0};
+    TIM_HandleTypeDef timer = {};
+    TIM_OC_InitTypeDef channel = {};
     GPIO_InitTypeDef gpio = getDefaultGPIO();
 
     timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;

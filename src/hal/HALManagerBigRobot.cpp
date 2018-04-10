@@ -11,26 +11,175 @@
 #ifdef BIG_ROBOT
 #include "hal/util.h"
 #include "hal/interupts.h"
+#include "error.h"
 
-#define LEFT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_12; // changing this might require another IRQ!
-static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_13; // changing this might require another IRQ!
-static constexpr int LEFT_ENCODER_SIGN = 1;
+// ///////////////////////////////////////////////////////////////////////////////
+// Hardware configuration
+// ///////////////////////////////////////////////////////////////////////////////
 
-#define RIGHT_ENCODER_GPIO GPIOC // when changing, also change clock enable in initializeEncoders!
-static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_2; // changing this might require another IRQ!
-static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_3; // changing this might require another IRQ!
-static constexpr int RIGHT_ENCODER_SIGN = -1;
+// ///////////////////////////////////////////////////////////////////////////////
+// Encoders
+// ///////////////////////////////////////////////////////////////////////////////
+/**
+ * GPIO Bank for left encoder.
+ * @attention when changing this, also change RCC clock enable in
+ *            HALManager::initializeEncoder!
+ */
+#define LEFT_ENCODER_GPIO GPIOC
 
+/**
+ * channel a pin for left encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_12;
+
+/**
+ * channel b pin for right encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_13;
+
+/**
+ * should the left encoder be inverted?
+ */
+static constexpr bool LEFT_ENCODER_INVERT = false;
+
+/**
+ * GPIO Bank for right encoder.
+ * @attention when changing this, also change RCC clock enable in
+ *            HALManager::initializeEncoder!
+ */
+#define RIGHT_ENCODER_GPIO GPIOC
+
+/**
+ * channel a pin for right encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_2;
+
+/**
+ * channel b pin for right encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_3;
+
+/**
+ * should the right encoder be inverted.
+ */
+static constexpr bool RIGHT_ENCODER_INVERT = true;
+
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Driving Motors
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * ID of the left motor
+ */
 static constexpr uint8_t LEFT_MOTOR_ID = 1;
+
+/**
+ * ID of the right motor
+ */
 static constexpr uint8_t RIGHT_MOTOR_ID = 2;
+
+/**
+ * should the left motor be inverted
+ */
 static constexpr bool LEFT_MOTOR_INVERT = false;
+
+/**
+ * should the right motor be inverted
+ */
 static constexpr bool RIGHT_MOTOR_INVERT = true;
 
-// Change USART and GPIO Port in initializeMotorUART();
+
+/**
+ * which USART to use for the motors.
+ * @attention when changing this, also change RCC clock enable as well as GPIO bank and
+ *            pin in HALManager::initializeMotorUART
+ */
+#define MOTOR_USART USART3
+
+/**
+ * which GPIO bank to use for the motor UART.
+ * @attention this depends on MOTOR_UART! When changing this, also change RCC clock
+ *            enable in HALManager::initializeMotorUART
+ */
+#define MOTOR_GPIO GPIOC
+
+/**
+ * which baudrate to use for communicating with the motors
+ */
 static constexpr uint32_t MOTOR_UART_BAUDRATE = 38400;
+
+/**
+ * UART TX pin.
+ * @attention this depends on MOTOR_UART!
+ */
 static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_10;
+
+/**
+ * UART RX pin.
+ * @attention this depends on MOTOR_UART!
+ */
 static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_11;
+
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Ultrasonic sensors
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * ID of the first SRF08
+ */
+static constexpr uint8_t SRF08_1_ID = 0xEE;
+
+/**
+ * ID of the second SRF08
+ */
+static constexpr uint8_t SRF08_2_ID = 0xEE;
+
+/**
+ * ID of the third SRF08
+ */
+static constexpr uint8_t SRF08_3_ID = 0xEE;
+
+/**
+ * ID of the fourth SRF08
+ */
+static constexpr uint8_t SRF08_4_ID = 0xEE;
+
+/**
+ * which I²C controller to use.
+ * @attention when changing this also change RCC clock enable and GPIO bank and pins in
+ *            HALManager::initializeI2C
+ */
+#define SRF08_I2C I2C2
+
+/**
+ * which GPIO bank to use for SRF08.
+ * @attention this depends on SRF08_I2C, when changing this also change RCC clock enable
+ *            in HALManager::initializeI2C
+ */
+#define SRF08_GPIO GPIOB
+
+/**
+ * which pin to use for SCL signal.
+ * @attention this depends on SRF08_I2C
+ */
+static constexpr uint16_t SRF08_SCL = GPIO_PIN_13;
+
+/**
+ * wich pn to use for SDA signal.
+ * @attention depends on SRF08_I2C
+ */
+static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
+
+
+// ///////////////////////////////////////////////////////////////////////////////
+// ISRs
+// ///////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
 void EXTI15_10_IRQHandler() {
@@ -58,52 +207,85 @@ void HAL_GPIO_EXTI_Callback(uint16_t pins) {
     }
 }
 
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Code
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @return the Singleton instance of this class.
+ */
 HALManager& HALManager::getInstance() {
     static HALManager instance;
     return instance;
 }
 
+/**
+ * Constructs and initializes the HALManager.
+ */
 HALManager::HALManager() :
         leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B,
-                LEFT_ENCODER_SIGN), //
+                LEFT_ENCODER_INVERT), //
         rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B,
-                RIGHT_ENCODER_SIGN), //
+                RIGHT_ENCODER_INVERT), //
         leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
         rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
         srf08(
-                { { &i2c, 0xEE }, { &i2c, 0xE2 }, { &i2c, 0xF2 }, { &i2c, 0xF2 } }) { //
+                { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID }, { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
+        i2c { }, motorUART { } { //
     initializeHal();
 
     leftMotor.disableAndStop();
     rightMotor.disableAndStop();
 }
 
+/**
+ * @return reference to the left encoder
+ */
 Encoder& HALManager::getLeftEncoder() {
     return leftEncoder;
 }
 
+/**
+ * @return reference to the right encoder
+ */
 Encoder& HALManager::getRightEncoder() {
     return rightEncoder;
 }
 
+/**
+ * initializes the necessary low level components
+ */
 void HALManager::initializeHal() {
     initializeMotorUART();
     initializeEncoders();
     initializeI2C();
 }
 
+/**
+ * @return reference to the left driving motor
+ */
 Motor& HALManager::getLeftMotor() {
     return leftMotor;
 }
 
+/**
+ * @return reference to the right driving motor
+ */
 Motor& HALManager::getRightMotor() {
     return rightMotor;
 }
 
+/**
+ * @return pointer to the first SRF08. Refer to SRF08_COUNT for array size.
+ */
 SRF08* HALManager::getSRF08s() {
     return srf08;
 }
 
+/**
+ * Initializes the encoder GPIOs and IRQs
+ */
 void HALManager::initializeEncoders() {
     __HAL_RCC_GPIOC_CLK_ENABLE()
     ;
@@ -129,8 +311,11 @@ void HALManager::initializeEncoders() {
     HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 }
 
+/**
+ * Initializes the USART and GPIO for the motors
+ */
 void HALManager::initializeMotorUART() {
-    motorUART.Instance = USART3;
+    motorUART.Instance = MOTOR_USART;
     motorUART.Init.BaudRate = MOTOR_UART_BAUDRATE;
     motorUART.Init.Parity = UART_PARITY_NONE;
     motorUART.Init.Mode = UART_MODE_TX_RX;
@@ -152,12 +337,15 @@ void HALManager::initializeMotorUART() {
     __HAL_RCC_USART3_CLK_ENABLE()
     ;
 
-    HAL_GPIO_Init(GPIOC, &uart_gpio);
-    HAL_UART_Init(&motorUART);
+    HAL_GPIO_Init(MOTOR_GPIO, &uart_gpio);
+    TRY(HAL_UART_Init(&motorUART));
 }
 
+/**
+ * Initializes the I²C and GPIO for the SRF08s
+ */
 void HALManager::initializeI2C() {
-    i2c.Instance = I2C2;
+    i2c.Instance = SRF08_I2C;
     i2c.Init.Timing = 0x10909CEC;
     i2c.Init.OwnAddress1 = 0;
     i2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -169,20 +357,16 @@ void HALManager::initializeI2C() {
 
     __HAL_RCC_I2C2_CLK_ENABLE()
     ;
-    if (HAL_I2C_Init(&i2c) != HAL_OK) {
-        //TODO: error handling
-        while (1)
-            ;
-    }
+    TRY(HAL_I2C_Init(&i2c));
 
     GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
-    i2cGPIO.Pin = GPIO_PIN_13 | GPIO_PIN_14;
+    i2cGPIO.Pin = SRF08_SCL | SRF08_SDA;
     i2cGPIO.Mode = GPIO_MODE_AF_OD;
     i2cGPIO.Alternate = GPIO_AF4_I2C2;
 
     __HAL_RCC_GPIOB_CLK_ENABLE()
     ;
-    HAL_GPIO_Init(GPIOB, &i2cGPIO);
+    HAL_GPIO_Init(SRF08_GPIO, &i2cGPIO);
 }
 
 #endif

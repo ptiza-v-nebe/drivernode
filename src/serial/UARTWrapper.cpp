@@ -12,6 +12,7 @@
 #include "hal/util.h"
 #include "hal/interupts.h"
 #include "constants.h"
+#include "error.h"
 
 // ////////////////////////////////////////////////////////
 // ISRs and other C-Stuff
@@ -25,10 +26,11 @@ void USART2_IRQHandler() {
         // byte was received
         UARTWrapper::getInstance().handleByte(USART2->RDR);
     } else {
-        // TODO: unexpected...error maybe?
+        ERROR("Unexpected IRQ on USART2!");
     }
 }
 
+#ifdef HUMAN_MODE
 /**
  * Low-Level 'syscall' needed for printf.
  *
@@ -39,6 +41,7 @@ int __io_putchar(int ch) {
     UARTWrapper::getInstance().send(reinterpret_cast<uint8_t*>(&ch), 1);
     return 0;
 }
+#endif
 
 } // extern "C"
 
@@ -59,7 +62,7 @@ UARTWrapper& UARTWrapper::getInstance() {
  * Constructs the UARTWrapper
  */
 UARTWrapper::UARTWrapper() :
-        receiveHandler(nullptr) {
+        uart {}, uart_gpio {}, receiveHandler(nullptr) {
     init();
 }
 

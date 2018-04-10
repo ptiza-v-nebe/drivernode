@@ -16,17 +16,23 @@
 
 class StepperMotor: public Motor {
 private:
-    PWM step;
-    uint16_t directionPin;
-    bool invertDirection;
-    uint16_t enablePin;
-    bool invertEnable;
-    GPIO_TypeDef *gpio;
-    bool enabled;
+    PWM step; ///< use a hardware PWM to generate step signal
+    uint16_t directionPin; ///< the direction pin
+    bool invertDirection; ///< should the direction pin be inverted
+    uint16_t enablePin; ///< the enable pin
+    bool invertEnable; ///< should the enable pin be inverted
+    GPIO_TypeDef *gpio; ///< the gpio bank to use
+    bool enabled; ///< is the motor enabled
 public:
-    StepperMotor(PWM step, GPIO_TypeDef *gpio, uint16_t directionPin,
+    StepperMotor(PWM& step, GPIO_TypeDef *gpio, uint16_t directionPin,
             uint16_t enablePin, bool invertDirection = false,
             bool invertEnable = false);
+
+    // prevent copy and move
+    StepperMotor(const StepperMotor&) = delete;
+    StepperMotor(StepperMotor&&) = delete;
+    StepperMotor& operator=(const StepperMotor&) = delete;
+    StepperMotor& operator=(StepperMotor) = delete;
 
     void enable() override;
     void disableAndStop() override;

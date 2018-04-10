@@ -19,23 +19,29 @@
 /**
  * Wraps the USART2 which is connected to the ST-LINK interface into a C++ Object.
  */
-class UARTWrapper : public MessageSender {
+class UARTWrapper: public MessageSender {
 public:
     static UARTWrapper& getInstance();
 private:
-	UART_HandleTypeDef uart; ///< low level uart handle
-	GPIO_InitTypeDef uart_gpio; ///< low level gpio handle
-	UARTReceiveHandler *receiveHandler; ///< the receive handler to be notified about incoming bytes
+    UART_HandleTypeDef uart; ///< low level uart handle
+    GPIO_InitTypeDef uart_gpio; ///< low level gpio handle
+    UARTReceiveHandler *receiveHandler; ///< the receive handler to be notified about incoming bytes
 private:
-	UARTWrapper();
-
+    UARTWrapper();
 public:
-	void send(const uint8_t* buffer, const int size) override;
-	void handleByte(uint8_t byte);
-	void setReceiveHandler(UARTReceiveHandler *receiveHandler);
+
+    // prevent copy and move
+    UARTWrapper(const UARTWrapper&) = delete;
+    UARTWrapper(UARTWrapper&&) = delete;
+    UARTWrapper& operator=(const UARTWrapper&) = delete;
+    UARTWrapper& operator=(UARTWrapper&&) = delete;
+
+    void send(const uint8_t* buffer, const int size) override;
+    void handleByte(uint8_t byte);
+    void setReceiveHandler(UARTReceiveHandler *receiveHandler);
 
 private:
-	void init();
+    void init();
 };
 
 #endif /* SERIAL_UARTWRAPPER_H_ */

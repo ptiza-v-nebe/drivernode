@@ -10,8 +10,13 @@
 #include "hal/DynamixelUART.h"
 #include "hal/util.h"
 #include "constants.h"
+#include "error.h"
 
-DynamixelUART::DynamixelUART() {
+/**
+ * Constructs a DynamixelUART
+ */
+DynamixelUART::DynamixelUART() :
+        uart { }, uart_gpio { } {
     init();
 }
 
@@ -22,10 +27,10 @@ DynamixelUART::DynamixelUART() {
  * @param size   the size of the data
  */
 void DynamixelUART::send(const uint8_t* buffer, const int size) {
-    HAL_HalfDuplex_EnableTransmitter(&uart);
-    HAL_UART_Transmit(&uart, const_cast<uint8_t*>(buffer), size,
-            DEFAULT_TIMEOUT_MS);
-    HAL_HalfDuplex_EnableReceiver(&uart);
+    TRY(HAL_HalfDuplex_EnableTransmitter(&uart));
+    TRY(HAL_UART_Transmit(&uart, const_cast<uint8_t*>(buffer), size,
+            DEFAULT_TIMEOUT_MS));
+    TRY(HAL_HalfDuplex_EnableReceiver(&uart));
 }
 
 /**
@@ -70,7 +75,7 @@ void DynamixelUART::init() {
     ;
 
     HAL_GPIO_Init(GPIOA, &uart_gpio);
-    HAL_HalfDuplex_Init(&uart);
-    HAL_HalfDuplex_EnableReceiver(&uart);
+    TRY(HAL_HalfDuplex_Init(&uart));
+    TRY(HAL_HalfDuplex_EnableReceiver(&uart));
 }
 /** @} */

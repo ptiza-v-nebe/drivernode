@@ -26,6 +26,12 @@
 #define HUMAN_MODE
 
 /**
+ * Should the program continue when an error occured?
+ * Only effective if HUMAN_MODE is enabled
+ */
+#define CONTINUE_ON_ERROR
+
+/**
  * Enables calibration
  */
 //#define CALIBRATION

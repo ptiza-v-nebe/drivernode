@@ -91,8 +91,8 @@ int MessageParser::parseDriveMessage(const uint8_t* msg, const int size,
                 return Serializer::serialize(sdm, buffer, buffersize);
             }
             case 'p': {
-                uint16_t x, y;
-                if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hu %hu",
+                int16_t x, y;
+                if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hd %hd",
                         &x, &y) == 2) {
                     // successfully parsed two unsigned ints
                     ControlledDriveMessage cdm(DriveSpeed::SLOW, {x, y});
@@ -210,9 +210,9 @@ int MessageParser::parseSetSpeedMessage(const uint8_t* msg, const int,
  */
 int MessageParser::parseResetMessage(const uint8_t* msg, const int,
         uint8_t* buffer, const int buffersize) {
-    uint16_t x, y;
+    int16_t x, y;
     float degrees;
-    if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hu %hu %f", &x, &y, &degrees) == 3) {
+    if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hd %hd %f", &x, &y, &degrees) == 3) {
         // successfully parsed float
         ResetOdometryMessage rom({x, y}, Angle::getFromDegrees(degrees));
         print(rom);

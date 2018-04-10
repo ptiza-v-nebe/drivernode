@@ -21,7 +21,7 @@ private:
     volatile int execCounter; ///< how often is the task due to be executed
 public:
     Task();
-    Task(std::function<void(void)> function, int delay, int period);
+    Task(const std::function<void(void)>& function, int delay, int period);
 
     bool isPlaceholder();
 

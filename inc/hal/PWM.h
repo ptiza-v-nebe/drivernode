@@ -15,10 +15,10 @@
 
 class PWM {
 private:
-    TIM_TypeDef *timer;
-    volatile uint32_t *ccr;
-    uint32_t enableMask;
-    float dutyCycle;
+    TIM_TypeDef *timer; ///< the timer to be used
+    volatile uint32_t *ccr; ///< the capture compare register to be used
+    uint32_t enableMask; ///< the mask to be used for enabling and disabling the pwm
+    float dutyCycle; ///< the duty cycle of the pwm signal
 public:
     PWM(TIM_TypeDef *timer, uint32_t channel);
 

@@ -14,8 +14,17 @@
 
 class DynamixelCOM {
 private:
-    DynamixelUART uart;
+    DynamixelUART uart; ///< the UART to be used
 public:
+
+    DynamixelCOM();
+
+    // prevent copy and move
+    DynamixelCOM(const DynamixelCOM&) = delete;
+    DynamixelCOM(DynamixelCOM&&) = delete;
+    DynamixelCOM& operator=(const DynamixelCOM&) = delete;
+    DynamixelCOM& operator=(DynamixelCOM&&) = delete;
+
     uint8_t ping(const uint8_t id);
     uint8_t writeByte(const uint8_t id, const uint8_t address, const uint8_t data);
     uint8_t writeWord(const uint8_t id, const uint8_t address, const uint16_t data);
