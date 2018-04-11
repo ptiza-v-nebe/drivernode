@@ -15,13 +15,23 @@
 
 class ShootingBLDC: public Actor {
 private:
-    PWM& pwm;
+    PWM& pwm; ///< the pwm used for output
+    bool enabled; ///< is the actor enabled
 public:
     ShootingBLDC(PWM& pwm);
     virtual ~ShootingBLDC() = default;
 
+    // prevent copy and move
+    ShootingBLDC(const ShootingBLDC&) = delete;
+    ShootingBLDC(ShootingBLDC&&) = delete;
+    ShootingBLDC& operator=(const ShootingBLDC&) = delete;
+    ShootingBLDC& operator=(ShootingBLDC&&) = delete;
+
     void enable() override;
     void disableAndStop() override;
+
+    void start();
+    void stop();
 };
 
 #endif /* HAL_SHOOTINGBLDC_H_ */
