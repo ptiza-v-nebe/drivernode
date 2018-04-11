@@ -14,11 +14,12 @@
 
 class InputPin {
 private:
-    GPIO_TypeDef *gpio;
-    uint16_t pin;
-    GPIO_PinState onState;
+    GPIO_TypeDef *gpio; ///< the GPIO bank to be used
+    uint16_t pin; ///< the pin to be used
+    GPIO_PinState onState; ///< the pin state when the connected device is on
 public:
-    InputPin(GPIO_TypeDef *gpio, uint16_t pin, GPIO_PinState onState = GPIO_PIN_SET, uint32_t pullUp = GPIO_NOPULL);
+    InputPin(GPIO_TypeDef *gpio, uint16_t pin, GPIO_PinState onState =
+            GPIO_PIN_SET, uint32_t pullUp = GPIO_NOPULL);
 
     // prevent copy and move
     InputPin(const InputPin&) = delete;
