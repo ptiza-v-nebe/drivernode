@@ -26,6 +26,7 @@ private:
 public:
     PDT1(float ks, float T, float Ts);
     float calc(float u);
+    void reset();
 };
 
 #endif /* DRIVING_PDT1_H */

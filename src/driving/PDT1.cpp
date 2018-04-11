@@ -43,3 +43,11 @@ float PDT1::calc(float u) {
 
     return this->y;
 }
+
+/**
+ * Resets the values for the next calculation
+ */
+void PDT1::reset() {
+	u = 0.0;
+	y = 0.0;
+}
