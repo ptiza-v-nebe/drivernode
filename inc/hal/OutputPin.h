@@ -15,10 +15,10 @@
 
 class OutputPin: public Actor {
 private:
-    GPIO_TypeDef *gpio;
-    uint16_t pin;
-    bool enabled;
-    GPIO_PinState onState;
+    GPIO_TypeDef *gpio; ///< the GPIO bank
+    uint16_t pin; ///< the GPIO pin
+    bool enabled; ///< is the actor enabled
+    GPIO_PinState onState; ///< the default state to set when the device is on
 public:
     OutputPin(GPIO_TypeDef *gpio, uint16_t pin, GPIO_PinState onState = GPIO_PIN_SET, uint32_t pullUp = GPIO_NOPULL, uint32_t mode = GPIO_MODE_OUTPUT_PP);
 

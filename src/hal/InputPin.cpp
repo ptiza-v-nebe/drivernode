@@ -24,15 +24,25 @@ InputPin::InputPin(GPIO_TypeDef* gpio, uint16_t pin, GPIO_PinState onState,
     init(pullUp);
 }
 
-
+/**
+ * @return true if the pin is currently on
+ */
 bool InputPin::isOn() {
     return HAL_GPIO_ReadPin(gpio, pin) == onState;
 }
 
+/**
+ * @return true if the pin is currently off
+ */
 bool InputPin::isOff() {
     return !isOn();
 }
 
+/**
+ * Initializes the GPIO pin.
+ *
+ * @param pullUp the pull-up/pull-down configuration for the pin
+ */
 void InputPin::init(uint32_t pullUp) {
     GPIO_InitTypeDef gpioInit = getDefaultGPIO();
     gpioInit.Pin = pin;
