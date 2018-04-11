@@ -17,6 +17,7 @@ class ScaraLift {
 private:
     Motor& motor; ///< reference to the motor
     Encoder& encoder; ///< reference to the encoder
+    int32_t startPosition; ///< the starting position for a movement
     int32_t targetPosition; ///< the target position
     bool initialized; ///< is the lift initialized
 public:

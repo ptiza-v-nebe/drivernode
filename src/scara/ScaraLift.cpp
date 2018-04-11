@@ -11,7 +11,8 @@
 #include <scheduler/Scheduler.h>
 
 ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
-        motor(motor), encoder(encoder), targetPosition(0), initialized(false) {
+        motor(motor), encoder(encoder), startPosition(0), targetPosition(0), //
+        initialized(false) {
 }
 
 void ScaraLift::operator ()() {
@@ -21,6 +22,11 @@ void ScaraLift::operator ()() {
 void ScaraLift::tick() {
     // TODO!!
     // printf("ScaraLift::tick()...\r\n");
+
+    int16_t currentPosition = encoder.getTick();
+
+    int16_t speedStart = (currentPosition - startPosition) /* * factor */;
+    int16_t speedEnd = (endPosition - currentPosition) /* * factor */;
 }
 
 void ScaraLift::initialize() {
@@ -29,9 +35,10 @@ void ScaraLift::initialize() {
 }
 
 void ScaraLift::moveTo(float mm) {
-    if(!initialized) {
+    if (!initialized) {
         return;
     }
+    startPosition = encoder.getTick();
     // TODO!!
     // targetPosition = CONVERSION * mm;
 }
