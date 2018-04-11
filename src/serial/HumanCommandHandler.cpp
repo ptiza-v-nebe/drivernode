@@ -101,6 +101,29 @@ void HumanCommandHandler::sendPrompt() {
 }
 
 /**
+ * Print a helpful message on screen :)
+ */
+void HumanCommandHandler::printHelpMessage() {
+    printf("Available commands: \r\n");
+    printf("q             - Stop \r\n\n");
+
+    printf("Driving: \r\n");
+    printf("df            - SimpleDrive forward (SLOW)\r\n");
+    printf("db            - SimpleDrive backward (SLOW)\r\n");
+    printf("dp <i> <i>    - ControlledDrive to position x,y (SLOW)\r\n\n");
+
+    printf("Turning: \r\n");
+    printf("tcc           - SimpleTurn counter-clockwise (SLOW)\r\n");
+    printf("tcw           - SimpleTurn clockwise (SLOW)\r\n");
+    printf("t <f>         - ControlledTurn to angle in degrees (SLOW)\r\n\n");
+
+    printf("Other: \r\n");
+    printf("s <i>         - SetSpeed same on both wheels\r\n");
+    printf("s <i> <i>     - SetSpeed left, right\r\n");
+    printf("r <i> <i> <f> - ResetOdometry to position x,y and angle in degrees\r\n\n");
+}
+
+/**
  * Process a message that was received.
  *
  * @param msg  the message
@@ -108,11 +131,12 @@ void HumanCommandHandler::sendPrompt() {
  */
 void HumanCommandHandler::processMessage(uint8_t* msg, int size) {
     static uint8_t buffer[MAX_PAYLOAD + 1];
-    if(size > 0) {
+    if (size > 0) {
         int result = MessageParser::parseMessage(msg, size, buffer,
                 MAX_PAYLOAD + 1);
         if (result < 0) {
             printf("That is not a valid command...\r\n");
+            printHelpMessage();
         } else {
             dispatcher.processMessage(buffer, result);
         }
