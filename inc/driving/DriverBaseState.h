@@ -14,7 +14,7 @@
 class name: public DriverBaseState {\
 public:\
 	name(DriverFSM& context) :\
-			DriverFSM(context) {\
+			DriverBaseState(context) {\
 	}
 // end of #define
 
