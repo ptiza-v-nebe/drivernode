@@ -17,6 +17,7 @@
 #include "util/util.h"
 
 #include "hal/PWM.h"
+#include "hal/ShootingBLDC.h"
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
 
@@ -79,43 +80,6 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    TIM_HandleTypeDef timer = {};
-    TIM_OC_InitTypeDef channel = {};
-    GPIO_InitTypeDef gpio = getDefaultGPIO();
-
-    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    timer.Init.Prescaler = 80 - 1;
-    timer.Init.Period = 1000 - 1;
-    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    timer.Instance = TIM2;
-
-    channel.Pulse = 500;
-    channel.OCMode = TIM_OCMODE_PWM1;
-
-    gpio.Alternate = GPIO_AF1_TIM2;
-    gpio.Mode = GPIO_MODE_AF_PP;
-    gpio.Pin = GPIO_PIN_0;
-
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    HAL_TIM_PWM_Init(&timer);
-    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
-    HAL_GPIO_Init(GPIOA, &gpio);
-
-    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
-
-    PWM pwm(TIM2, TIM_CHANNEL_1);
-    pwm.setFrequency(1);
-    pwm.setDutyCycle(0.25);
-
-    dispatcher.registerMessageHandler<SetSpeedMessage>([&pwm](SetSpeedMessage ssm){
-       if(ssm.getSpeedLeft()) {
-           pwm.enable();
-
-       } else {
-           pwm.disable();
-       }
-    });
 
     // ////////////////////////////////////////////
     // END TEST AREA
