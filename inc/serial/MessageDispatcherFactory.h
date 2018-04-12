@@ -10,7 +10,7 @@
 #ifndef SERIAL_MESSAGEDISPATCHERFACTORY_H_
 #define SERIAL_MESSAGEDISPATCHERFACTORY_H_
 
-#include "serial/messages/MessageDispatcher.h"
+#include "serial/MessageDispatcher.h"
 #include "serial/HumanSender.h"
 #include "serial/HumanCommandHandler.h"
 #include "serial/ODROIDCommandHandler.h"

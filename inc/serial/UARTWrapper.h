@@ -11,7 +11,7 @@
 #define SERIAL_UARTWRAPPER_H_
 
 #include "serial/UARTReceiveHandler.h"
-#include "serial/messages/MessageSender.h"
+#include "serial/MessageSender.h"
 
 #include <stm32l4xx.h>
 #include <string>
