@@ -10,6 +10,11 @@
 #include <scara/ScaraLift.h>
 #include <scheduler/Scheduler.h>
 
+static constexpr int16_t DELTA_MIN = 10;
+static constexpr int16_t DELTA_MAX = 100;
+static constexpr int16_t ACCURACY = 10;
+static constexpr float DELTA_TO_SPEED = 3.0f;
+
 ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
         motor(motor), encoder(encoder), startPosition(0), targetPosition(0), //
         initialized(false) {
@@ -21,17 +26,34 @@ void ScaraLift::operator ()() {
 
 void ScaraLift::tick() {
     // TODO!!
-    // printf("ScaraLift::tick()...\r\n");
-
+    // read input
     int16_t currentPosition = encoder.getTick();
 
-    int16_t speedStart = (currentPosition - startPosition) /* * factor */;
-    int16_t speedEnd = (targetPosition - currentPosition) /* * factor */;
+    // calculate
+    int16_t deltaEnd = std::abs(targetPosition - currentPosition);
+    int16_t speed;
+    if (deltaEnd < ACCURACY) {
+        speed = 0;
+    } else {
+        int16_t deltaStart = std::abs(currentPosition - startPosition);
+        int16_t delta = std::min(
+                std::max(std::min(deltaStart, deltaEnd), DELTA_MIN), DELTA_MAX);
+
+        if (currentPosition > targetPosition) {
+            delta = -delta;
+        }
+
+        speed = static_cast<int16_t>(delta * DELTA_TO_SPEED);
+    }
+
+    // set output
+    motor.setSpeed(speed);
 }
 
 void ScaraLift::initialize() {
     // TODO!!
-    //schedule_repeating_task(*this, 100);
+    initialized = true;
+    schedule_repeating_task(*this, 100);
 }
 
 void ScaraLift::moveTo(float mm) {
@@ -40,7 +62,7 @@ void ScaraLift::moveTo(float mm) {
     }
     startPosition = encoder.getTick();
     // TODO!!
-    // targetPosition = CONVERSION * mm;
+    targetPosition = /*CONVERSION * mm*/static_cast<int16_t>(mm);
 }
 
 float ScaraLift::getPosition() {
