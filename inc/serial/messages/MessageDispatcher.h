@@ -12,7 +12,7 @@
 
 #include "util/optional.hpp"
 #include "serial/messages/Message.h"
-#include "serial/MessageSender.h"
+#include "serial/messages/MessageSender.h"
 #include "serial/messages/message_info.h"
 #include <functional>
 

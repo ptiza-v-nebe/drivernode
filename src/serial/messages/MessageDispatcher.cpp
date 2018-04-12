@@ -7,7 +7,7 @@
  ******************************************************************************
  */
 
-#include <serial/MessageDispatcher.h>
+#include <serial/messages/MessageDispatcher.h>
 #include "serial/messages/StatusMessage.h"
 #include "serial/Serializer.h"
 

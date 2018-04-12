@@ -11,7 +11,7 @@
 #define SERIAL_ODROIDCOMMANDHANDLER_H_
 
 #include <serial/UARTReceiveHandler.h>
-#include "serial/MessageDispatcher.h"
+#include "serial/messages/MessageDispatcher.h"
 #include "serial/messages/message_info.h"
 
 /**

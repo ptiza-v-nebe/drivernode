@@ -10,7 +10,7 @@
 #ifndef SERIAL_HUMANSENDER_H_
 #define SERIAL_HUMANSENDER_H_
 
-#include <serial/MessageSender.h>
+#include <serial/messages/MessageSender.h>
 
 #include "util/optional.hpp"
 #include "serial/messages/Message.h"

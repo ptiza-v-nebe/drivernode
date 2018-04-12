@@ -11,7 +11,7 @@
 #define SERIAL_HUMANCOMMANDHANDLER_H_
 
 #include <serial/UARTReceiveHandler.h>
-#include "serial/MessageDispatcher.h"
+#include "serial/messages/MessageDispatcher.h"
 
 /**
  * The size of the message buffer
