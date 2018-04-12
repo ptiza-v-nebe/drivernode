@@ -26,7 +26,7 @@ void ScaraLift::tick() {
     int16_t currentPosition = encoder.getTick();
 
     int16_t speedStart = (currentPosition - startPosition) /* * factor */;
-    int16_t speedEnd = (endPosition - currentPosition) /* * factor */;
+    int16_t speedEnd = (targetPosition - currentPosition) /* * factor */;
 }
 
 void ScaraLift::initialize() {
