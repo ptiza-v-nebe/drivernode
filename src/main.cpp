@@ -19,6 +19,7 @@
 #include "hal/PWM.h"
 #include "hal/OutputPin.h"
 #include "hal/InputPin.h"
+#include "hal/ShootingBLDC.h"
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
 
