@@ -1,0 +1,3 @@
+[submodule "modules/SerialMessages"]
+	path = modules/SerialMessages
+	url = ssh://git@git.rchh.org:2222/eurobot2018/SerialMessages.git
