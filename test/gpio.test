@@ -1,0 +1,17 @@
+ OutputPin led(GPIOA, GPIO_PIN_0);
+    led.enable();
+    led.setOn();
+    HAL_Delay(1000);
+    led.setOff();
+    HAL_Delay(1000);
+    led.setOn();
+    HAL_Delay(1000);
+    led.disableAndStop();
+    HAL_Delay(1000);
+    led.setOn();
+    printf("Done \r\n");
+
+    InputPin inp(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+    schedule_repeating_task([&inp](){
+        printf("Switch is %s\r\n", inp.isOn() ? "ON" : "OFF");
+    }, 500);
