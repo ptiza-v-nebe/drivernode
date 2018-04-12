@@ -35,40 +35,23 @@ void DriverFSM::update() {
 	currentState->doAction();
 }
 
-Motor& DriverFSM::getLeftMotor() {
-	return leftMotor;
+void DriverFSM::updateControl() {
+	// read inputs
+	double distance = pm.getPosition().distanceTo(targetPosition);
+	double angle = (targetAngle - pm.getHeading()).getAngleInRadian();
+
+	// calculate next value
+	double linearSpeed = positionControl.calc(distance);
+	double turningSpeed = angleControl.calc(angle);
+
+	// set speed
+	leftMotor.setSpeed(linearSpeed-turningSpeed);
+	rightMotor.setSpeed(linearSpeed+turningSpeed);
 }
 
-Motor& DriverFSM::getRightMotor() {
-	return rightMotor;
-}
-
-PDT1& DriverFSM::getPositionController() {
-	return positionControl;
-}
-
-PDT1& DriverFSM::getAngleController() {
-	return angleControl;
-}
-
-PositionManager& DriverFSM::getPositionManager() {
-	return pm;
-}
-
-Position& DriverFSM::getTargetPosition() {
-	return targetPosition;
-}
-
-Angle& DriverFSM::getTargetAngle() {
-	return targetAngle;
-}
-
-DriveSpeed& DriverFSM::getDriveSpeed() {
-	return speed;
-}
-
-DriveDirection& DriverFSM::getDriveDirection() {
-	return direction;
+void DriverFSM::resetControl() {
+	positionControl.reset();
+	angleControl.reset();
 }
 
 DriverFSM::~DriverFSM() {

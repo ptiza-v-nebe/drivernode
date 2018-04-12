@@ -7,8 +7,16 @@
 
 #include <driving/DriverStates.h>
 
-void DrivingForward::doAction() {
+void Idle::doAction() {
 
+}
+
+void DrivingForward::entryAction() {
+	ctx.resetControl();
+}
+
+void DrivingForward::doAction() {
+	ctx.updateControl();
 }
 
 void DrivingBackward::doAction() {

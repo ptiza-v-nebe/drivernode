@@ -11,10 +11,11 @@
 #include <driving/DriverBaseState.h>
 
 STATE(Idle)
-
+	void doAction() override;
 };
 
 STATE(DrivingForward)
+	void entryAction() override;
 	void doAction() override;
 };
 

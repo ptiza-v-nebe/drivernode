@@ -34,15 +34,8 @@ private:
 public:
 	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
 	void update();
-	Motor& getLeftMotor();
-	Motor& getRightMotor();
-	PDT1& getPositionController();
-	PDT1& getAngleController();
-	PositionManager& getPositionManager();
-	Position& getTargetPosition();
-	Angle& getTargetAngle();
-	DriveSpeed& getDriveSpeed();
-	DriveDirection& getDriveDirection();
+	void updateControl();
+	void resetControl();
 	virtual ~DriverFSM();
 };
 
