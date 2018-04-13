@@ -25,7 +25,6 @@ StepperMotor::StepperMotor(PWM& step, GPIO_TypeDef* gpio, uint16_t directionPin,
         step(step), directionPin(directionPin), invertDirection(
                 invertDirection), enablePin(enablePin), invertEnable(
                 invertEnable), gpio(gpio), enabled(true) {
-    disableAndStop();
 }
 
 /*
@@ -43,6 +42,8 @@ void StepperMotor::enable() {
 void StepperMotor::disableAndStop() {
     enabled = false;
     stop();
+    HAL_GPIO_WritePin(gpio, enablePin,
+            (invertEnable ? GPIO_PIN_SET : GPIO_PIN_RESET));
 }
 
 /*
@@ -54,9 +55,9 @@ void StepperMotor::setSpeed(int16_t speed) {
     }
 
     if (speed == 0) {
-        stop();
+        step.disable();
     } else {
-        enable();
+        step.enable();
     }
 
     if (speed < 0) {
@@ -72,8 +73,7 @@ void StepperMotor::setSpeed(int16_t speed) {
  * @see - Motor::stop()
  */
 void StepperMotor::stop() {
-    HAL_GPIO_WritePin(gpio, enablePin,
-            (invertEnable ? GPIO_PIN_SET : GPIO_PIN_RESET));
+    setSpeed(0);
 }
 
 /**

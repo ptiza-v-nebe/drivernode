@@ -13,9 +13,11 @@
 #include "config.h"
 
 #ifdef BIG_ROBOT
-#include "hal/Encoder.h"
-#include "hal/FaulhaberBLDC.h"
-#include "hal/SRF08.h"
+#include "Encoder.h"
+#include "FaulhaberBLDC.h"
+#include "SRF08.h"
+#include "PWM.h"
+#include "StepperMotor.h"
 
 constexpr int SRF08_COUNT = 4;
 
@@ -29,6 +31,9 @@ private:
     FaulhaberBLDC rightMotor; ///< the right motor used for driving
     SRF08 srf08[SRF08_COUNT]; ///< the ultrasonic sensor used for enemy detection when driving backwards
 
+    PWM scaraLiftMotorPWM;
+    StepperMotor scaraLiftMotor;
+
     I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
     UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
 
@@ -40,11 +45,15 @@ public:
     Motor& getLeftMotor();
     Motor& getRightMotor();
     SRF08* getSRF08s();
+
+    Motor& getScaraLiftMotor();
+
 private:
     void initializeHal();
     void initializeEncoders();
     void initializeMotorUART();
     void initializeI2C();
+    void initializeScara();
 };
 #endif
 

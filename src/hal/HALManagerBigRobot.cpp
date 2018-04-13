@@ -68,7 +68,6 @@ static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_3;
  */
 static constexpr bool RIGHT_ENCODER_INVERT = true;
 
-
 // ///////////////////////////////////////////////////////////////////////////////
 // Driving Motors
 // ///////////////////////////////////////////////////////////////////////////////
@@ -92,7 +91,6 @@ static constexpr bool LEFT_MOTOR_INVERT = false;
  * should the right motor be inverted
  */
 static constexpr bool RIGHT_MOTOR_INVERT = true;
-
 
 /**
  * which USART to use for the motors.
@@ -124,7 +122,6 @@ static constexpr uint16_t MOTOR_UART_TX = GPIO_PIN_10;
  * @attention this depends on MOTOR_UART!
  */
 static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_11;
-
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Ultrasonic sensors
@@ -176,7 +173,6 @@ static constexpr uint16_t SRF08_SCL = GPIO_PIN_13;
  */
 static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
 
-
 // ///////////////////////////////////////////////////////////////////////////////
 // ISRs
 // ///////////////////////////////////////////////////////////////////////////////
@@ -207,7 +203,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t pins) {
     }
 }
 
-
 // ///////////////////////////////////////////////////////////////////////////////
 // Code
 // ///////////////////////////////////////////////////////////////////////////////
@@ -230,13 +225,17 @@ HALManager::HALManager() :
                 RIGHT_ENCODER_INVERT), //
         leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
         rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
-        srf08(
-                { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID }, { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
+        srf08( { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID },
+                { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
+        scaraLiftMotorPWM(TIM2, TIM_CHANNEL_1), //
+        scaraLiftMotor(scaraLiftMotorPWM, GPIOH, GPIO_PIN_1, GPIO_PIN_0), //
         i2c { }, motorUART { } { //
+
     initializeHal();
 
     leftMotor.disableAndStop();
     rightMotor.disableAndStop();
+    scaraLiftMotor.disableAndStop();
 }
 
 /**
@@ -260,6 +259,7 @@ void HALManager::initializeHal() {
     initializeMotorUART();
     initializeEncoders();
     initializeI2C();
+    initializeScara();
 }
 
 /**
@@ -367,6 +367,44 @@ void HALManager::initializeI2C() {
     __HAL_RCC_GPIOB_CLK_ENABLE()
     ;
     HAL_GPIO_Init(SRF08_GPIO, &i2cGPIO);
+}
+
+Motor& HALManager::getScaraLiftMotor() {
+    return scaraLiftMotor;
+}
+
+void HALManager::initializeScara() {
+    // initialize timer
+    TIM_HandleTypeDef timer = { };
+    TIM_OC_InitTypeDef channel = { };
+    GPIO_InitTypeDef gpio = getDefaultGPIO();
+
+    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Period = 1000 - 1;
+    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
+    timer.Instance = TIM2;
+
+    channel.Pulse = 500;
+    channel.OCMode = TIM_OCMODE_PWM1;
+
+    gpio.Alternate = GPIO_AF1_TIM2;
+    gpio.Mode = GPIO_MODE_AF_PP;
+    gpio.Pin = GPIO_PIN_5;
+
+    __HAL_RCC_TIM2_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
+    HAL_TIM_PWM_Init(&timer);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
+
+    // initialize GPIO for motor
+    GPIO_InitTypeDef motorGPIO = getDefaultGPIO();
+
 }
 
 #endif
