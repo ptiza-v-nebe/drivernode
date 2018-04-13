@@ -40,8 +40,8 @@ void StepperMotor::enable() {
  * @see - Actor::disableAndStop()
  */
 void StepperMotor::disableAndStop() {
-    enabled = false;
     stop();
+    enabled = false;
     HAL_GPIO_WritePin(gpio, enablePin,
             (invertEnable ? GPIO_PIN_SET : GPIO_PIN_RESET));
 }
@@ -56,6 +56,7 @@ void StepperMotor::setSpeed(int16_t speed) {
 
     if (speed == 0) {
         step.disable();
+        return;
     } else {
         step.enable();
     }

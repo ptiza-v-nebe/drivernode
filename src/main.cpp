@@ -22,6 +22,7 @@
 #include "hal/ShootingBLDC.h"
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
+#include "scara/ScaraLift.h"
 
 int main(void) {
     setupHardware();
@@ -31,6 +32,7 @@ int main(void) {
     // ////////////////////////////////////////////
 
     HALManager& hal = HALManager::getInstance();
+    hal.enableISRs();
 
 #ifdef CALIBRATION
     CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
@@ -74,18 +76,53 @@ int main(void) {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
     schedule_repeating_task([]() {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    }, 500);
+                HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+            }, 500);
 #endif
 
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
+    ScaraLift scaraLift(hal.getScaraLiftMotor(), hal.getScaraLiftEncoder());
+    scaraLift.initialize();
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&scaraLift](SetSpeedMessage ssm) {
+                scaraLift.moveTo(ssm.getSpeedLeft());
+            });
+
+    dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
+        hal.getScaraLiftMotor().disableAndStop();
+    });
+
+    /*Motor& scaraLift = hal.getScaraLiftMotor();
+     scaraLift.enable();
+
+     dispatcher.registerMessageHandler<SetSpeedMessage>(
+     [&scaraLift](SetSpeedMessage ssm) {
+     scaraLift.setSpeed(ssm.getSpeedLeft());
+     });
+     dispatcher.registerMessageHandler<StopMessage>([&scaraLift](StopMessage) {
+     scaraLift.disableAndStop();
+     });
+     dispatcher.registerMessageHandler<SimpleDriveMessage>([&scaraLift](SimpleDriveMessage) {
+     scaraLift.enable();
+     });*/
+
+    /*Encoder& scaraEncoder = hal.getScaraLiftEncoder();
+     schedule_repeating_task([&scaraEncoder]() {
+     printf("Scara Encoder: %ld\r\n", scaraEncoder.getTick());
+     }, 500);
+
+     dispatcher.registerMessageHandler<StopMessage>(
+     [&scaraEncoder](StopMessage) {
+     scaraEncoder.reset();
+     });*/
+
     // ////////////////////////////////////////////
     // END TEST AREA
     // ////////////////////////////////////////////
-
     // ////////////////////////////////////////////
     // Start Scheduler and execute Tasks
     // ////////////////////////////////////////////

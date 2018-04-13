@@ -33,6 +33,7 @@ private:
 
     PWM scaraLiftMotorPWM;
     StepperMotor scaraLiftMotor;
+    Encoder scaraLiftEncoder;
 
     I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
     UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
@@ -47,6 +48,9 @@ public:
     SRF08* getSRF08s();
 
     Motor& getScaraLiftMotor();
+    Encoder& getScaraLiftEncoder();
+
+    void enableISRs();
 
 private:
     void initializeHal();

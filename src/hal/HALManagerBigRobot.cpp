@@ -25,19 +25,19 @@
  * @attention when changing this, also change RCC clock enable in
  *            HALManager::initializeEncoder!
  */
-#define LEFT_ENCODER_GPIO GPIOC
+#define LEFT_ENCODER_GPIO GPIOA
 
 /**
  * channel a pin for left encoder.
  * @attention changing this might require using another IRQ/ISR
  */
-static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_12;
+static constexpr uint16_t LEFT_ENCODER_A = GPIO_PIN_4;
 
 /**
  * channel b pin for right encoder.
  * @attention changing this might require using another IRQ/ISR
  */
-static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_13;
+static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_6;
 
 /**
  * should the left encoder be inverted?
@@ -49,19 +49,19 @@ static constexpr bool LEFT_ENCODER_INVERT = false;
  * @attention when changing this, also change RCC clock enable in
  *            HALManager::initializeEncoder!
  */
-#define RIGHT_ENCODER_GPIO GPIOC
+#define RIGHT_ENCODER_GPIO GPIOA
 
 /**
  * channel a pin for right encoder.
  * @attention changing this might require using another IRQ/ISR
  */
-static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_2;
+static constexpr uint16_t RIGHT_ENCODER_A = GPIO_PIN_11;
 
 /**
  * channel b pin for right encoder.
  * @attention changing this might require using another IRQ/ISR
  */
-static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_3;
+static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_12;
 
 /**
  * should the right encoder be inverted.
@@ -174,21 +174,52 @@ static constexpr uint16_t SRF08_SCL = GPIO_PIN_13;
 static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
 
 // ///////////////////////////////////////////////////////////////////////////////
+// Scara
+// ///////////////////////////////////////////////////////////////////////////////
+/**
+ * GPIO Bank for left encoder.
+ * @attention when changing this, also change RCC clock enable in
+ *            HALManager::initializeScara!
+ */
+#define SCARA_ENCODER_GPIO GPIOB
+
+/**
+ * channel a pin for scara encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t SCARA_ENCODER_A = GPIO_PIN_2;
+
+/**
+ * channel b pin for scara encoder.
+ * @attention changing this might require using another IRQ/ISR
+ */
+static constexpr uint16_t SCARA_ENCODER_B = GPIO_PIN_4;
+
+/**
+ * should the scara encoder be inverted?
+ */
+static constexpr bool SCARA_ENCODER_INVERT = false;
+
+// ///////////////////////////////////////////////////////////////////////////////
 // ISRs
 // ///////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
-void EXTI15_10_IRQHandler() {
-    // handles left encoder A+B
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B);
-}
 void EXTI2_IRQHandler() {
-    // handle right encoder A
-    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_A);
+    // handle scara encoder A
+    HAL_GPIO_EXTI_IRQHandler(SCARA_ENCODER_A);
 }
-void EXTI3_IRQHandler() {
-    // handles right encoder B
-    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_B);
+void EXTI4_IRQHandler() {
+    // handles left encoder A and scara encoder B
+    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | SCARA_ENCODER_B);
+}
+void EXTI9_5_IRQHandler() {
+    // handles right encoder A (pin 6)
+    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_B);
+}
+void EXTI15_10_IRQHandler() {
+    // handles right encoder A+B (pins 11 and 12)
+    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_A | RIGHT_ENCODER_B);
 }
 }
 
@@ -200,6 +231,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t pins) {
     if ((pins & RIGHT_ENCODER_A) || (pins & RIGHT_ENCODER_B)) {
         // update right encoder
         HALManager::getInstance().getRightEncoder().update();
+    }
+    if ((pins & SCARA_ENCODER_A) || (pins & SCARA_ENCODER_B)) {
+        // update scara encoder
+        HALManager::getInstance().getScaraLiftEncoder().update();
     }
 }
 
@@ -228,7 +263,10 @@ HALManager::HALManager() :
         srf08( { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID },
                 { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
         scaraLiftMotorPWM(TIM2, TIM_CHANNEL_1), //
-        scaraLiftMotor(scaraLiftMotorPWM, GPIOH, GPIO_PIN_1, GPIO_PIN_0), //
+        scaraLiftMotor(scaraLiftMotorPWM, GPIOH, GPIO_PIN_1, GPIO_PIN_0, true,
+                true), //
+        scaraLiftEncoder(SCARA_ENCODER_GPIO, SCARA_ENCODER_A, SCARA_ENCODER_B,
+                SCARA_ENCODER_INVERT), //
         i2c { }, motorUART { } { //
 
     initializeHal();
@@ -236,6 +274,8 @@ HALManager::HALManager() :
     leftMotor.disableAndStop();
     rightMotor.disableAndStop();
     scaraLiftMotor.disableAndStop();
+
+    //enableISRs();
 }
 
 /**
@@ -287,7 +327,7 @@ SRF08* HALManager::getSRF08s() {
  * Initializes the encoder GPIOs and IRQs
  */
 void HALManager::initializeEncoders() {
-    __HAL_RCC_GPIOC_CLK_ENABLE()
+    __HAL_RCC_GPIOA_CLK_ENABLE()
     ;
     GPIO_InitTypeDef gpio_left = getDefaultGPIO();
     gpio_left.Mode = GPIO_MODE_IT_RISING_FALLING;
@@ -299,16 +339,6 @@ void HALManager::initializeEncoders() {
 
     HAL_GPIO_Init(LEFT_ENCODER_GPIO, &gpio_left);
     HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right);
-
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-    HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-    HAL_NVIC_SetPriority(EXTI3_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 }
 
 /**
@@ -373,6 +403,10 @@ Motor& HALManager::getScaraLiftMotor() {
     return scaraLiftMotor;
 }
 
+Encoder& HALManager::getScaraLiftEncoder() {
+    return scaraLiftEncoder;
+}
+
 void HALManager::initializeScara() {
     // initialize timer
     TIM_HandleTypeDef timer = { };
@@ -404,7 +438,41 @@ void HALManager::initializeScara() {
 
     // initialize GPIO for motor
     GPIO_InitTypeDef motorGPIO = getDefaultGPIO();
+    motorGPIO.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+    motorGPIO.Mode = GPIO_MODE_OUTPUT_PP;
 
+    __HAL_RCC_GPIOH_CLK_ENABLE()
+    ;
+
+    HAL_GPIO_Init(GPIOH, &motorGPIO);
+    scaraLiftMotorPWM.disable();
+
+    // initialize encoder
+    __HAL_RCC_GPIOB_CLK_ENABLE()
+    ;
+    GPIO_InitTypeDef gpio_encoder = getDefaultGPIO();
+    gpio_encoder.Mode = GPIO_MODE_IT_RISING_FALLING;
+    gpio_encoder.Pin = SCARA_ENCODER_A | SCARA_ENCODER_B;
+
+    HAL_GPIO_Init(SCARA_ENCODER_GPIO, &gpio_encoder);
+}
+
+void HALManager::enableISRs() {
+    HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI4_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI9_5_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 #endif
