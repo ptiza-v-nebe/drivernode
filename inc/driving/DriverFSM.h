@@ -36,7 +36,15 @@ public:
 	void update();
 	void updateControl();
 	void resetControl();
+	void stop();
+	bool reachedTargetPosition();
 	virtual ~DriverFSM();
+
+	void setTargetPosition(Position targetPosition);
+	void setTargetAngle(Angle targetAngle);
+	void setDriveSpeed(DriveSpeed speed);
+	void setDriveDirection(DriveDirection direction);
+
 };
 
 #endif /* DRIVING_DRIVERFSM_H */

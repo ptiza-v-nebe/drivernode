@@ -7,8 +7,8 @@
 
 #include <driving/DriverStates.h>
 
-void Idle::doAction() {
-
+void Idle::newTargetPosition() {
+	CHANGE_STATE(DrivingForward);
 }
 
 void DrivingForward::entryAction() {
@@ -16,9 +16,25 @@ void DrivingForward::entryAction() {
 }
 
 void DrivingForward::doAction() {
-	ctx.updateControl();
+	if(ctx.reachedTargetPosition()) {
+		CHANGE_STATE(Idle)
+	} else {
+		ctx.updateControl();
+	}
+}
+
+void DrivingForward::exitAction() {
+	ctx.stop();
+}
+
+void DrivingBackward::entryAction() {
+	ctx.resetControl();
 }
 
 void DrivingBackward::doAction() {
+	ctx.updateControl();
+}
 
+void DrivingBackward::exitAction() {
+	ctx.stop();
 }

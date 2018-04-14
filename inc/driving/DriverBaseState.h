@@ -33,6 +33,8 @@ public:
 	virtual void entryAction() {}
 	virtual void doAction() {}
 	virtual void exitAction() {}
+
+	virtual void newTargetPosition() {}
 };
 
 #endif /* DRIVING_DRIVERBASESTATE_H */
