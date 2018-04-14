@@ -29,7 +29,7 @@ HumanSender::HumanSender() {
 void HumanSender::send(const uint8_t* message, const int size) {
     // get message type as offset for handler array
     int messageType = (message[0] & MSG_TYPE_MASK) >> MSG_TYPE_OFFSET;
-    if (messageType > 0 && messageType < MESSAGE_TYPE_COUNT) {
+    if (messageType >= 0 && messageType < MESSAGE_TYPE_COUNT) {
         // pass payload to the handler which will deserialize and print it
         deserializers[messageType](message + 1, size - 1);
     }

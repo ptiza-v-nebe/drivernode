@@ -39,7 +39,7 @@ template<class Message>
 inline void HumanSender::setDeseralizer() {
     // get message type as index of handler array
     int messageType = Message::getMessageType();
-    if (messageType > 0 && messageType < MESSAGE_TYPE_COUNT) {
+    if (messageType >= 0 && messageType < MESSAGE_TYPE_COUNT) {
         // message type is valid --> register handler
         deserializers[messageType] = [](const uint8_t* msg, const int size) {
             auto result = Message::deserialize(msg, size);

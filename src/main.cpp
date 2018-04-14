@@ -22,6 +22,7 @@
 #include "hal/ShootingBLDC.h"
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
+#include "serial/messages/version.h"
 
 int main(void) {
     setupHardware();
@@ -81,6 +82,10 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
+
+    schedule_repeating_task([&dispatcher](){
+        dispatcher.sendMessage(HeartbeatMessage(SERIAL_VERSION));
+    }, 500);
 
     // ////////////////////////////////////////////
     // END TEST AREA
