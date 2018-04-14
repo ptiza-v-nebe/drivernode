@@ -12,6 +12,8 @@
 #include "position/PositionParameterCalibration.h"
 #include "hal/HALManager.h"
 #include "position/PositionManager.h"
+#include "driving/DriverFSM.h"
+#include "constants.h"
 
 #include "serial/messages/all.h"
 #include "util/util.h"
@@ -41,6 +43,7 @@ int main(void) {
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
+    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -49,6 +52,18 @@ int main(void) {
             [&pm](ResetOdometryMessage rom) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
+
+    dispatcher.registerMessageHandler<ControlledDriveMessage>(
+    		[&driverFSM](ControlledDriveMessage cdm) {
+    			driverFSM.setTargetPosition(cdm.getPosition());
+    			driverFSM.setDriveSpeed(cdm.getSpeed());
+    			driverFSM.currentState->newTargetPosition();
+    		});
+
+    dispatcher.registerMessageHandler<SimpleDriveMessage>(
+    		[&driverFSM](SimpleDriveMessage sdm) {
+
+    		});
 
     // ////////////////////////////////////////////
     // Setup Tasks
@@ -60,8 +75,7 @@ int main(void) {
 #endif
 
 #ifdef BLINK_LED
-    __HAL_RCC_GPIOA_CLK_ENABLE()
-    ;
+    __HAL_RCC_GPIOA_CLK_ENABLE();
 
     GPIO_InitTypeDef gpioa = getDefaultGPIO();
     gpioa.Pin = GPIO_PIN_5;
@@ -79,43 +93,9 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    TIM_HandleTypeDef timer = {};
-    TIM_OC_InitTypeDef channel = {};
-    GPIO_InitTypeDef gpio = getDefaultGPIO();
-
-    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    timer.Init.Prescaler = 80 - 1;
-    timer.Init.Period = 1000 - 1;
-    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    timer.Instance = TIM2;
-
-    channel.Pulse = 500;
-    channel.OCMode = TIM_OCMODE_PWM1;
-
-    gpio.Alternate = GPIO_AF1_TIM2;
-    gpio.Mode = GPIO_MODE_AF_PP;
-    gpio.Pin = GPIO_PIN_0;
-
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    HAL_TIM_PWM_Init(&timer);
-    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
-    HAL_GPIO_Init(GPIOA, &gpio);
-
-    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
-
-    PWM pwm(TIM2, TIM_CHANNEL_1);
-    pwm.setFrequency(1);
-    pwm.setDutyCycle(0.25);
-
-    dispatcher.registerMessageHandler<SetSpeedMessage>([&pwm](SetSpeedMessage ssm){
-       if(ssm.getSpeedLeft()) {
-           pwm.enable();
-
-       } else {
-           pwm.disable();
-       }
-    });
+    /*schedule_repeating_task([]() {
+    	driverFSM.update();
+    }, CONTROLLER_SAMPLING_TIME*1000);*/
 
     // ////////////////////////////////////////////
     // END TEST AREA
