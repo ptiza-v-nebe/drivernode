@@ -9,6 +9,7 @@
 #define DRIVING_DRIVERBASESTATE_H
 
 #include <driving/DriverFSM.h>
+#include <new>
 
 #define STATE(name) \
 class name: public DriverBaseState {\

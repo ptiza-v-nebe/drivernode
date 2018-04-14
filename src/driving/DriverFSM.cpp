@@ -86,6 +86,10 @@ DriverFSM::~DriverFSM() {
 	delete currentState;
 }
 
+void DriverFSM::newTargetPosition() {
+	currentState->newTargetPosition();
+}
+
 void DriverFSM::setTargetPosition(Position targetPosition) {
 	this->targetPosition = targetPosition;
 }
@@ -101,3 +105,5 @@ void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 void DriverFSM::setDriveDirection(DriveDirection direction) {
 	this->direction = direction;
 }
+
+

@@ -40,6 +40,9 @@ public:
 	bool reachedTargetPosition();
 	virtual ~DriverFSM();
 
+	// transitions
+	void newTargetPosition();
+
 	void setTargetPosition(Position targetPosition);
 	void setTargetAngle(Angle targetAngle);
 	void setDriveSpeed(DriveSpeed speed);

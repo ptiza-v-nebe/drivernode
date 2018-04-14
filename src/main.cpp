@@ -57,7 +57,8 @@ int main(void) {
     		[&driverFSM](ControlledDriveMessage cdm) {
     			driverFSM.setTargetPosition(cdm.getPosition());
     			driverFSM.setDriveSpeed(cdm.getSpeed());
-    			driverFSM.currentState->newTargetPosition();
+    			driverFSM.newTargetPosition();
+
     		});
 
     dispatcher.registerMessageHandler<SimpleDriveMessage>(
@@ -70,7 +71,7 @@ int main(void) {
     // ////////////////////////////////////////////
 #ifndef CALIBRATION
     schedule_repeating_task([&pm]() {
-        pm.update();
+    	pm.update();
     }, 5);
 #endif
 
@@ -93,9 +94,10 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    /*schedule_repeating_task([]() {
+    schedule_repeating_task([]() {
+    	pm.update();
     	driverFSM.update();
-    }, CONTROLLER_SAMPLING_TIME*1000);*/
+    }, CONTROLLER_SAMPLING_TIME*1000);
 
     // ////////////////////////////////////////////
     // END TEST AREA
