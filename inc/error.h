@@ -34,14 +34,17 @@
     STOP_PROGRAM()\
 }
 
-#else
-#define ERROR(...)
-#endif
-
 #define TRY(x) \
     if(int result = (x)) { \
         ERROR("%s failed with result %d", #x, result);\
     }
+
+#else
+#define ERROR(...)
+#define TRY(x) x
+#endif
+
+
 
 
 

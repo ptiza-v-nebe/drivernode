@@ -10,17 +10,17 @@
 #ifndef SERIAL_MESSAGEDISPATCHERFACTORY_H_
 #define SERIAL_MESSAGEDISPATCHERFACTORY_H_
 
-#include "serial/MessageDispatcher.h"
-#include "serial/HumanSender.h"
-#include "serial/HumanCommandHandler.h"
-#include "serial/ODROIDCommandHandler.h"
+#include "NucleoMessageDispatcher.h"
+#include "HumanSender.h"
+#include "HumanCommandHandler.h"
+#include "ODROIDCommandHandler.h"
 
 /**
  * Base class for creating the message dispatcher and associated system.
  */
 class MessageDispatcherFactory {
 protected:
-    MessageDispatcher dispatcher; ///< the message dispatcher
+    NucleoMessageDispatcher dispatcher; ///< the message dispatcher
 public:
     MessageDispatcherFactory(MessageSender& sender);
     virtual ~MessageDispatcherFactory() = default;
