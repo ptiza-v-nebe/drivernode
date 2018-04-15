@@ -52,5 +52,10 @@
  */
 //#define DEBUG_MOTOR_UART
 
+/**
+ * Enable for driver parameter measurement mode
+ */
+#define DRIVERMEASUREMENT
+
 
 #endif /* CONFIG_H_ */

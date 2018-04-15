@@ -13,6 +13,7 @@
 #include "hal/HALManager.h"
 #include "position/PositionManager.h"
 #include "driving/DriverFSM.h"
+#include "driving/DrivingParameterMeasurement.h"
 #include "constants.h"
 
 #include "serial/messages/all.h"
@@ -33,6 +34,9 @@ int main(void) {
 
 #ifdef CALIBRATION
     CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
+#elif defined(DRIVERMEASUREMENT)
+    PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
+    MeasurementMessageDispatcherFactory factory(pm, hal.getLeftMotor(), hal.getRightMotor());
 #else
 #ifdef HUMAN_MODE
     HumanMessageDispatcherFactory factory;
@@ -42,8 +46,10 @@ int main(void) {
 #endif /*CALIBRATION*/
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
+#ifndef DRIVERMEASUREMENT
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
+#endif
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -53,6 +59,7 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
+#ifndef DRIVERMEASUREMENT
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
     		[&driverFSM](ControlledDriveMessage cdm) {
     			driverFSM.setTargetPosition(cdm.getPosition());
@@ -65,6 +72,7 @@ int main(void) {
     		[&driverFSM](SimpleDriveMessage sdm) {
 
     		});
+#endif
 
     // ////////////////////////////////////////////
     // Setup Tasks
@@ -94,10 +102,12 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    schedule_repeating_task([]() {
+#ifndef DRIVERMEASUREMENT
+    schedule_repeating_task([&pm, &driverFSM]() {
     	pm.update();
     	driverFSM.update();
     }, CONTROLLER_SAMPLING_TIME*1000);
+#endif
 
     // ////////////////////////////////////////////
     // END TEST AREA
