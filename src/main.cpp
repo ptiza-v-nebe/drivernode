@@ -84,7 +84,7 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    ScaraLift scaraLift(hal.getScaraLiftMotor(), hal.getScaraLiftEncoder());
+    /*ScaraLift scaraLift(hal.getScaraLiftMotor(), hal.getScaraLiftEncoder());
     scaraLift.initialize();
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
@@ -94,7 +94,7 @@ int main(void) {
 
     dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
         hal.getScaraLiftMotor().disableAndStop();
-    });
+    });*/
 
     /*Motor& scaraLift = hal.getScaraLiftMotor();
      scaraLift.enable();
@@ -110,15 +110,11 @@ int main(void) {
      scaraLift.enable();
      });*/
 
-    /*Encoder& scaraEncoder = hal.getScaraLiftEncoder();
-     schedule_repeating_task([&scaraEncoder]() {
-     printf("Scara Encoder: %ld\r\n", scaraEncoder.getTick());
-     }, 500);
+    schedule_repeating_task([&dispatcher, &pm]() {
+        PositionMessage posM(pm.getPosition(), pm.getHeading());
+        dispatcher.sendMessage(posM);
+    }, 500);
 
-     dispatcher.registerMessageHandler<StopMessage>(
-     [&scaraEncoder](StopMessage) {
-     scaraEncoder.reset();
-     });*/
 
     // ////////////////////////////////////////////
     // END TEST AREA

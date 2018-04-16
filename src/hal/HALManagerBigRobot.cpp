@@ -214,7 +214,7 @@ void EXTI4_IRQHandler() {
     HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | SCARA_ENCODER_B);
 }
 void EXTI9_5_IRQHandler() {
-    // handles right encoder A (pin 6)
+    // handles left encoder B (pin 6)
     HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_B);
 }
 void EXTI15_10_IRQHandler() {
@@ -274,8 +274,6 @@ HALManager::HALManager() :
     leftMotor.disableAndStop();
     rightMotor.disableAndStop();
     scaraLiftMotor.disableAndStop();
-
-    //enableISRs();
 }
 
 /**
@@ -299,7 +297,7 @@ void HALManager::initializeHal() {
     initializeMotorUART();
     initializeEncoders();
     initializeI2C();
-    initializeScara();
+    //initializeScara();
 }
 
 /**
