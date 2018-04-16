@@ -33,8 +33,8 @@ void DrivingParameterMeasurement::transition() {
 	switch(state) {
 	case MeasurementState::Idle:
 		pm.reset(Position(0, 0), Angle(0.0));
-		leftMotor.setSpeed(500);
-		rightMotor.setSpeed(500);
+		leftMotor.setSpeed(1500);
+		rightMotor.setSpeed(1500);
 
 		taskId = schedule_repeating_task([this]() {
 			if(dataIndex > MEASUREMENTPOINTS) {
@@ -42,7 +42,7 @@ void DrivingParameterMeasurement::transition() {
 			} else {
 				linearMeasurement();
 			}
-		}, 100);
+		}, MEASUREMENTPERIODTIME);
 
 		state = MeasurementState::MeasureLinearDriving;
 		break;
@@ -65,8 +65,8 @@ void DrivingParameterMeasurement::transition() {
 		break;
 	case MeasurementState::Wait:
 		pm.reset(Position(0, 0), Angle(0.0));
-		leftMotor.setSpeed(500);
-		rightMotor.setSpeed(-500);
+		leftMotor.setSpeed(1500);
+		rightMotor.setSpeed(-1500);
 
 		// schedule measurement task
 		taskId = schedule_repeating_task([this]() {
@@ -75,7 +75,7 @@ void DrivingParameterMeasurement::transition() {
 			} else {
 				rotationMeasurement();
 			}
-		}, 100);
+		}, MEASUREMENTPERIODTIME);
 
 		state = MeasurementState::MeasureRotationalDriving;
 		break;

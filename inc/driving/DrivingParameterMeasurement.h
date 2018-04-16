@@ -26,6 +26,7 @@
 SMARTENUM_DEFINE_ENUM(MeasurementState, MEASUREMENT_STATE_VALS)
 
 #define MEASUREMENTPOINTS 200
+#define MEASUREMENTPERIODTIME 20 // in ms
 
 class DrivingParameterMeasurement : public HumanCommandHandler {
 private:
