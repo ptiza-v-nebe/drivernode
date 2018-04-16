@@ -8,13 +8,16 @@
  */
 
 #include <hal/HALManager.h>
-#ifdef BIG_ROBOT
 #include "hal/util.h"
 #include "hal/interupts.h"
 #include "error.h"
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Hardware configuration
+// ///////////////////////////////////////////////////////////////////////////////
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Common
 // ///////////////////////////////////////////////////////////////////////////////
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -68,6 +71,40 @@ static constexpr uint16_t RIGHT_ENCODER_B = GPIO_PIN_12;
  */
 static constexpr bool RIGHT_ENCODER_INVERT = true;
 
+// ///////////////////////////////////////////////////////////////////////////////
+// Ultrasonic sensors
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * which I²C controller to use.
+ * @attention when changing this also change RCC clock enable and GPIO bank and pins in
+ *            HALManager::initializeI2C
+ */
+#define SRF08_I2C I2C2
+
+/**
+ * which GPIO bank to use for SRF08.
+ * @attention this depends on SRF08_I2C, when changing this also change RCC clock enable
+ *            in HALManager::initializeI2C
+ */
+#define SRF08_GPIO GPIOB
+
+/**
+ * which pin to use for SCL signal.
+ * @attention this depends on SRF08_I2C
+ */
+static constexpr uint16_t SRF08_SCL = GPIO_PIN_13;
+
+/**
+ * wich pn to use for SDA signal.
+ * @attention depends on SRF08_I2C
+ */
+static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Specific Config
+// ///////////////////////////////////////////////////////////////////////////////
+#ifdef BIG_ROBOT
 // ///////////////////////////////////////////////////////////////////////////////
 // Driving Motors
 // ///////////////////////////////////////////////////////////////////////////////
@@ -147,71 +184,27 @@ static constexpr uint8_t SRF08_3_ID = 0xEE;
  */
 static constexpr uint8_t SRF08_4_ID = 0xEE;
 
-/**
- * which I²C controller to use.
- * @attention when changing this also change RCC clock enable and GPIO bank and pins in
- *            HALManager::initializeI2C
- */
-#define SRF08_I2C I2C2
-
-/**
- * which GPIO bank to use for SRF08.
- * @attention this depends on SRF08_I2C, when changing this also change RCC clock enable
- *            in HALManager::initializeI2C
- */
-#define SRF08_GPIO GPIOB
-
-/**
- * which pin to use for SCL signal.
- * @attention this depends on SRF08_I2C
- */
-static constexpr uint16_t SRF08_SCL = GPIO_PIN_13;
-
-/**
- * wich pn to use for SDA signal.
- * @attention depends on SRF08_I2C
- */
-static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
-
-// ///////////////////////////////////////////////////////////////////////////////
-// Scara
-// ///////////////////////////////////////////////////////////////////////////////
-/**
- * GPIO Bank for left encoder.
- * @attention when changing this, also change RCC clock enable in
- *            HALManager::initializeScara!
- */
-#define SCARA_ENCODER_GPIO GPIOB
-
-/**
- * channel a pin for scara encoder.
- * @attention changing this might require using another IRQ/ISR
- */
-static constexpr uint16_t SCARA_ENCODER_A = GPIO_PIN_2;
-
-/**
- * channel b pin for scara encoder.
- * @attention changing this might require using another IRQ/ISR
- */
-static constexpr uint16_t SCARA_ENCODER_B = GPIO_PIN_4;
-
-/**
- * should the scara encoder be inverted?
- */
-static constexpr bool SCARA_ENCODER_INVERT = false;
+#endif
 
 // ///////////////////////////////////////////////////////////////////////////////
 // ISRs
 // ///////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
+#ifdef BIG_ROBOT
+void EXTI1_IRQHandler() {
+    // handle scara encoder B
+    HAL_GPIO_EXTI_IRQHandler(SCARA_ENCODER_B);
+}
 void EXTI2_IRQHandler() {
     // handle scara encoder A
     HAL_GPIO_EXTI_IRQHandler(SCARA_ENCODER_A);
 }
+#endif
+
 void EXTI4_IRQHandler() {
-    // handles left encoder A and scara encoder B
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | SCARA_ENCODER_B);
+    // handles left encoder A
+    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A);
 }
 void EXTI9_5_IRQHandler() {
     // handles left encoder B (pin 6)
@@ -224,24 +217,59 @@ void EXTI15_10_IRQHandler() {
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t pins) {
+    static Encoder& left = HALManager::getInstance().getLeftEncoder();
     if ((pins & LEFT_ENCODER_A) || (pins & LEFT_ENCODER_B)) {
-        // update left encoder
-        HALManager::getInstance().getLeftEncoder().update();
+        left.update();
     }
+
+    static Encoder& right = HALManager::getInstance().getRightEncoder();
     if ((pins & RIGHT_ENCODER_A) || (pins & RIGHT_ENCODER_B)) {
-        // update right encoder
-        HALManager::getInstance().getRightEncoder().update();
+        right.update();
     }
+#ifdef BIG_ROBOT
+    static Encoder& scara =
+            HALManager::getInstance().getScaraHardware().getLiftEncoder();
     if ((pins & SCARA_ENCODER_A) || (pins & SCARA_ENCODER_B)) {
-        // update scara encoder
-        HALManager::getInstance().getScaraLiftEncoder().update();
+        scara.update();
     }
+#endif
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-// Code
+// Constructor
 // ///////////////////////////////////////////////////////////////////////////////
+/**
+ * Constructs and initializes the HALManager.
+ */
+HALManager::HALManager() :
+        leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B,
+                LEFT_ENCODER_INVERT), //
+        rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B,
+                RIGHT_ENCODER_INVERT), //
+#ifdef BIG_ROBOT
+        srf08( { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID },
+                { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
 
+#endif
+                dynamixelCom(), //
+                starterSwitch(GPIOB, GPIO_PIN_5), //
+                i2c { }, //
+#ifdef BIG_ROBOT
+                scaraHardware(dynamixelCom), //
+                leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
+                rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
+                motorUART { } //
+#endif
+{ //
+
+    initializeHal();
+
+    disableAllActors();
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Common Code
+// ///////////////////////////////////////////////////////////////////////////////
 /**
  * @return the Singleton instance of this class.
  */
@@ -251,29 +279,16 @@ HALManager& HALManager::getInstance() {
 }
 
 /**
- * Constructs and initializes the HALManager.
+ * initializes the necessary low level components
  */
-HALManager::HALManager() :
-        leftEncoder(LEFT_ENCODER_GPIO, LEFT_ENCODER_A, LEFT_ENCODER_B,
-                LEFT_ENCODER_INVERT), //
-        rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B,
-                RIGHT_ENCODER_INVERT), //
-        leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
-        rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
-        srf08( { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID },
-                { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
-        scaraLiftMotorPWM(TIM2, TIM_CHANNEL_1), //
-        scaraLiftMotor(scaraLiftMotorPWM, GPIOH, GPIO_PIN_1, GPIO_PIN_0, true,
-                true), //
-        scaraLiftEncoder(SCARA_ENCODER_GPIO, SCARA_ENCODER_A, SCARA_ENCODER_B,
-                SCARA_ENCODER_INVERT), //
-        i2c { }, motorUART { } { //
+void HALManager::initializeHal() {
+    initializeEncoders();
+    initializeI2C();
 
-    initializeHal();
-
-    leftMotor.disableAndStop();
-    rightMotor.disableAndStop();
-    scaraLiftMotor.disableAndStop();
+#ifdef BIG_ROBOT
+    initializeMotorUART();
+    scaraHardware.initialize();
+#endif
 }
 
 /**
@@ -288,16 +303,6 @@ Encoder& HALManager::getLeftEncoder() {
  */
 Encoder& HALManager::getRightEncoder() {
     return rightEncoder;
-}
-
-/**
- * initializes the necessary low level components
- */
-void HALManager::initializeHal() {
-    initializeMotorUART();
-    initializeEncoders();
-    initializeI2C();
-    //initializeScara();
 }
 
 /**
@@ -322,6 +327,13 @@ SRF08* HALManager::getSRF08s() {
 }
 
 /**
+ * @return reference to the starter pin
+ */
+InputPin& HALManager::getStarterPin() {
+    return starterSwitch;
+}
+
+/**
  * Initializes the encoder GPIOs and IRQs
  */
 void HALManager::initializeEncoders() {
@@ -337,6 +349,80 @@ void HALManager::initializeEncoders() {
 
     HAL_GPIO_Init(LEFT_ENCODER_GPIO, &gpio_left);
     HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right);
+}
+
+/**
+ * Initializes the I²C and GPIO for the SRF08s
+ */
+void HALManager::initializeI2C() {
+    i2c.Instance = SRF08_I2C;
+    i2c.Init.Timing = 0x10909CEC;
+    i2c.Init.OwnAddress1 = 0;
+    i2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    i2c.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    i2c.Init.OwnAddress2 = 0;
+    i2c.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    i2c.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    i2c.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+    __HAL_RCC_I2C2_CLK_ENABLE()
+    ;
+    TRY(HAL_I2C_Init(&i2c));
+
+    GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
+    i2cGPIO.Pin = SRF08_SCL | SRF08_SDA;
+    i2cGPIO.Mode = GPIO_MODE_AF_OD;
+    i2cGPIO.Alternate = GPIO_AF4_I2C2;
+
+    __HAL_RCC_GPIOB_CLK_ENABLE()
+    ;
+    HAL_GPIO_Init(SRF08_GPIO, &i2cGPIO);
+}
+
+/**
+ * unmasks the interrupts
+ */
+void HALManager::enableISRs() {
+    HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI4_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI9_5_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+            ENCODERS_SUB_PRIORITY);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
+/**
+ * disables all actors
+ */
+void HALManager::disableAllActors() {
+    leftMotor.disableAndStop();
+    rightMotor.disableAndStop();
+
+#ifdef BIG_ROBOT
+    scaraHardware.disable();
+#endif
+
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Specific Code
+// ///////////////////////////////////////////////////////////////////////////////
+#ifdef BIG_ROBOT
+
+/**
+ * @return reference to the scara hardware wrapper
+ */
+ScaraHardware& HALManager::getScaraHardware() {
+    return scaraHardware;
 }
 
 /**
@@ -368,110 +454,5 @@ void HALManager::initializeMotorUART() {
     HAL_GPIO_Init(MOTOR_GPIO, &uart_gpio);
     TRY(HAL_UART_Init(&motorUART));
 }
-
-/**
- * Initializes the I²C and GPIO for the SRF08s
- */
-void HALManager::initializeI2C() {
-    i2c.Instance = SRF08_I2C;
-    i2c.Init.Timing = 0x10909CEC;
-    i2c.Init.OwnAddress1 = 0;
-    i2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    i2c.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    i2c.Init.OwnAddress2 = 0;
-    i2c.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-    i2c.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-    i2c.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-
-    __HAL_RCC_I2C2_CLK_ENABLE()
-    ;
-    TRY(HAL_I2C_Init(&i2c));
-
-    GPIO_InitTypeDef i2cGPIO = getDefaultGPIO();
-    i2cGPIO.Pin = SRF08_SCL | SRF08_SDA;
-    i2cGPIO.Mode = GPIO_MODE_AF_OD;
-    i2cGPIO.Alternate = GPIO_AF4_I2C2;
-
-    __HAL_RCC_GPIOB_CLK_ENABLE()
-    ;
-    HAL_GPIO_Init(SRF08_GPIO, &i2cGPIO);
-}
-
-Motor& HALManager::getScaraLiftMotor() {
-    return scaraLiftMotor;
-}
-
-Encoder& HALManager::getScaraLiftEncoder() {
-    return scaraLiftEncoder;
-}
-
-void HALManager::initializeScara() {
-    // initialize timer
-    TIM_HandleTypeDef timer = { };
-    TIM_OC_InitTypeDef channel = { };
-    GPIO_InitTypeDef gpio = getDefaultGPIO();
-
-    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    timer.Init.Prescaler = 80 - 1;
-    timer.Init.Period = 1000 - 1;
-    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    timer.Instance = TIM2;
-
-    channel.Pulse = 500;
-    channel.OCMode = TIM_OCMODE_PWM1;
-
-    gpio.Alternate = GPIO_AF1_TIM2;
-    gpio.Mode = GPIO_MODE_AF_PP;
-    gpio.Pin = GPIO_PIN_5;
-
-    __HAL_RCC_TIM2_CLK_ENABLE()
-    ;
-    __HAL_RCC_GPIOA_CLK_ENABLE()
-    ;
-    HAL_TIM_PWM_Init(&timer);
-    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
-    HAL_GPIO_Init(GPIOA, &gpio);
-
-    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
-
-    // initialize GPIO for motor
-    GPIO_InitTypeDef motorGPIO = getDefaultGPIO();
-    motorGPIO.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-    motorGPIO.Mode = GPIO_MODE_OUTPUT_PP;
-
-    __HAL_RCC_GPIOH_CLK_ENABLE()
-    ;
-
-    HAL_GPIO_Init(GPIOH, &motorGPIO);
-    scaraLiftMotorPWM.disable();
-
-    // initialize encoder
-    __HAL_RCC_GPIOB_CLK_ENABLE()
-    ;
-    GPIO_InitTypeDef gpio_encoder = getDefaultGPIO();
-    gpio_encoder.Mode = GPIO_MODE_IT_RISING_FALLING;
-    gpio_encoder.Pin = SCARA_ENCODER_A | SCARA_ENCODER_B;
-
-    HAL_GPIO_Init(SCARA_ENCODER_GPIO, &gpio_encoder);
-}
-
-void HALManager::enableISRs() {
-    HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI4_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI9_5_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
-            ENCODERS_SUB_PRIORITY);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-}
-
 #endif
 /** @} */
