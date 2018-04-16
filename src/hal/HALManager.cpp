@@ -174,15 +174,106 @@ static constexpr uint8_t SRF08_1_ID = 0xEE;
  */
 static constexpr uint8_t SRF08_2_ID = 0xEE;
 
+#endif
+#ifdef SMALL_ROBOT
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Stepper Motors
+// ///////////////////////////////////////////////////////////////////////////////
 /**
- * ID of the third SRF08
+ * the timer used for left motor
+ * @attention when changing this, also change RCC clock enable as well as GPIO
+ *            and pin in HALManager::initializeMotors
  */
-static constexpr uint8_t SRF08_3_ID = 0xEE;
+#define LEFT_TIMER TIM5
 
 /**
- * ID of the fourth SRF08
+ * the timer channel used for left motor
  */
-static constexpr uint8_t SRF08_4_ID = 0xEE;
+static constexpr auto LEFT_CHANNEL = TIM_CHANNEL_1;
+
+/**
+ * the GPIO bank used for left motor
+ * @attention depends on LEFT_TIMER and LEFT_CHANNEL!
+ */
+#define LEFT_TIMER_GPIO GPIOA
+
+/**
+ * the GPIO pin used for the left timer
+ * @attention depends on LEFT_TIMER and LEFT_CHANNEL!
+ */
+static constexpr uint16_t LEFT_TIMER_PIN = GPIO_PIN_0;
+
+/**
+ * the timer used for right motor
+ * @attention when changing this, also change RCC clock enable as well as GPIO
+ *            and pin in HALManager::initializeMotors
+ */
+#define RIGHT_TIMER TIM2
+
+/**
+ * timer channel used for right motor
+ */
+static constexpr auto RIGHT_CHANNEL = TIM_CHANNEL_1;
+
+/**
+ * the GPIO bank used for right motor
+ * @attention depends on RIGHT_TIMER and RIGHT_CHANNEL!
+ */
+#define RIGHT_TIMER_GPIO GPIOA
+
+/**
+ * the GPIO pin used for the right timer
+ * @attention depends on RIGHT_TIMER and RIGHT_CHANNEL!
+ */
+static constexpr uint16_t RIGHT_TIMER_PIN = GPIO_PIN_5;
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Shooting BLDC
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * the timer used for shooting bldc
+ * @attention when changing this, also change RCC clock enable as well as GPIO
+ *            and pin in HALManager::initializeShootingBLDC
+ */
+#define BLDC_TIMER TIM8
+
+/**
+ * timer channel used for shooting bldc
+ */
+static constexpr auto BLDC_CHANNEL = TIM_CHANNEL_1;
+
+/**
+ * the GPIO bank used for shooting bldc
+ * @attention depends on BLDC_TIMER and BLDC_CHANNEL!
+ */
+#define BLDC_TIMER_GPIO GPIOA
+
+/**
+ * the GPIO pin used for shooting bldc
+ * @attention depends on BLDC_TIMER and BLDC_CHANNEL!
+ */
+static constexpr uint16_t BLDC_TIMER_PIN = GPIO_PIN_7;
+
+/**
+ * the id of the dynamixel with the little arm
+ */
+static constexpr uint8_t DYNAMIXEL_ID = 4;
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Ultrasonic sensors
+// ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * ID of the first SRF08
+ */
+static constexpr uint8_t SRF08_1_ID = 0xEE;
+
+/**
+ * ID of the second SRF08
+ */
+static constexpr uint8_t SRF08_2_ID = 0xEE;
 
 #endif
 
@@ -228,7 +319,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t pins) {
     }
 #ifdef BIG_ROBOT
     static Encoder& scara =
-            HALManager::getInstance().getScaraHardware().getLiftEncoder();
+    HALManager::getInstance().getScaraHardware().getLiftEncoder();
     if ((pins & SCARA_ENCODER_A) || (pins & SCARA_ENCODER_B)) {
         scara.update();
     }
@@ -247,18 +338,33 @@ HALManager::HALManager() :
         rightEncoder(RIGHT_ENCODER_GPIO, RIGHT_ENCODER_A, RIGHT_ENCODER_B,
                 RIGHT_ENCODER_INVERT), //
 #ifdef BIG_ROBOT
-        srf08( { { &i2c, SRF08_1_ID }, { &i2c, SRF08_2_ID },
-                { &i2c, SRF08_3_ID }, { &i2c, SRF08_4_ID } }), //
+                srf08( {  {   &i2c, SRF08_1_ID}, {&i2c, SRF08_2_ID}}), //
 
 #endif
-                dynamixelCom(), //
-                starterSwitch(GPIOB, GPIO_PIN_5), //
-                i2c { }, //
+#ifdef SMALL_ROBOT
+                srf08( {  {   &i2c, SRF08_1_ID}, {&i2c, SRF08_2_ID}}), //
+
+#endif
+        dynamixelCom(), //
+        starterSwitch(GPIOB, GPIO_PIN_5), //
+        i2c { }, //
 #ifdef BIG_ROBOT
                 scaraHardware(dynamixelCom), //
-                leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT), //
-                rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT), //
-                motorUART { } //
+                leftMotor(&motorUART, LEFT_MOTOR_ID, LEFT_MOTOR_INVERT),//
+                rightMotor(&motorUART, RIGHT_MOTOR_ID, RIGHT_MOTOR_INVERT),//
+                motorUART {} //
+#endif
+#ifdef SMALL_ROBOT
+                leftMotorPWM(LEFT_TIMER, LEFT_CHANNEL), //
+                rightMotorPWM(RIGHT_TIMER, RIGHT_CHANNEL), //
+                leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4 }, //
+                        { GPIOA, GPIO_PIN_1 }), //
+                rightMotor(rightMotorPWM, { GPIOH, GPIO_PIN_1 }, //
+                        { GPIOH, GPIO_PIN_0 }), //
+                shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //
+                shootingBLDC(shootingBLDCPWM), //
+                servo( { DYNAMIXEL_ID, dynamixelCom }) //
+
 #endif
 { //
 
@@ -288,6 +394,10 @@ void HALManager::initializeHal() {
 #ifdef BIG_ROBOT
     initializeMotorUART();
     scaraHardware.initialize();
+#endif
+#ifdef SMALL_ROBOT
+    initializeMotors();
+    initializeShootingBLDC();
 #endif
 }
 
@@ -383,9 +493,15 @@ void HALManager::initializeI2C() {
  * unmasks the interrupts
  */
 void HALManager::enableISRs() {
+#ifdef BIG_OTTER
+    HAL_NVIC_SetPriority(EXTI1_IRQn, ENCODERS_PREEMPTION_PRIORITY,
+                ENCODERS_SUB_PRIORITY);
+        HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
     HAL_NVIC_SetPriority(EXTI2_IRQn, ENCODERS_PREEMPTION_PRIORITY,
             ENCODERS_SUB_PRIORITY);
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+#endif
 
     HAL_NVIC_SetPriority(EXTI4_IRQn, ENCODERS_PREEMPTION_PRIORITY,
             ENCODERS_SUB_PRIORITY);
@@ -409,6 +525,10 @@ void HALManager::disableAllActors() {
 
 #ifdef BIG_ROBOT
     scaraHardware.disable();
+#endif
+#ifdef SMALL_ROBOT
+    shootingBLDC.disableAndStop();
+    servo.disableAndStop();
 #endif
 
 }
@@ -453,6 +573,112 @@ void HALManager::initializeMotorUART() {
 
     HAL_GPIO_Init(MOTOR_GPIO, &uart_gpio);
     TRY(HAL_UART_Init(&motorUART));
+}
+#endif
+#ifdef SMALL_ROBOT
+/**
+ * @return reference to the bldc used for shooting
+ */
+ShootingBLDC& HALManager::getShootingBLDC() {
+    return shootingBLDC;
+}
+
+/**
+ * @return reference to the dynamixel with the little arm
+ */
+DynamixelAX12A& HALManager::getServo() {
+    return servo;
+}
+
+/**
+ * initializes the timers and gpios for the pwms for the motors
+ */
+void HALManager::initializeMotors() {
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOC_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOH_CLK_ENABLE()
+    ;
+
+    TIM_HandleTypeDef timer = { };
+    TIM_OC_InitTypeDef channel = { };
+    GPIO_InitTypeDef gpio = getDefaultGPIO();
+
+    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Period = 1000 - 1;
+    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+    channel.Pulse = 500;
+    channel.OCMode = TIM_OCMODE_PWM1;
+
+    gpio.Alternate = GPIO_AF1_TIM2;
+    gpio.Mode = GPIO_MODE_AF_PP;
+
+    __HAL_RCC_TIM2_CLK_ENABLE()
+    ;
+    __HAL_RCC_TIM5_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
+
+    // initialize left
+    timer.Instance = LEFT_TIMER;
+    gpio.Pin = LEFT_TIMER_PIN;
+
+    HAL_TIM_PWM_Init(&timer);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, LEFT_CHANNEL);
+    HAL_GPIO_Init(LEFT_TIMER_GPIO, &gpio);
+
+    HAL_TIM_PWM_Start(&timer, LEFT_CHANNEL);
+    leftMotorPWM.disable();
+
+    // initialize right
+    timer.Instance = RIGHT_TIMER;
+    gpio.Pin = RIGHT_TIMER_PIN;
+
+    HAL_TIM_PWM_Init(&timer);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, RIGHT_CHANNEL);
+    HAL_GPIO_Init(RIGHT_TIMER_GPIO, &gpio);
+
+    HAL_TIM_PWM_Start(&timer, RIGHT_CHANNEL);
+    rightMotorPWM.disable();
+}
+
+/**
+ * initializes the timers and gpio for the pwm for the shooting bldc
+ */
+void HALManager::initializeShootingBLDC() {
+    TIM_HandleTypeDef timer = { };
+    TIM_OC_InitTypeDef channel = { };
+    GPIO_InitTypeDef gpio = getDefaultGPIO();
+
+    timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Period = 1000 - 1;
+    timer.Init.CounterMode = TIM_COUNTERMODE_UP;
+    timer.Instance = BLDC_TIMER;
+
+    channel.Pulse = 500;
+    channel.OCMode = TIM_OCMODE_PWM1;
+
+    gpio.Alternate = GPIO_AF1_TIM2;
+    gpio.Mode = GPIO_MODE_AF_PP;
+    gpio.Pin = BLDC_TIMER_PIN;
+
+    __HAL_RCC_TIM8_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOA_CLK_ENABLE()
+    ;
+    HAL_TIM_PWM_Init(&timer);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, BLDC_CHANNEL);
+    HAL_GPIO_Init(BLDC_TIMER_GPIO, &gpio);
+
+    HAL_TIM_PWM_Start(&timer, BLDC_CHANNEL);
+    shootingBLDCPWM.disable();
+
+    shootingBLDC.initialize();
 }
 #endif
 /** @} */

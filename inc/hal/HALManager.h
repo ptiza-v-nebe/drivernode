@@ -29,7 +29,13 @@
 #include "FaulhaberBLDC.h"
 #include "ScaraHardware.h"
 
-constexpr int SRF08_COUNT = 4;
+constexpr int SRF08_COUNT = 2;
+#endif
+#ifdef SMALL_ROBOT
+#include "StepperMotor.h"
+#include "ShootingBLDC.h"
+#include "DynamixelAX12A.h"
+constexpr int SRF08_COUNT = 2;
 #endif
 
 // /////////////////////////////////////////////////////////////
@@ -56,9 +62,19 @@ private:
 #ifdef BIG_ROBOT
     ScaraHardware scaraHardware; ///< the scara hardware
 
-    FaulhaberBLDC leftMotor; ///< the left motor used for driving
-    FaulhaberBLDC rightMotor; ///< the right motor used for driving
-    UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
+    FaulhaberBLDC leftMotor;///< the left motor used for driving
+    FaulhaberBLDC rightMotor;///< the right motor used for driving
+    UART_HandleTypeDef motorUART;///< the UART used for the Faulhaber BLDC motors
+#endif
+#ifdef SMALL_ROBOT
+    PWM leftMotorPWM; ///< the PWM for the left motor.
+    PWM rightMotorPWM; /// the PWM for the right motor
+    StepperMotor leftMotor; ///< the left motor used for driving
+    StepperMotor rightMotor; ///< the right motor used for driving
+
+    PWM shootingBLDCPWM; ///<
+    ShootingBLDC shootingBLDC; ///< the BLDC used to shoot
+    DynamixelAX12A servo; ///< the dynamixel used for bee and switch
 #endif
 
     // /////////////////////////////////////////////////////////////
@@ -91,6 +107,14 @@ public:
 
 private:
     void initializeMotorUART();
+#endif
+#ifdef SMALL_ROBOT
+public:
+    ShootingBLDC& getShootingBLDC();
+    DynamixelAX12A& getServo();
+private:
+    void initializeMotors();
+    void initializeShootingBLDC();
 #endif
 };
 

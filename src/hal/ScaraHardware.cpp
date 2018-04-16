@@ -21,6 +21,15 @@ static constexpr uint8_t ARMSERVO_2_ID = 5;
 static constexpr uint8_t ARMSERVO_3_ID = 3;
 static constexpr uint8_t ARMSERVO_4_ID = 7;
 
+#define SCARA_TIMER TIM2
+
+static constexpr auto SCARA_CHANNEL = TIM_CHANNEL_1;
+
+#define SCARA_TIMER_GPIO GPIOA
+
+static constexpr uint16_t SCARA_TIMER_PIN = GPIO_PIN_5;
+
+
 ScaraHardware::ScaraHardware(DynamixelCOM& dynamixelCOM) :
         motorPWM(TIM2, TIM_CHANNEL_1), //
         motor(motorPWM, { GPIOH, GPIO_PIN_1, GPIO_PIN_RESET }, //
@@ -71,24 +80,24 @@ void ScaraHardware::initializePWM() {
     timer.Init.Prescaler = 80 - 1;
     timer.Init.Period = 1000 - 1;
     timer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    timer.Instance = TIM2;
+    timer.Instance = SCARA_TIMER;
 
     channel.Pulse = 500;
     channel.OCMode = TIM_OCMODE_PWM1;
 
     gpio.Alternate = GPIO_AF1_TIM2;
     gpio.Mode = GPIO_MODE_AF_PP;
-    gpio.Pin = GPIO_PIN_5;
+    gpio.Pin = SCARA_TIMER_PIN;
 
     __HAL_RCC_TIM2_CLK_ENABLE()
     ;
     __HAL_RCC_GPIOA_CLK_ENABLE()
     ;
     HAL_TIM_PWM_Init(&timer);
-    HAL_TIM_PWM_ConfigChannel(&timer, &channel, TIM_CHANNEL_1);
-    HAL_GPIO_Init(GPIOA, &gpio);
+    HAL_TIM_PWM_ConfigChannel(&timer, &channel, SCARA_CHANNEL);
+    HAL_GPIO_Init(SCARA_TIMER_GPIO, &gpio);
 
-    HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&timer, SCARA_CHANNEL);
     motorPWM.disable();
 }
 

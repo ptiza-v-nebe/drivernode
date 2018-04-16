@@ -26,6 +26,9 @@ static constexpr float UM_PER_TICK_R = 48.53662; // calibrated 27.03.18
 // Parameters for small robot
 // /////////////////////////
 #ifdef SMALL_ROBOT
+static constexpr float TRACK_WIDTH_UM = 300691.375; // TODO: calibrate
+static constexpr float UM_PER_TICK_L = 49.58842; // TODO: calibrate
+static constexpr float UM_PER_TICK_R = 48.53662; // TODO: calibrate
 #endif
 
 

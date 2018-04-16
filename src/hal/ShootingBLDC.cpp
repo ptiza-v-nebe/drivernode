@@ -36,11 +36,6 @@ static constexpr float ON_PERCENT = 0.058f;
  */
 ShootingBLDC::ShootingBLDC(PWM& pwm) :
         pwm(pwm), enabled(false) {
-    pwm.setPrescale(PRESCALE);
-    pwm.setFrequency(FREQUENCY);
-
-    pwm.setDutyCycle(STOP_PERCENT);
-    pwm.enable();
 }
 
 /*
@@ -76,5 +71,16 @@ void ShootingBLDC::stop() {
         return;
     }
     pwm.setDutyCycle(STOP_PERCENT);
+}
+
+/**
+ * initializes the shootign bldc
+ */
+void ShootingBLDC::initialize() {
+    pwm.setPrescale(PRESCALE);
+    pwm.setFrequency(FREQUENCY);
+
+    pwm.setDutyCycle(STOP_PERCENT);
+    pwm.enable();
 }
 /** @} */
