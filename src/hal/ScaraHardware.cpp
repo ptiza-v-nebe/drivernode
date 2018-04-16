@@ -23,7 +23,8 @@ static constexpr uint8_t ARMSERVO_4_ID = 7;
 
 ScaraHardware::ScaraHardware(DynamixelCOM& dynamixelCOM) :
         motorPWM(TIM2, TIM_CHANNEL_1), //
-        motor(motorPWM, GPIOH, GPIO_PIN_1, GPIO_PIN_0, true, true), // TODO: ugly magic values!!
+        motor(motorPWM, { GPIOH, GPIO_PIN_1, GPIO_PIN_RESET }, //
+                { GPIOH, GPIO_PIN_0, GPIO_PIN_RESET }), //
         encoder(SCARA_ENCODER_GPIO, SCARA_ENCODER_A, SCARA_ENCODER_B,
                 SCARA_ENCODER_INVERT), //
         endSwitch(GPIOB, GPIO_PIN_6), //
@@ -37,11 +38,16 @@ ScaraHardware::ScaraHardware(DynamixelCOM& dynamixelCOM) :
                 { GPIOC, GPIO_PIN_14 }, //
                 { GPIOC, GPIO_PIN_15 } } //
 {
+    __HAL_RCC_GPIOB_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOC_CLK_ENABLE()
+    ;
+    __HAL_RCC_GPIOH_CLK_ENABLE()
+    ;
 }
 
 void ScaraHardware::initialize() {
     initializePWM();
-    initializeMotor();
     initializeEncoder();
 }
 
@@ -84,17 +90,6 @@ void ScaraHardware::initializePWM() {
 
     HAL_TIM_PWM_Start(&timer, TIM_CHANNEL_1);
     motorPWM.disable();
-}
-
-void ScaraHardware::initializeMotor() {
-    GPIO_InitTypeDef motorGPIO = getDefaultGPIO();
-    motorGPIO.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-    motorGPIO.Mode = GPIO_MODE_OUTPUT_PP;
-
-    __HAL_RCC_GPIOH_CLK_ENABLE()
-    ;
-
-    HAL_GPIO_Init(GPIOH, &motorGPIO);
 }
 
 void ScaraHardware::initializeEncoder() {

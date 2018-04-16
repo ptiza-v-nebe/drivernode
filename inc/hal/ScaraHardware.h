@@ -49,7 +49,6 @@ public:
 
 private:
     void initializePWM();
-    void initializeMotor();
     void initializeEncoder();
 };
 
