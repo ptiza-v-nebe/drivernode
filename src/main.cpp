@@ -31,7 +31,7 @@ int main(void) {
     // ////////////////////////////////////////////
 
     HALManager& hal = HALManager::getInstance();
-
+    hal.enableISRs();
 #ifdef CALIBRATION
     CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
 #elif defined(DRIVERMEASUREMENT)
@@ -46,14 +46,17 @@ int main(void) {
 #endif /*CALIBRATION*/
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
+#ifndef CALIBRATION
 #ifndef DRIVERMEASUREMENT
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
+#endif
 #endif
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
     // ////////////////////////////////////////////
+#ifndef CALIBRATION
     dispatcher.registerMessageHandler<ResetOdometryMessage>(
             [&pm](ResetOdometryMessage rom) {
                 pm.reset(rom.getPosition(), rom.getHeading());
@@ -72,6 +75,7 @@ int main(void) {
     		[&driverFSM](SimpleDriveMessage sdm) {
 
     		});
+#endif
 #endif
 
     // ////////////////////////////////////////////
@@ -102,11 +106,13 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
+#ifndef CALIBRATION
 #ifndef DRIVERMEASUREMENT
     schedule_repeating_task([&pm, &driverFSM]() {
     	pm.update();
     	driverFSM.update();
     }, CONTROLLER_SAMPLING_TIME*1000);
+#endif
 #endif
 
     // ////////////////////////////////////////////

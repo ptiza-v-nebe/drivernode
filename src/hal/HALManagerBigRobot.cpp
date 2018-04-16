@@ -299,7 +299,7 @@ void HALManager::initializeHal() {
     initializeMotorUART();
     initializeEncoders();
     initializeI2C();
-    initializeScara();
+    //initializeScara();
 }
 
 /**

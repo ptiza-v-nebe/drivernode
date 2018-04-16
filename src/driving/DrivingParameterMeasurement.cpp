@@ -20,53 +20,82 @@ DrivingParameterMeasurement::DrivingParameterMeasurement(PositionManager& pm,
 		HumanCommandHandler(m), state(MeasurementState::Idle),
 		pm(pm), leftMotor(leftMotor), rightMotor(rightMotor),
 		taskId(-1), dataIndex(0), data() {
+	pm.reset(Position(0,0), Angle(0.0));
+	leftMotor.enable();
+	rightMotor.enable();
+
+
 	printf("Please prepare robot for measurement of linear driving.\r\n");
-	printf("Press [Enter] for start");
+	printf("Press [Enter] for start\r\n");
 }
 
 void DrivingParameterMeasurement::transition() {
 	switch(state) {
 	case MeasurementState::Idle:
-		pm.reset(Position(0.0, 0.0), Angle(0.0));
-		leftMotor.setSpeed(2000);
-		rightMotor.setSpeed(2000);
+		pm.reset(Position(0, 0), Angle(0.0));
+		leftMotor.setSpeed(500);
+		rightMotor.setSpeed(500);
+
 		taskId = schedule_repeating_task([this]() {
-			linearMeasurement();
+			if(dataIndex > MEASUREMENTPOINTS) {
+				transition();
+			} else {
+				linearMeasurement();
+			}
 		}, 100);
+
 		state = MeasurementState::MeasureLinearDriving;
 		break;
 	case MeasurementState::MeasureLinearDriving:
-		if(dataIndex > MEASUREMENTPOINTS) {
-			unschedule_task(taskId);
-			printf("Data acquired:\r\n");
-			printf("n[100ms/i] x[mm] y[mm]\r\n");
-			for(int i = 0; i < MEASUREMENTPOINTS/2; i += 2) {
-				printf("%5d %5d %5d\r\n",i , (int)data[i], (int)data[i+1]);
-			}
-			printf("Please prepare robot for measurement of rotation.\r\n");
-			printf("Press[Enter] for start");
-			state = MeasurementState::Wait;
+		leftMotor.stop();
+		rightMotor.stop();
+		unschedule_task(taskId);
+		dataIndex = 0;
+
+		// print data to console
+		printf("Data acquired:\r\n");
+		printf("n[100ms/i] x[mm] y[mm]\r\n");
+		for(int i = 0; i < MEASUREMENTPOINTS/2; i += 2) {
+			printf("%5d %5d %5d\r\n",i , (int)data[i], (int)data[i+1]);
 		}
+
+		printf("Please prepare robot for measurement of rotation.\r\n");
+		printf("Press[Enter] for start\r\n");
+		state = MeasurementState::Wait;
 		break;
 	case MeasurementState::Wait:
-		pm.reset(Position(0.0, 0.0), Angle(0.0));
-		leftMotor.setSpeed(2000);
-		rightMotor.setSpeed(-2000);
+		pm.reset(Position(0, 0), Angle(0.0));
+		leftMotor.setSpeed(500);
+		rightMotor.setSpeed(-500);
+
+		// schedule measurement task
 		taskId = schedule_repeating_task([this]() {
-			rotationMeasurement();
+			if(dataIndex > MEASUREMENTPOINTS) {
+				transition();
+			} else {
+				rotationMeasurement();
+			}
 		}, 100);
+
 		state = MeasurementState::MeasureRotationalDriving;
 		break;
 	case MeasurementState::MeasureRotationalDriving:
-		if(dataIndex > MEASUREMENTPOINTS) {
-			unschedule_task(taskId);
-			state = MeasurementState::Done;
+		leftMotor.stop();
+		rightMotor.stop();
+		unschedule_task(taskId);
+
+		// print data to console
+		printf("Data acquired:\r\n");
+		printf("n[100ms/i] x[mm] y[mm]\r\n");
+		for(int i = 0; i < MEASUREMENTPOINTS; i++) {
+			printf("%5d %5d\r\n",i , (int)data[i]);
 		}
-		break;
-	case MeasurementState::Done:
+
+		state = MeasurementState::Done;
 		break;
 	default:
 		printf("Please reset Nucleo to restart measurement...\r\n");
+		break;
 	}
 }
 
