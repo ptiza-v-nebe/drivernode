@@ -22,6 +22,7 @@
 #include "hal/ShootingBLDC.h"
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
+#include "serial/messages/version.h"
 
 int main(void) {
     setupHardware();
