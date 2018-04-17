@@ -32,6 +32,11 @@
 #define CONTINUE_ON_ERROR
 
 /**
+ * Use this to prevent showing errors
+ */
+//#define SUPRESS_ERROR
+
+/**
  * Enables calibration
  */
 //#define CALIBRATION

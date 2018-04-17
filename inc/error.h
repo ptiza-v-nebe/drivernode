@@ -19,6 +19,7 @@
     printf("\nStopping program...please press RESET\r\n"); \
     while(1) {}
 #endif
+#ifndef SUPRESS_ERROR
 /**
  * Report an error and stop program
  */
@@ -33,8 +34,10 @@
     printf("\r\n"); \
     STOP_PROGRAM()\
 }
-
-#else
+#else // SUPRESS_ERROR
+#define ERROR(...)
+#endif
+#else // HUMAN MODE
 #define ERROR(...)
 #endif
 

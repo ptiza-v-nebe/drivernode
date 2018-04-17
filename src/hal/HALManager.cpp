@@ -172,7 +172,7 @@ static constexpr uint8_t SRF08_1_ID = 0xEE;
 /**
  * ID of the second SRF08
  */
-static constexpr uint8_t SRF08_2_ID = 0xEE;
+static constexpr uint8_t SRF08_2_ID = 0xE2;
 
 #endif
 #ifdef SMALL_ROBOT
@@ -493,7 +493,7 @@ void HALManager::initializeI2C() {
  * unmasks the interrupts
  */
 void HALManager::enableISRs() {
-#ifdef BIG_OTTER
+#ifdef BIG_ROBOT
     HAL_NVIC_SetPriority(EXTI1_IRQn, ENCODERS_PREEMPTION_PRIORITY,
                 ENCODERS_SUB_PRIORITY);
         HAL_NVIC_EnableIRQ(EXTI1_IRQn);
