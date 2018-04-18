@@ -79,22 +79,24 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    auto tickAlways = [&pm]() {
+    auto tickAlways = [&]() {
         pm.update();
+        dispatcher.sendMessage(StatusMessage(Status::ABORTED));
     };
 
-    auto tickInit = []() {
+    auto tickInit = [&dispatcher]() {
+        dispatcher.sendMessage(StatusMessage(Status::STUCK));
         return true;
     };
 
-    auto tickNormal = []() {
-
+    auto tickNormal = [&dispatcher]() {
+        dispatcher.sendMessage(StatusMessage(Status::FINISHED));
     };
 
     MainFSMContext mainFSM(dispatcher, tickInit, tickNormal, tickAlways);
     schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
-    }, 10);
+    }, 400);
 
     // ////////////////////////////////////////////
     // END TEST AREA
