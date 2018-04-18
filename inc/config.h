@@ -18,7 +18,7 @@
 /**
  * Should the LED blink to signal that the Scheduler is running
  */
-//#define BLINK_LED
+#define BLINK_LED
 
 /**
  * Should the UART-Messages be converted to be human readable

@@ -53,6 +53,8 @@ private:
     SRF08 srf08[SRF08_COUNT]; ///< the ultrasonic sensor used for enemy detection when driving backwards
     DynamixelCOM dynamixelCom; ///< the COM object for the dynamixels
     InputPin starterSwitch; ///< the starter switch
+    OutputPin statusLED; ///< the status LED
+    OutputPin errorLED; ///< the error LED
 
     I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
 
@@ -62,19 +64,19 @@ private:
 #ifdef BIG_ROBOT
     ScaraHardware scaraHardware; ///< the scara hardware
 
-    FaulhaberBLDC leftMotor;///< the left motor used for driving
-    FaulhaberBLDC rightMotor;///< the right motor used for driving
-    UART_HandleTypeDef motorUART;///< the UART used for the Faulhaber BLDC motors
+    FaulhaberBLDC leftMotor; ///< the left motor used for driving
+    FaulhaberBLDC rightMotor; ///< the right motor used for driving
+    UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
 #endif
 #ifdef SMALL_ROBOT
     PWM leftMotorPWM; ///< the PWM for the left motor.
-    PWM rightMotorPWM; /// the PWM for the right motor
-    StepperMotor leftMotor; ///< the left motor used for driving
-    StepperMotor rightMotor; ///< the right motor used for driving
+    PWM rightMotorPWM;/// the PWM for the right motor
+    StepperMotor leftMotor;///< the left motor used for driving
+    StepperMotor rightMotor;///< the right motor used for driving
 
-    PWM shootingBLDCPWM; ///<
-    ShootingBLDC shootingBLDC; ///< the BLDC used to shoot
-    DynamixelAX12A servo; ///< the dynamixel used for bee and switch
+    PWM shootingBLDCPWM;///<
+    ShootingBLDC shootingBLDC;///< the BLDC used to shoot
+    DynamixelAX12A servo;///< the dynamixel used for bee and switch
 #endif
 
     // /////////////////////////////////////////////////////////////
@@ -89,6 +91,8 @@ public:
     Motor& getRightMotor();
     SRF08* getSRF08s();
     InputPin& getStarterPin();
+    OutputPin& getStatusLED();
+    OutputPin& getErrorLED();
 
     void enableISRs();
     void disableAllActors();

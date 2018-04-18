@@ -34,6 +34,8 @@ public:
     void set(bool on);
     void setOn();
     void setOff();
+
+    void toggle();
 private:
     void init(uint32_t pullUp, uint32_t mode);
 };
