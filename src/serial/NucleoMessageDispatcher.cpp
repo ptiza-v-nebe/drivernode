@@ -34,6 +34,10 @@ NucleoMessageDispatcher::NucleoMessageDispatcher(MessageSender& sender) :
     }, HEARTBEAT_TIMEOUT_MS);
 }
 
+NucleoMessageDispatcher::~NucleoMessageDispatcher() {
+    delete currentState;
+}
+
 void NucleoMessageDispatcher::handleMessageProcessed(uint8_t type) const {
     if(type != HeartbeatMessage::getMessageType()) {
         sendMessage(StatusMessage(Status::OK));

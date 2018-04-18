@@ -22,6 +22,7 @@ private:
     mutable bool messageSent;
 public:
     NucleoMessageDispatcher(MessageSender& sender);
+    ~NucleoMessageDispatcher();
 
     NucleoMessageDispatcher(const NucleoMessageDispatcher& other) = delete;
     NucleoMessageDispatcher(NucleoMessageDispatcher&& other) = delete;
