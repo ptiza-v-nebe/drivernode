@@ -9,17 +9,18 @@
 
 #include <control/MainFSM.h>
 #include <control/MainFSMStates.h>
-#include <serial/messages/StatusMessage.h>
+#include <serial/messages/InitializeMessage.h>
 #include <serial/messages/GameStartMessage.h>
+#include <serial/messages/StatusMessage.h>
 #include <serial/MessageDispatcher.h>
 
 MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher) :
         currentState(new Reset(*this)), dispatcher(dispatcher) {
     currentState->entry();
 
-    /*dispatcher.registerMessageHandler<InitializeMessage>([this](InitializeMessage){ // TODO: implement init message
+    dispatcher.registerMessageHandler<InitializeMessage>([this](InitializeMessage){
      currentState->initializeMessageReceived();
-     });*/
+     });
 }
 
 MainFSMContext::~MainFSMContext() {
@@ -40,7 +41,7 @@ void MainFSMContext::tick() {
 }
 
 void MainFSMContext::sendReadyMessage() {
-    //dispatcher.sendMessage(StatusMessage(Status::READY)); // TODO: implement ready status
+    dispatcher.sendMessage(StatusMessage(Status::READY));
 }
 
 void MainFSMContext::sendStartMessage() {
