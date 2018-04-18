@@ -112,12 +112,12 @@ static constexpr uint16_t SRF08_SDA = GPIO_PIN_14;
 /**
  * ID of the left motor
  */
-static constexpr uint8_t LEFT_MOTOR_ID = 1;
+static constexpr uint8_t LEFT_MOTOR_ID = 2;
 
 /**
  * ID of the right motor
  */
-static constexpr uint8_t RIGHT_MOTOR_ID = 2;
+static constexpr uint8_t RIGHT_MOTOR_ID = 1;
 
 /**
  * should the left motor be inverted
@@ -141,7 +141,7 @@ static constexpr bool RIGHT_MOTOR_INVERT = true;
  * @attention this depends on MOTOR_UART! When changing this, also change RCC clock
  *            enable in HALManager::initializeMotorUART
  */
-#define MOTOR_GPIO GPIOC
+#define MOTOR_GPIO GPIOB
 
 /**
  * which baudrate to use for communicating with the motors
@@ -593,7 +593,7 @@ void HALManager::initializeMotorUART() {
     uart_gpio.Mode = GPIO_MODE_AF_OD;
     uart_gpio.Alternate = GPIO_AF7_USART3;
 
-    __HAL_RCC_GPIOC_CLK_ENABLE()
+    __HAL_RCC_GPIOB_CLK_ENABLE()
     ;
     __HAL_RCC_USART3_CLK_ENABLE()
     ;
