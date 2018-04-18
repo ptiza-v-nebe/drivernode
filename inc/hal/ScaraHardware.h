@@ -25,7 +25,7 @@ private:
     PWM motorPWM; ///< the pwm for the scara lift motor
     StepperMotor motor; ///< the motor for the scara lift
     Encoder encoder; ///< the encoder on the scara
-    InputPin endSwitch; ///< the end switch
+    InputPin endStop; ///< the end stop
     OutputPin pump; ///< the pump on the scara
     OutputPin valve; ///< the valve on the scara sucker
     DynamixelAX12A armServos[DYNAMIXEL_COUNT]; ///< the serovs in the scara
@@ -40,7 +40,7 @@ public:
 
     Motor& getLiftMotor();
     Encoder& getLiftEncoder();
-    InputPin& getEndSwitch();
+    InputPin& getEndStop();
     OutputPin& getPump();
     OutputPin& getValve();
     OutputPin* getStoragePumps();
