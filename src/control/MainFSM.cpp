@@ -14,29 +14,28 @@
 #include <serial/messages/StatusMessage.h>
 #include <serial/MessageDispatcher.h>
 
-MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher) :
-        currentState(new Reset(*this)), dispatcher(dispatcher) {
+MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
+        std::function<bool()>&& init, std::function<void()>&& normal,
+        std::function<void()>&& always) :
+        currentState(new Reset(*this)), dispatcher(dispatcher), //
+        tickAlways(std::move(always)), tickInit(std::move(init)), //
+        tickNormal(std::move(normal)) {
     currentState->entry();
 
-    dispatcher.registerMessageHandler<InitializeMessage>([this](InitializeMessage){
-     currentState->initializeMessageReceived();
-     });
+    dispatcher.registerMessageHandler<InitializeMessage>(
+            [this](InitializeMessage) {
+                currentState->initializeMessageReceived();
+            });
+
+    dispatcher.setStatusHandler(this);
 }
 
 MainFSMContext::~MainFSMContext() {
-    delete(currentState);
-}
-
-bool MainFSMContext::tickInit() {
-    return true; // initialization done
-}
-
-void MainFSMContext::tickNormal() {
-    // TODO: tick everything that needs to be ticked
+    delete (currentState);
 }
 
 void MainFSMContext::tick() {
-    // TODO: tick everything that ALWAYS has to be ticked
+    tickAlways();
     currentState->tick();
 }
 
@@ -52,11 +51,11 @@ void MainFSMContext::startGameTimer() {
     // TODO: start game timer
 }
 
-void MainFSMContext::comEstablished() {
+void MainFSMContext::handleComEstablished() {
     currentState->comEstablished();
 }
 
-void MainFSMContext::comFailed() {
+void MainFSMContext::handleComFailed() {
     currentState->comFailed();
 }
 

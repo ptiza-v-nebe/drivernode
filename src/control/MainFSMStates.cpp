@@ -65,4 +65,9 @@ void Normal_Operation::tick() {
 void EmergencyStop::entry() {
     //HALManager::getInstance().disableAllActors(); // TODO: update HALManager
 }
+
+void Com_Error::entry() {
+    EmergencyStop::entry();
+    //HALManager::getInstance().getErrorLED().setOn(); // TODO: update HALManager
+}
 /** @} */

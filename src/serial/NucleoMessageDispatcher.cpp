@@ -11,6 +11,7 @@
 #include "serial/messages/StatusMessage.h"
 #include <serial/UARTStates.h>
 #include <serial/messages/HeartbeatMessage.h>
+#include <serial/ComStatusHandler.h>
 
 #include <scheduler/Scheduler.h>
 
@@ -21,9 +22,10 @@ NucleoMessageDispatcher::NucleoMessageDispatcher(MessageSender& sender) :
         MessageDispatcher(sender), currentState(new Init(*this)), count(0), messageSent(
                 false) {
 
-    registerMessageHandler<HeartbeatMessage>([this](const HeartbeatMessage& msg){
-        currentState->heartbeatReceived(msg);
-    });
+    registerMessageHandler<HeartbeatMessage>(
+            [this](const HeartbeatMessage& msg) {
+                currentState->heartbeatReceived(msg);
+            });
 
     schedule_repeating_task([this]() {
         currentState->heartbeatTick();
@@ -39,7 +41,7 @@ NucleoMessageDispatcher::~NucleoMessageDispatcher() {
 }
 
 void NucleoMessageDispatcher::handleMessageProcessed(uint8_t type) const {
-    if(type != HeartbeatMessage::getMessageType()) {
+    if (type != HeartbeatMessage::getMessageType()) {
         sendMessage(StatusMessage(Status::OK));
     }
     currentState->messageReceived();
@@ -78,11 +80,15 @@ bool NucleoMessageDispatcher::getMessageSent() {
 }
 
 void NucleoMessageDispatcher::publishComError() {
-    // TODO: implement
+    if (statusHandler) {
+        statusHandler->handleComFailed();
+    }
 }
 
 void NucleoMessageDispatcher::publishComEstablished() {
-    // TODO: implement
+    if (statusHandler) {
+        statusHandler->handleComEstablished();
+    }
 }
 
 void NucleoMessageDispatcher::sendMessage(const Message& msg) const {

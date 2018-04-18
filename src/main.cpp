@@ -15,6 +15,7 @@
 
 #include "serial/messages/all.h"
 #include "util/util.h"
+#include "control/MainFSM.h"
 
 #include "hal/PWM.h"
 #include "hal/OutputPin.h"
@@ -57,11 +58,6 @@ int main(void) {
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
-#ifndef CALIBRATION
-    schedule_repeating_task([&pm]() {
-        pm.update();
-    }, 5);
-#endif
 
 #ifdef BLINK_LED
     __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -82,6 +78,23 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
+
+    auto tickAlways = [&pm]() {
+        pm.update();
+    };
+
+    auto tickInit = []() {
+        return true;
+    };
+
+    auto tickNormal = []() {
+
+    };
+
+    MainFSMContext mainFSM(dispatcher, tickInit, tickNormal, tickAlways);
+    schedule_repeating_task([&mainFSM]() {
+        mainFSM.tick();
+    }, 10);
 
     // ////////////////////////////////////////////
     // END TEST AREA

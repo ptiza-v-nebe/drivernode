@@ -10,17 +10,20 @@
 #ifndef CONTROL_MAINFSM_H_
 #define CONTROL_MAINFSM_H_
 
+#include <serial/ComStatusHandler.h>
+#include <functional>
+
 class MessageDispatcher;
 class MainFSMBaseState;
 
-class MainFSM {
+class MainFSM : public ComStatusHandler {
 public:
     virtual ~MainFSM() = default;
 
     virtual void tick() = 0;
 
-    virtual void comEstablished() = 0;
-    virtual void comFailed() = 0;
+    //virtual void handleComEstablished() = 0; // from ComStatusHandler
+    //virtual void handleComFailed() = 0; // from ComStatusHandler
     virtual void gameTimerFinished() = 0;
 };
 
@@ -28,8 +31,14 @@ class MainFSMContext: public MainFSM {
 private:
     MainFSMBaseState *currentState;
     MessageDispatcher& dispatcher;
+    std::function<void()> tickAlways;
 public:
-    MainFSMContext(MessageDispatcher& dispatcher);
+    // internal / FSM
+    std::function<bool()> tickInit;
+    std::function<void()> tickNormal;
+public:
+    MainFSMContext(MessageDispatcher& dispatcher, std::function<bool()>&& init = []{return true;},
+            std::function<void()>&& normal = []{}, std::function<void()>&& always = []{});
     virtual ~MainFSMContext();
 
     // prevent copy and move
@@ -39,9 +48,6 @@ public:
     MainFSMContext& operator=(MainFSMContext&&) = delete;
 
     // internal / FSM
-    bool tickInit();
-    void tickNormal();
-
     void sendReadyMessage();
     void sendStartMessage();
     void startGameTimer();
@@ -49,8 +55,8 @@ public:
     // external interface
     void tick() override;
 
-    void comEstablished() override;
-    void comFailed() override;
+    void handleComEstablished() override;
+    void handleComFailed() override;
     void gameTimerFinished() override;
 };
 

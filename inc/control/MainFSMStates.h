@@ -88,6 +88,7 @@ SUBSTATE(Game_Finished, EmergencyStop)
 };
 
 SUBSTATE(Com_Error, EmergencyStop)
+    void entry();
 };
 
 #endif /* CONTROL_MAINFSMSTATES_H_ */
