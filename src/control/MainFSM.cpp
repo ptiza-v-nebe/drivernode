@@ -15,11 +15,12 @@
 #include <serial/MessageDispatcher.h>
 
 MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
-        std::function<bool()>&& init, std::function<void()>&& normal,
-        std::function<void()>&& always) :
-        currentState(new Reset(*this)), dispatcher(dispatcher), //
-        tickAlways(std::move(always)), tickInit(std::move(init)), //
-        tickNormal(std::move(normal)) {
+        std::vector<Clocked*> clockedInNormalOperation,
+        std::vector<InitializableClocked*> needInitialising,
+        std::vector<Clocked*> alwaysClocked) :
+        currentState(new Reset(*this)), dispatcher(dispatcher), alwaysClocked(
+                alwaysClocked), clockedInNormalOperation(
+                clockedInNormalOperation), needInitializing(needInitialising) {
     currentState->entry();
 
     dispatcher.registerMessageHandler<InitializeMessage>(
@@ -34,8 +35,17 @@ MainFSMContext::~MainFSMContext() {
     delete (currentState);
 }
 
+bool MainFSMContext::tickInit() {
+    // TODO: tick init
+    return true;
+}
+
+void MainFSMContext::tickNormal() {
+    // TODO: tick normal
+}
+
 void MainFSMContext::tick() {
-    tickAlways();
+    // TODO: tick always
     currentState->tick();
 }
 

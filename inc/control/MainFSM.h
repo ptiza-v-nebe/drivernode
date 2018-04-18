@@ -12,11 +12,15 @@
 
 #include <serial/ComStatusHandler.h>
 #include <functional>
+#include <vector>
 
 class MessageDispatcher;
 class MainFSMBaseState;
 
-class MainFSM : public ComStatusHandler {
+class Clocked;
+class InitializableClocked;
+
+class MainFSM: public ComStatusHandler {
 public:
     virtual ~MainFSM() = default;
 
@@ -31,14 +35,15 @@ class MainFSMContext: public MainFSM {
 private:
     MainFSMBaseState *currentState;
     MessageDispatcher& dispatcher;
-    std::function<void()> tickAlways;
+
+    std::vector<Clocked*> alwaysClocked;
+    std::vector<Clocked*> clockedInNormalOperation;
+    std::vector<InitializableClocked*> needInitializing;
 public:
-    // internal / FSM
-    std::function<bool()> tickInit;
-    std::function<void()> tickNormal;
-public:
-    MainFSMContext(MessageDispatcher& dispatcher, std::function<bool()>&& init = []{return true;},
-            std::function<void()>&& normal = []{}, std::function<void()>&& always = []{});
+    MainFSMContext(MessageDispatcher& dispatcher,
+            std::vector<Clocked*> clockedInNormalOperation = { },
+            std::vector<InitializableClocked*> needInitialising = { },
+            std::vector<Clocked*> alwaysClocked = { });
     virtual ~MainFSMContext();
 
     // prevent copy and move
@@ -51,6 +56,11 @@ public:
     void sendReadyMessage();
     void sendStartMessage();
     void startGameTimer();
+
+    void startInitializing();
+
+    bool tickInit();
+    void tickNormal();
 
     // external interface
     void tick() override;
