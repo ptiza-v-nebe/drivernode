@@ -167,12 +167,12 @@ static constexpr uint16_t MOTOR_UART_RX = GPIO_PIN_11;
 /**
  * ID of the first SRF08
  */
-static constexpr uint8_t SRF08_1_ID = 0xEE;
+static constexpr uint8_t SRF08_1_ID = 0xE2;
 
 /**
  * ID of the second SRF08
  */
-static constexpr uint8_t SRF08_2_ID = 0xE2;
+static constexpr uint8_t SRF08_2_ID = 0xEE;
 
 #endif
 #ifdef SMALL_ROBOT
@@ -346,7 +346,7 @@ HALManager::HALManager() :
 
 #endif
                 dynamixelCom(), //
-                starterSwitch(GPIOB, GPIO_PIN_5), //
+                starterSwitch(GPIOB, GPIO_PIN_5, GPIO_PIN_SET, GPIO_PULLUP), //
                 statusLED(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET), //
                 errorLED(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET), //
                 i2c { }, //
