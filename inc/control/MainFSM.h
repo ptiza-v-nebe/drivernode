@@ -11,14 +11,13 @@
 #define CONTROL_MAINFSM_H_
 
 #include <serial/ComStatusHandler.h>
+#include <control/Clocked.h>
+#include <control/ClockedInitializable.h>
 #include <functional>
 #include <vector>
 
 class MessageDispatcher;
 class MainFSMBaseState;
-
-class Clocked;
-class InitializableClocked;
 
 class MainFSM: public ComStatusHandler {
 public:
@@ -38,11 +37,11 @@ private:
 
     std::vector<Clocked*> alwaysClocked;
     std::vector<Clocked*> clockedInNormalOperation;
-    std::vector<InitializableClocked*> needInitializing;
+    std::vector<ClockedInitializable*> needInitializing;
 public:
     MainFSMContext(MessageDispatcher& dispatcher,
             std::vector<Clocked*> clockedInNormalOperation = { },
-            std::vector<InitializableClocked*> needInitialising = { },
+            std::vector<ClockedInitializable*> needInitialising = { },
             std::vector<Clocked*> alwaysClocked = { });
     virtual ~MainFSMContext();
 

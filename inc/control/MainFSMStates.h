@@ -66,6 +66,7 @@ STATE(UART_Connected)
 };
 
 STATE(Initialize)
+    void entry() override;
     void tick() override;
 };
 

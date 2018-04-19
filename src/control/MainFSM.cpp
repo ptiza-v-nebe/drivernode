@@ -13,10 +13,11 @@
 #include <serial/messages/GameStartMessage.h>
 #include <serial/messages/StatusMessage.h>
 #include <serial/MessageDispatcher.h>
+#include <algorithm>
 
 MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
         std::vector<Clocked*> clockedInNormalOperation,
-        std::vector<InitializableClocked*> needInitialising,
+        std::vector<ClockedInitializable*> needInitialising,
         std::vector<Clocked*> alwaysClocked) :
         currentState(new Reset(*this)), dispatcher(dispatcher), alwaysClocked(
                 alwaysClocked), clockedInNormalOperation(
@@ -35,17 +36,34 @@ MainFSMContext::~MainFSMContext() {
     delete (currentState);
 }
 
+void MainFSMContext::startInitializing() {
+    std::for_each(needInitializing.begin(), needInitializing.end(),
+            [](ClockedInitializable *element) {
+                element->startInitializing();
+            });
+}
+
 bool MainFSMContext::tickInit() {
-    // TODO: tick init
-    return true;
+    bool result = true;
+    std::for_each(needInitializing.begin(), needInitializing.end(),
+            [&result](ClockedInitializable *element) {
+                result = result && element->tickInit();
+            });
+    return result;
 }
 
 void MainFSMContext::tickNormal() {
-    // TODO: tick normal
+    std::for_each(clockedInNormalOperation.begin(),
+            clockedInNormalOperation.end(), [](Clocked *element) {
+                element->tick();
+            });
 }
 
 void MainFSMContext::tick() {
-    // TODO: tick always
+    std::for_each(alwaysClocked.begin(), alwaysClocked.end(),
+            [](Clocked *element) {
+                element->tick();
+            });
     currentState->tick();
 }
 

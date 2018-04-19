@@ -31,6 +31,10 @@ void UART_Connected::initializeMessageReceived() {
     CHANGE_STATE(Initialize);
 }
 
+void Initialize::entry() {
+    context.startInitializing();
+}
+
 void Initialize::tick() {
     if(context.tickInit()) {
         CHANGE_STATE(Ready);
