@@ -27,6 +27,7 @@ public:
 
     //virtual void handleComEstablished() = 0; // from ComStatusHandler
     //virtual void handleComFailed() = 0; // from ComStatusHandler
+    //virtual void handleComReset() = 0; // from ComStatusHandler
     virtual void gameTimerFinished() = 0;
 };
 
@@ -66,6 +67,7 @@ public:
 
     void handleComEstablished() override;
     void handleComFailed() override;
+    void handleComReset() override;
     void gameTimerFinished() override;
 };
 

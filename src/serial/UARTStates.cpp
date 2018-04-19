@@ -15,6 +15,7 @@
 void UARTBaseState::heartbeatReceived(const HeartbeatMessage& msg) {
     if (msg.hasVersion()) {
         CHANGE_STATE(Init);
+        context.publishComReset();
     }
 }
 
@@ -36,6 +37,7 @@ void WaitForConnection::heartbeatTick() {
 void WaitForConnection::heartbeatReceived(const HeartbeatMessage& msg) {
     if (msg.hasVersion()) {
         CHANGE_STATE(Init);
+        context.publishComReset();
     } else {
         context.increaseCount();
         if (context.getCount() >= 5) {

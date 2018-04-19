@@ -40,6 +40,7 @@ public:
 
     void publishComError();
     void publishComEstablished();
+    void publishComReset();
 
     void sendMessage(const Message& msg) const override;
 

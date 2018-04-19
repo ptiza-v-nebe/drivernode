@@ -87,6 +87,10 @@ void MainFSMContext::handleComFailed() {
     currentState->comFailed();
 }
 
+void MainFSMContext::handleComReset() {
+    currentState->comReset();
+}
+
 void MainFSMContext::gameTimerFinished() {
     currentState->gameTimerFinished();
 }

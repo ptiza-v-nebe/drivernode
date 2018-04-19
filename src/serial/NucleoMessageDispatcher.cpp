@@ -93,6 +93,12 @@ void NucleoMessageDispatcher::publishComEstablished() {
     }
 }
 
+void NucleoMessageDispatcher::publishComReset() {
+    if (statusHandler) {
+        statusHandler->handleComReset();
+    }
+}
+
 void NucleoMessageDispatcher::sendMessage(const Message& msg) const {
     MessageDispatcher::sendMessage(msg);
     setMessageSent();

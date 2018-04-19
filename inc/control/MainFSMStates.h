@@ -40,6 +40,7 @@ public:
 
     }
     virtual void comFailed();
+    virtual void comReset();
     virtual void initializeMessageReceived() {
     }
     virtual void gameTimerFinished() {
@@ -61,6 +62,7 @@ STATE(Reset)
 };
 
 STATE(UART_Connected)
+    void entry() override;
     void comFailed() override;
     void initializeMessageReceived() override;
 };

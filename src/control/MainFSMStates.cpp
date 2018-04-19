@@ -14,6 +14,9 @@
 void MainFSMBaseState::comFailed() {
     CHANGE_STATE(Com_Error);
 }
+void MainFSMBaseState::comReset() {
+    CHANGE_STATE(Reset);
+}
 
 void Reset::comEstablished() {
     CHANGE_STATE(UART_Connected);
@@ -21,6 +24,10 @@ void Reset::comEstablished() {
 
 void Reset::comFailed() {
     // do nothing (overrides default behavior)
+}
+
+void UART_Connected::entry() {
+    //HALManager::getInstance().getErrorLED().setOff(); // TODO: update HALManager
 }
 
 void UART_Connected::comFailed() {
