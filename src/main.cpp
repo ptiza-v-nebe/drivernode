@@ -42,10 +42,12 @@ int main(void) {
 #else
     ODROIDMessageDispatcherFactory factory;
 #endif /*HUMAN_MODE*/
-#endif /*CALIBRATION*/
+
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
 
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
+
+    MainFSMContext mainFSM(dispatcher, { }, { }, { &pm });
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -58,6 +60,10 @@ int main(void) {
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+
+    schedule_repeating_task([&mainFSM]() {
+        mainFSM.tick();
+    }, 10);
 
 #ifdef BLINK_LED
     __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -79,11 +85,6 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-    MainFSMContext mainFSM(dispatcher);
-    schedule_repeating_task([&mainFSM]() {
-        mainFSM.tick();
-    }, 400);
-
     // ////////////////////////////////////////////
     // END TEST AREA
     // ////////////////////////////////////////////
@@ -91,6 +92,7 @@ int main(void) {
     // ////////////////////////////////////////////
     // Start Scheduler and execute Tasks
     // ////////////////////////////////////////////
+#endif /*CALIBRATION*/
     start_scheduler();
 
     for (;;)

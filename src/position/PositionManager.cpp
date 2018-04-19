@@ -23,7 +23,7 @@ void PositionManager::reset(const Position& position, const Angle& heading) {
     this->heading = heading;
 }
 
-void PositionManager::update() {
+void PositionManager::tick() {
     // read encoders
     int ticksLeft = left.getTickAndReset();
     int ticksRight = right.getTickAndReset();

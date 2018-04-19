@@ -12,8 +12,8 @@
 #include <serial/UARTStates.h>
 #include <serial/messages/HeartbeatMessage.h>
 #include <serial/ComStatusHandler.h>
-
 #include <scheduler/Scheduler.h>
+#include <config.h>
 
 static constexpr int HEARTBEAT_TICK_MS = 200;
 static constexpr int HEARTBEAT_TIMEOUT_MS = 500;
@@ -27,6 +27,7 @@ NucleoMessageDispatcher::NucleoMessageDispatcher(MessageSender& sender) :
                 currentState->heartbeatReceived(msg);
             });
 
+#ifndef CALIBRATION
     schedule_repeating_task([this]() {
         currentState->heartbeatTick();
     }, HEARTBEAT_TICK_MS);
@@ -34,6 +35,7 @@ NucleoMessageDispatcher::NucleoMessageDispatcher(MessageSender& sender) :
     schedule_repeating_task([this]() {
         currentState->heartbeatTimeout();
     }, HEARTBEAT_TIMEOUT_MS);
+#endif
 }
 
 NucleoMessageDispatcher::~NucleoMessageDispatcher() {

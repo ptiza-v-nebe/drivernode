@@ -10,13 +10,14 @@
 #ifndef POSITION_POSITIONMANAGER_H_
 #define POSITION_POSITIONMANAGER_H_
 
-#include <cstdint>
+#include "Angle.h"
+#include "Position.h"
+
 #include "hal/Encoder.h"
+#include <control/Clocked.h>
+#include <cstdint>
 
-#include "position/Angle.h"
-#include "position/Position.h"
-
-class PositionManager {
+class PositionManager : public Clocked {
 private:
     float xum;
     float yum;
@@ -29,7 +30,7 @@ public:
 
 
     void reset(const Position& position, const Angle& heading);
-    void update();
+    void tick() override;
 
     Position getPosition() const;
     const Angle& getHeading() const;
