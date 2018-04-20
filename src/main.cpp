@@ -72,6 +72,16 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
+    dispatcher.registerMessageHandler<ControlledDriveMessage>(
+            [&hal](const ControlledDriveMessage&) {
+                hal.getLeftMotor().setSpeed(4000);
+                hal.getRightMotor().setSpeed(4000);
+            });
+    dispatcher.registerMessageHandler<StopMessage>([&hal](const StopMessage&) {
+        hal.getLeftMotor().stop();
+        hal.getRightMotor().stop();
+    });
+
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
@@ -90,7 +100,7 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 
-#if 1
+#if 0
     // Sensor Test
     schedule_repeating_task(
             [&hal]() {

@@ -27,7 +27,7 @@ void Reset::comFailed() {
 }
 
 void UART_Connected::entry() {
-    //HALManager::getInstance().getErrorLED().setOff(); // TODO: update HALManager
+    HALManager::getInstance().getErrorLED().setOff();
 }
 
 void UART_Connected::comFailed() {
@@ -53,10 +53,10 @@ void Ready::entry() {
 }
 
 void Ready::tick() {
-    /*static InputPin& starterPin = HALManager::getInstance().getStarterPin(); // TODO: update HALManager
-    if(starterPin.isOff()) {*/
+    static InputPin& starterPin = HALManager::getInstance().getStarterPin();
+    if(starterPin.isOff()) {
         CHANGE_STATE(Normal_Operation);
-    //}
+    }
 
 }
 
@@ -74,11 +74,11 @@ void Normal_Operation::tick() {
 }
 
 void EmergencyStop::entry() {
-    //HALManager::getInstance().disableAllActors(); // TODO: update HALManager
+    HALManager::getInstance().disableAllActors();
 }
 
 void Com_Error::entry() {
     EmergencyStop::entry();
-    //HALManager::getInstance().getErrorLED().setOn(); // TODO: update HALManager
+    HALManager::getInstance().getErrorLED().setOn();
 }
 /** @} */
