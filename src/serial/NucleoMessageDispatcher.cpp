@@ -27,7 +27,7 @@ NucleoMessageDispatcher::NucleoMessageDispatcher(MessageSender& sender) :
                 currentState->heartbeatReceived(msg);
             });
 
-#ifndef CALIBRATION
+#ifndef HUMAN_MODE
     schedule_repeating_task([this]() {
         currentState->heartbeatTick();
     }, HEARTBEAT_TICK_MS);

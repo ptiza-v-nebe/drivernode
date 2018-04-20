@@ -72,6 +72,9 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
+    hal.getLeftMotor().enable();
+    hal.getRightMotor().enable();
+
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
             [&hal](const ControlledDriveMessage&) {
                 hal.getLeftMotor().setSpeed(4000);
