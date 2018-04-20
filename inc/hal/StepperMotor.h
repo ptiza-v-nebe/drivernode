@@ -10,23 +10,21 @@
 #ifndef HAL_STEPPERMOTOR_H_
 #define HAL_STEPPERMOTOR_H_
 
-#include "hal/Motor.h"
-#include "hal/PWM.h"
+#include "Motor.h"
+#include "PWM.h"
+#include "OutputPin.h"
 #include <stm32l4xx.h>
+
+class OutputPin;
 
 class StepperMotor: public Motor {
 private:
     PWM step; ///< use a hardware PWM to generate step signal
-    uint16_t directionPin; ///< the direction pin
-    bool invertDirection; ///< should the direction pin be inverted
-    uint16_t enablePin; ///< the enable pin
-    bool invertEnable; ///< should the enable pin be inverted
-    GPIO_TypeDef *gpio; ///< the gpio bank to use
+    OutputPin enablePin; ///< the enable pin
+    OutputPin directionPin; ///< the direction pin
     bool enabled; ///< is the motor enabled
 public:
-    StepperMotor(PWM& step, GPIO_TypeDef *gpio, uint16_t directionPin,
-            uint16_t enablePin, bool invertDirection = false,
-            bool invertEnable = false);
+    StepperMotor(PWM& step, OutputPin&& enablePin, OutputPin&& directionPin);
 
     // prevent copy and move
     StepperMotor(const StepperMotor&) = delete;

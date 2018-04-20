@@ -68,6 +68,10 @@ void OutputPin::setOff() {
     set(false);
 }
 
+void OutputPin::toggle() {
+    HAL_GPIO_TogglePin(gpio, pin);
+}
+
 /**
  * Initializes the GPIO pin
  *

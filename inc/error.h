@@ -5,7 +5,6 @@
  ******************************************************************************
  */
 
-
 #ifndef ERROR_H_
 #define ERROR_H_
 
@@ -19,6 +18,7 @@
     printf("\nStopping program...please press RESET\r\n"); \
     while(1) {}
 #endif
+#ifndef SUPRESS_ERROR
 /**
  * Report an error and stop program
  */
@@ -33,19 +33,18 @@
     printf("\r\n"); \
     STOP_PROGRAM()\
 }
+#else // SUPRESS_ERROR
+#define ERROR(...)
+#endif
 
 #define TRY(x) \
     if(int result = (x)) { \
         ERROR("%s failed with result %d", #x, result);\
     }
 
-#else
+#else // HUMAN MODE --> RAW_MODE
 #define ERROR(...)
 #define TRY(x) x
-#endif
-
-
-
-
+#endif // HUMAN_MODE
 
 #endif /* ERROR_H_ */

@@ -24,9 +24,9 @@ public:
 
     // prevent copy and move
     OutputPin(const OutputPin&) = delete;
-    OutputPin(OutputPin&&) = delete;
+    OutputPin(OutputPin&&) = default;
     OutputPin& operator=(const OutputPin&) = delete;
-    OutputPin& operator=(OutputPin&&) = delete;
+    OutputPin& operator=(OutputPin&&) = default;
 
     void enable() override;
     void disableAndStop() override;
@@ -34,6 +34,8 @@ public:
     void set(bool on);
     void setOn();
     void setOff();
+
+    void toggle();
 private:
     void init(uint32_t pullUp, uint32_t mode);
 };

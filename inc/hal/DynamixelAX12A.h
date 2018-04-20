@@ -24,9 +24,9 @@ public:
 
     // prevent copy and move
     DynamixelAX12A(const DynamixelAX12A&) = delete;
-    DynamixelAX12A(DynamixelAX12A&&) = delete;
+    DynamixelAX12A(DynamixelAX12A&&) = default;
     DynamixelAX12A& operator=(const DynamixelAX12A&) = delete;
-    DynamixelAX12A& operator=(DynamixelAX12A&&) = delete;
+    DynamixelAX12A& operator=(DynamixelAX12A&&) = default;
 
     virtual void enable() override;
     virtual void disableAndStop() override;

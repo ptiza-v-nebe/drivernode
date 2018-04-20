@@ -8,24 +8,19 @@
  */
 
 #include <hal/StepperMotor.h>
-
+#include <utility>
 /**
  * Constructs a StepperMotor abstraction.
  * @attention StepperMotor is DISABLED by default!
  *
- * @param step            the PWM used to generate step signal
- * @param gpio            the gpio bank
- * @param directionPin    the direction pin
- * @param enablePin       the enable pin
- * @param invertDirection should the direction pin be inverted?
- * @param invertEnable    should the enable pin be inverted?
+ * @param step      the PWM used to generate step signal
+ * @param enable    the enable pin
+ * @param direction the direction pin
  */
-StepperMotor::StepperMotor(PWM& step, GPIO_TypeDef* gpio, uint16_t directionPin,
-        uint16_t enablePin, bool invertDirection, bool invertEnable) :
-        step(step), directionPin(directionPin), invertDirection(
-                invertDirection), enablePin(enablePin), invertEnable(
-                invertEnable), gpio(gpio), enabled(true) {
-    disableAndStop();
+StepperMotor::StepperMotor(PWM& step, OutputPin&& enablePin, OutputPin&& directionPin) :
+        step(step), enablePin(std::move(enablePin)), directionPin(std::move(directionPin)), enabled(false) {
+    this->enablePin.enable();
+    this->directionPin.enable();
 }
 
 /*
@@ -33,16 +28,16 @@ StepperMotor::StepperMotor(PWM& step, GPIO_TypeDef* gpio, uint16_t directionPin,
  */
 void StepperMotor::enable() {
     enabled = true;
-    HAL_GPIO_WritePin(gpio, enablePin,
-            (invertEnable ? GPIO_PIN_RESET : GPIO_PIN_SET));
+    enablePin.setOn();
 }
 
 /*
  * @see - Actor::disableAndStop()
  */
 void StepperMotor::disableAndStop() {
-    enabled = false;
     stop();
+    enabled = false;
+    enablePin.setOff();
 }
 
 /*
@@ -54,9 +49,10 @@ void StepperMotor::setSpeed(int16_t speed) {
     }
 
     if (speed == 0) {
-        stop();
+        step.disable();
+        return;
     } else {
-        enable();
+        step.enable();
     }
 
     if (speed < 0) {
@@ -72,8 +68,7 @@ void StepperMotor::setSpeed(int16_t speed) {
  * @see - Motor::stop()
  */
 void StepperMotor::stop() {
-    HAL_GPIO_WritePin(gpio, enablePin,
-            (invertEnable ? GPIO_PIN_SET : GPIO_PIN_RESET));
+    setSpeed(0);
 }
 
 /**
@@ -83,11 +78,9 @@ void StepperMotor::stop() {
  */
 void StepperMotor::setDirection(int direction) {
     if (direction < 0) {
-        HAL_GPIO_WritePin(gpio, directionPin,
-                (invertDirection ? GPIO_PIN_RESET : GPIO_PIN_SET));
+        directionPin.setOn();
     } else {
-        HAL_GPIO_WritePin(gpio, directionPin,
-                (invertDirection ? GPIO_PIN_SET : GPIO_PIN_RESET));
+        directionPin.setOff();
     }
 }
 /** @} */

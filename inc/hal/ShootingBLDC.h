@@ -32,6 +32,8 @@ public:
 
     void start();
     void stop();
+
+    void initialize();
 };
 
 #endif /* HAL_SHOOTINGBLDC_H_ */

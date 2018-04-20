@@ -12,8 +12,8 @@
 /**
  * Select Robot (only one!!!)
  */
-#define BIG_ROBOT
-//#define SMALL_ROBOT
+//#define BIG_ROBOT
+#define SMALL_ROBOT
 
 /**
  * Should the LED blink to signal that the Scheduler is running
@@ -30,6 +30,11 @@
  * Only effective if HUMAN_MODE is enabled
  */
 #define CONTINUE_ON_ERROR
+
+/**
+ * Use this to prevent showing errors
+ */
+#define SUPRESS_ERROR
 
 /**
  * Enables calibration
