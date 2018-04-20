@@ -359,10 +359,11 @@ HALManager::HALManager() :
 #ifdef SMALL_ROBOT
                 leftMotorPWM(LEFT_TIMER, LEFT_CHANNEL), //
                 rightMotorPWM(RIGHT_TIMER, RIGHT_CHANNEL), //
-                leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4}, //
+                leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4 }, //
                         { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
                 rightMotor(rightMotorPWM, { GPIOH, GPIO_PIN_0 }, //
                         { GPIOH, GPIO_PIN_1 }), //
+                frontSwitch(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET, GPIO_PULLUP), //
                 shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //
                 shootingBLDC(shootingBLDCPWM), //
                 servo( { DYNAMIXEL_ID, dynamixelCom }) //
@@ -610,6 +611,13 @@ DynamixelAX12A& HALManager::getServo() {
 }
 
 /**
+ * @return reference to the switch at the front
+ */
+InputPin& HALManager::getFrontSwitch() {
+    return frontSwitch;
+}
+
+/**
  * initializes the timers and gpios for the pwms for the motors
  */
 void HALManager::initializeMotors() {
@@ -632,7 +640,6 @@ void HALManager::initializeMotors() {
     channel.Pulse = 500;
     channel.OCMode = TIM_OCMODE_PWM1;
 
-    gpio.Alternate = GPIO_AF1_TIM2;
     gpio.Mode = GPIO_MODE_AF_PP;
 
     __HAL_RCC_TIM2_CLK_ENABLE()
@@ -645,6 +652,7 @@ void HALManager::initializeMotors() {
     // initialize left
     timer.Instance = LEFT_TIMER;
     gpio.Pin = LEFT_TIMER_PIN;
+    gpio.Alternate = GPIO_AF2_TIM5;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, LEFT_CHANNEL);
@@ -656,6 +664,7 @@ void HALManager::initializeMotors() {
     // initialize right
     timer.Instance = RIGHT_TIMER;
     gpio.Pin = RIGHT_TIMER_PIN;
+    gpio.Alternate = GPIO_AF1_TIM2;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, RIGHT_CHANNEL);

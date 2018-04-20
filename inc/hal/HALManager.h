@@ -64,19 +64,20 @@ private:
 #ifdef BIG_ROBOT
     ScaraHardware scaraHardware; ///< the scara hardware
 
-    FaulhaberBLDC leftMotor; ///< the left motor used for driving
-    FaulhaberBLDC rightMotor; ///< the right motor used for driving
-    UART_HandleTypeDef motorUART; ///< the UART used for the Faulhaber BLDC motors
+    FaulhaberBLDC leftMotor;///< the left motor used for driving
+    FaulhaberBLDC rightMotor;///< the right motor used for driving
+    UART_HandleTypeDef motorUART;///< the UART used for the Faulhaber BLDC motors
 #endif
 #ifdef SMALL_ROBOT
     PWM leftMotorPWM; ///< the PWM for the left motor.
-    PWM rightMotorPWM;/// the PWM for the right motor
-    StepperMotor leftMotor;///< the left motor used for driving
-    StepperMotor rightMotor;///< the right motor used for driving
+    PWM rightMotorPWM; /// the PWM for the right motor
+    StepperMotor leftMotor; ///< the left motor used for driving
+    StepperMotor rightMotor; ///< the right motor used for driving
+    InputPin frontSwitch; ///< the switch at the front, used to detect when we are under the ball thingy
 
-    PWM shootingBLDCPWM;///<
-    ShootingBLDC shootingBLDC;///< the BLDC used to shoot
-    DynamixelAX12A servo;///< the dynamixel used for bee and switch
+    PWM shootingBLDCPWM; ///<
+    ShootingBLDC shootingBLDC; ///< the BLDC used to shoot
+    DynamixelAX12A servo; ///< the dynamixel used for bee and switch
 #endif
 
     // /////////////////////////////////////////////////////////////
@@ -116,6 +117,7 @@ private:
 public:
     ShootingBLDC& getShootingBLDC();
     DynamixelAX12A& getServo();
+    InputPin& getFrontSwitch();
 private:
     void initializeMotors();
     void initializeShootingBLDC();
