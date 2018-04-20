@@ -19,6 +19,8 @@
  */
 StepperMotor::StepperMotor(PWM& step, OutputPin&& enablePin, OutputPin&& directionPin) :
         step(step), enablePin(std::move(enablePin)), directionPin(std::move(directionPin)), enabled(false) {
+    this->enablePin.enable();
+    this->directionPin.enable();
 }
 
 /*
