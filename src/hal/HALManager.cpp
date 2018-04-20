@@ -360,7 +360,7 @@ HALManager::HALManager() :
                 leftMotorPWM(LEFT_TIMER, LEFT_CHANNEL), //
                 rightMotorPWM(RIGHT_TIMER, RIGHT_CHANNEL), //
                 leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4}, //
-                        { GPIOA, GPIO_PIN_1 }), //
+                        { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
                 rightMotor(rightMotorPWM, { GPIOH, GPIO_PIN_0 }, //
                         { GPIOH, GPIO_PIN_1 }), //
                 shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //

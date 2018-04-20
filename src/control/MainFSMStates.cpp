@@ -57,7 +57,6 @@ void Ready::tick() {
     if(starterPin.isOff()) {
         CHANGE_STATE(Normal_Operation);
     }
-
 }
 
 void Normal_Operation::entry() {
