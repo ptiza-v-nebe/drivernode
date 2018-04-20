@@ -108,14 +108,10 @@ void HumanCommandHandler::printHelpMessage() {
     printf("q             - Stop \r\n\n");
 
     printf("Driving: \r\n");
-    printf("df            - SimpleDrive forward (SLOW)\r\n");
-    printf("db            - SimpleDrive backward (SLOW)\r\n");
-    printf("dp <i> <i>    - ControlledDrive to position x,y (SLOW)\r\n\n");
+    printf("dp <i> <i>    - ControlledDrive to position x,y (FAST, FORWARD, HIGH accuracy)\r\n\n");
 
     printf("Turning: \r\n");
-    printf("tcc           - SimpleTurn counter-clockwise (SLOW)\r\n");
-    printf("tcw           - SimpleTurn clockwise (SLOW)\r\n");
-    printf("t <f>         - ControlledTurn to angle in degrees (SLOW)\r\n\n");
+    printf("t <f>         - ControlledTurn to angle in degrees\r\n\n");
 
     printf("Other: \r\n");
     printf("s <i>         - SetSpeed same on both wheels\r\n");

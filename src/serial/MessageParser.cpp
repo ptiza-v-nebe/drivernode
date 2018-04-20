@@ -76,26 +76,13 @@ int MessageParser::parseDriveMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
     if (size >= 2) {
         switch (msg[1]) {
-            case 'f': //df
-            {
-                SimpleDriveMessage sdm(DriveSpeed::SLOW,
-                        DriveDirection::FORWARD);
-                print(sdm);
-                return Serializer::serialize(sdm, buffer, buffersize);
-            }
-            case 'b': //db
-            {
-                SimpleDriveMessage sdm(DriveSpeed::SLOW,
-                        DriveDirection::BACKWARD);
-                print(sdm);
-                return Serializer::serialize(sdm, buffer, buffersize);
-            }
             case 'p': {
                 int16_t x, y;
                 if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hd %hd",
                         &x, &y) == 2) {
                     // successfully parsed two unsigned ints
-                    ControlledDriveMessage cdm(DriveSpeed::SLOW, {x, y});
+                    ControlledDriveMessage cdm( { x, y }, DriveSpeed::FAST,
+                            DriveDirection::FORWARD, DriveAccuracy::HIGH);
                     print(cdm);
                     return Serializer::serialize(cdm, buffer, buffersize);
                 } else {
@@ -125,32 +112,12 @@ int MessageParser::parseTurnMessage(const uint8_t* msg, const int size,
         uint8_t* buffer, const int buffersize) {
     if (size >= 3) {
         switch (msg[1]) {
-            case 'c':
-                switch (msg[2]) {
-                    case 'c': // tcc
-                    {
-                        SimpleTurnMessage stm(TurnSpeed::SLOW,
-                                TurnDirection::CCW);
-                        print(stm);
-                        return Serializer::serialize(stm, buffer, buffersize);
-                    }
-                    case 'w': //tcw
-                    {
-                        SimpleTurnMessage stm(TurnSpeed::SLOW,
-                                TurnDirection::CW);
-                        print(stm);
-                        return Serializer::serialize(stm, buffer, buffersize);
-                    }
-                    default:
-                        return -1;
-                }
             case ' ': {
                 float degrees;
                 if (sscanf(reinterpret_cast<const char*>(msg + 2), "%f",
                         &degrees) == 1) {
                     // successfully parsed float
-                    ControlledTurnMessage ctm(TurnSpeed::SLOW,
-                            Angle::getFromDegrees(degrees));
+                    ControlledTurnMessage ctm(Angle::getFromDegrees(degrees));
                     print(ctm);
                     return Serializer::serialize(ctm, buffer, buffersize);
                 } else {
@@ -212,9 +179,10 @@ int MessageParser::parseResetMessage(const uint8_t* msg, const int,
         uint8_t* buffer, const int buffersize) {
     int16_t x, y;
     float degrees;
-    if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hd %hd %f", &x, &y, &degrees) == 3) {
+    if (sscanf(reinterpret_cast<const char*>(msg + 2), "%hd %hd %f", &x, &y,
+            &degrees) == 3) {
         // successfully parsed float
-        ResetOdometryMessage rom({x, y}, Angle::getFromDegrees(degrees));
+        ResetOdometryMessage rom( { x, y }, Angle::getFromDegrees(degrees));
         print(rom);
         return Serializer::serialize(rom, buffer, buffersize);
     } else {
@@ -233,7 +201,7 @@ void MessageParser::print(const Message& message) {
     message.print();
     printf("\r\n");
 #else
-void MessageParser::print(const Message&) {
+    void MessageParser::print(const Message&) {
 #endif
 }
 /** @} */

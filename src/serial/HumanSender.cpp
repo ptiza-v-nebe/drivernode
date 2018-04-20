@@ -42,9 +42,7 @@ void HumanSender::send(const uint8_t* message, const int size) {
 void HumanSender::initializeDeserializationTable() {
     setDeseralizer<HeartbeatMessage>();
     setDeseralizer<StopMessage>();
-    setDeseralizer<SimpleDriveMessage>();
     setDeseralizer<ControlledDriveMessage>();
-    setDeseralizer<SimpleTurnMessage>();
     setDeseralizer<ControlledTurnMessage>();
     setDeseralizer<PositionMessage>();
     setDeseralizer<StatusMessage>();
