@@ -99,9 +99,22 @@ int main(void) {
     // Setup Tasks
     // ////////////////////////////////////////////
 
-    schedule_repeating_task([&mainFSM]() {
+    /*schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
-    }, 10);
+    }, 10);*/
+
+    schedule_repeating_task([&hal](){
+        static InputPin& front = hal.getFrontSwitch();
+        static bool stopped = false;
+        if(front.isOn() && !stopped) {
+            hal.getLeftMotor().stop();
+            hal.getRightMotor().stop();
+
+            stopped = true;
+        } else if (front.isOff() && stopped) {
+            stopped = false;
+        }
+    }, 50);
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
