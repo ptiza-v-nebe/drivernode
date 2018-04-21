@@ -12,8 +12,8 @@
 /**
  * Select Robot (only one!!!)
  */
-//#define BIG_ROBOT
-#define SMALL_ROBOT
+#define BIG_ROBOT
+//#define SMALL_ROBOT
 
 /**
  * Should the LED blink to signal that the Scheduler is running
@@ -39,7 +39,7 @@
 /**
  * Enables calibration
  */
-#define CALIBRATION
+//#define CALIBRATION
 
 /**
  * Enable to generate more output in the MessageParser.

@@ -5,7 +5,7 @@
  *      Author: max
  */
 
-#include <PD.h>
+#include <driving/PD.h>
 
 PD::PD(float kP, float Tv, float Ts) {
 	b0 = (kP*Ts+kP*Tv)/Ts;
