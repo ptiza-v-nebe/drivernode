@@ -40,9 +40,7 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm) :
 		targetPosition(pm.getPosition()),
 		targetAngle(pm.getHeading()),
 		driveSpeed(DriveSpeed::SLOW),
-		driveDirection(DriveDirection::FORWARD),
-		turnSpeed(TurnSpeed::SLOW),
-		turnDirection(TurnDirection::CW)
+		driveDirection(DriveDirection::FORWARD)
 		{
 	currentState = new Idle(*this);
 }
@@ -130,12 +128,4 @@ void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
 	this->driveDirection = direction;
-}
-
-void DriverFSM::setTurnSpeed(TurnSpeed speed) {
-	this->turnSpeed = speed;
-}
-
-void DriverFSM::setTurnDirection(TurnDirection direction) {
-	this->turnDirection = direction;
 }

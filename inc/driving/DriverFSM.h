@@ -35,8 +35,6 @@ private:
 	Angle targetAngle;
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
-	TurnSpeed turnSpeed;
-	TurnDirection turnDirection;
 
 	int counter = 0;
 	float lastSpeedLeft = 0;
@@ -61,8 +59,6 @@ public:
 	void setTargetAngle(Angle targetAngle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
-	void setTurnSpeed(TurnSpeed speed);
-	void setTurnDirection(TurnDirection direction);
 };
 
 #endif /* DRIVING_DRIVERFSM_H */
