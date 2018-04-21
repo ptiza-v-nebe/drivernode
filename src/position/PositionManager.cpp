@@ -9,10 +9,15 @@
 
 #include <position/PositionManager.h>
 #include "position/calibration_parameters.h"
+#include "constants.h"
 #include <cmath>
 
 PositionManager::PositionManager(Encoder& left, Encoder& right) :
-        xum(0), yum(0), heading(0), left(left), right(right) {
+        xum(0), yum(0), heading(0),
+		leftWheelVelocity(0), rightWheelVelocity(0),
+		leftWheelDistance(0), rightWheelDistance(0),
+		forwardVelocity(0), rotationalVelocity(0),
+		left(left), right(right) {
 }
 
 void PositionManager::reset(const Position& position, const Angle& heading) {
@@ -32,11 +37,21 @@ void PositionManager::tick() {
     float umLeft = ticksLeft * UM_PER_TICK_L;
     float umRight = ticksRight * UM_PER_TICK_R;
 
+    leftWheelDistance = leftWheelDistance + (umLeft/1000000);
+    rightWheelDistance = rightWheelDistance + (umRight/1000000);
+
+    leftWheelVelocity = umLeft/(1000000*CONTROLLER_SAMPLING_TIME);
+    rightWheelVelocity = umRight/(1000000*CONTROLLER_SAMPLING_TIME);
+
     // general formula for changes in angle
     float delta_alpha = (umRight - umLeft) / TRACK_WIDTH_UM;
 
     // distance traveled
     float delta_s = (umLeft + umRight) / 2;
+
+    // velocities
+    forwardVelocity = delta_s/(1000000*CONTROLLER_SAMPLING_TIME);
+    rotationalVelocity = delta_alpha/CONTROLLER_SAMPLING_TIME;
 
     // both motors traveled the same distance
     if (std::abs(delta_alpha) < EPSILON) {
@@ -62,4 +77,13 @@ Position PositionManager::getPosition() const {
 const Angle& PositionManager::getHeading() const {
     return heading;
 }
+
+float PositionManager::getForwardVelocity() const {
+	return forwardVelocity;
+}
+
+float PositionManager::getRotationalVelocity() const {
+	return rotationalVelocity;
+}
+
 /** @} */

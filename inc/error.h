@@ -39,11 +39,10 @@
         ERROR("%s failed with result %d", #x, result);\
     }
 
-
 #else // SUPRESS_ERROR
 #define ERROR(...)
 #define TRY(x) x
-#endif // SUPPRESS_ERROR
+#endif // SUPRESS_ERROR
 #else // HUMAN MODE --> RAW_MODE
 #define ERROR(...)
 #define TRY(x) x

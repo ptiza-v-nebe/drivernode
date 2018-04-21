@@ -57,9 +57,9 @@ float Vector::getLength() const {
  * @return the polar angle
  */
 Angle Vector::getPolarAngle() const {
-    if (std::abs(x) < EPSILON && std::abs(y) < EPSILON) {
+    /*if (std::abs(x) < EPSILON && std::abs(y) < EPSILON) {
         return Angle(0);
-    }
+    }*/
     return Angle(std::atan2(y, x));
 }
 

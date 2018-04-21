@@ -122,12 +122,12 @@ static constexpr uint8_t RIGHT_MOTOR_ID = 1;
 /**
  * should the left motor be inverted
  */
-static constexpr bool LEFT_MOTOR_INVERT = false;
+static constexpr bool LEFT_MOTOR_INVERT = true;
 
 /**
  * should the right motor be inverted
  */
-static constexpr bool RIGHT_MOTOR_INVERT = true;
+static constexpr bool RIGHT_MOTOR_INVERT = false;
 
 /**
  * which USART to use for the motors.
@@ -185,7 +185,7 @@ static constexpr uint8_t SRF08_2_ID = 0xEE;
  * @attention when changing this, also change RCC clock enable as well as GPIO
  *            and pin in HALManager::initializeMotors
  */
-#define LEFT_TIMER TIM5
+#define LEFT_TIMER TIM2
 
 /**
  * the timer channel used for left motor
@@ -202,14 +202,14 @@ static constexpr auto LEFT_CHANNEL = TIM_CHANNEL_1;
  * the GPIO pin used for the left timer
  * @attention depends on LEFT_TIMER and LEFT_CHANNEL!
  */
-static constexpr uint16_t LEFT_TIMER_PIN = GPIO_PIN_0;
+static constexpr uint16_t LEFT_TIMER_PIN = GPIO_PIN_5;
 
 /**
  * the timer used for right motor
  * @attention when changing this, also change RCC clock enable as well as GPIO
  *            and pin in HALManager::initializeMotors
  */
-#define RIGHT_TIMER TIM2
+#define RIGHT_TIMER TIM5
 
 /**
  * timer channel used for right motor
@@ -226,7 +226,7 @@ static constexpr auto RIGHT_CHANNEL = TIM_CHANNEL_1;
  * the GPIO pin used for the right timer
  * @attention depends on RIGHT_TIMER and RIGHT_CHANNEL!
  */
-static constexpr uint16_t RIGHT_TIMER_PIN = GPIO_PIN_5;
+static constexpr uint16_t RIGHT_TIMER_PIN = GPIO_PIN_0;
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Shooting BLDC
@@ -359,10 +359,11 @@ HALManager::HALManager() :
 #ifdef SMALL_ROBOT
                 leftMotorPWM(LEFT_TIMER, LEFT_CHANNEL), //
                 rightMotorPWM(RIGHT_TIMER, RIGHT_CHANNEL), //
-                leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4}, //
-                        { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
-                rightMotor(rightMotorPWM, { GPIOH, GPIO_PIN_0 }, //
+                leftMotor(leftMotorPWM, { GPIOH, GPIO_PIN_0 }, //
                         { GPIOH, GPIO_PIN_1 }), //
+                rightMotor(rightMotorPWM, { GPIOC, GPIO_PIN_4 }, //
+                        { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
+                frontSwitch(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET, GPIO_PULLUP), //
                 shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //
                 shootingBLDC(shootingBLDCPWM), //
                 servo( { DYNAMIXEL_ID, dynamixelCom }) //
@@ -610,6 +611,13 @@ DynamixelAX12A& HALManager::getServo() {
 }
 
 /**
+ * @return reference to the switch at the front
+ */
+InputPin& HALManager::getFrontSwitch() {
+    return frontSwitch;
+}
+
+/**
  * initializes the timers and gpios for the pwms for the motors
  */
 void HALManager::initializeMotors() {
@@ -632,7 +640,6 @@ void HALManager::initializeMotors() {
     channel.Pulse = 500;
     channel.OCMode = TIM_OCMODE_PWM1;
 
-    gpio.Alternate = GPIO_AF1_TIM2;
     gpio.Mode = GPIO_MODE_AF_PP;
 
     __HAL_RCC_TIM2_CLK_ENABLE()
@@ -645,6 +652,7 @@ void HALManager::initializeMotors() {
     // initialize left
     timer.Instance = LEFT_TIMER;
     gpio.Pin = LEFT_TIMER_PIN;
+    gpio.Alternate = GPIO_AF1_TIM2;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, LEFT_CHANNEL);
@@ -656,6 +664,7 @@ void HALManager::initializeMotors() {
     // initialize right
     timer.Instance = RIGHT_TIMER;
     gpio.Pin = RIGHT_TIMER_PIN;
+    gpio.Alternate = GPIO_AF2_TIM5;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, RIGHT_CHANNEL);

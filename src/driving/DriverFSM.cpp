@@ -11,24 +11,37 @@
 #include "constants.h"
 #include "hal/Motor.h"
 #include "position/PositionManager.h"
+#include "position/calibration_parameters.h"
 #include "util/util.h"
 
 DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm) :
 		currentState(nullptr),
 		leftMotor(motorLeft),
 		rightMotor(motorRight),
-		positionControl(CONTROLLER_SYSTEM_POSITION_GAIN,
-				CONTROLLER_SYSTEM_POSITION_DELAYTIME,
+		positionControl(
+				CONTROLLER_POSITION_KP,
+				CONTROLLER_SYSTEM_DELAYTIME,
+				0.0005,
 				CONTROLLER_SAMPLING_TIME),
 		angleControl(
-				CONTROLLER_SYSTEM_ANGLE_GAIN,
-				CONTROLLER_SYSTEM_ANGLE_DELAYTIME,
+				CONTROLLER_ANGLE_KP,
+				CONTROLLER_SYSTEM_DELAYTIME,
+				0.0,
+				CONTROLLER_SAMPLING_TIME),
+		leftWheelControl(
+				CONTROLLER_SYSTEM_LEFT_WHEEL_KP,
+				CONTROLLER_SYSTEM_LEFT_WHEEL_DELAYTIME,
+				CONTROLLER_SAMPLING_TIME),
+		rightWheelControl(
+				CONTROLLER_SYSTEM_RIGHT_WHEEL_KP,
+				CONTROLLER_SYSTEM_RIGHT_WHEEL_DELAYTIME,
 				CONTROLLER_SAMPLING_TIME),
 		pm(pm),
 		targetPosition(pm.getPosition()),
 		targetAngle(pm.getHeading()),
-		speed(DriveSpeed::SLOW),
-		direction(DriveDirection::FORWARD) {
+		driveSpeed(DriveSpeed::SLOW),
+		driveDirection(DriveDirection::FORWARD)
+		{
 	currentState = new Idle(*this);
 }
 
@@ -38,28 +51,37 @@ void DriverFSM::update() {
 
 void DriverFSM::updateControl() {
 	// read inputs
-	double distance = pm.getPosition().distanceTo(targetPosition);
-	double angle = (targetAngle - pm.getHeading()).getAngleInDegrees();
+	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
 
-	// calculate next value
-	double linearSpeed = positionControl.calc(distance);
-	double turningSpeed = angleControl.calc(angle);
+	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	float angle = (soll - pm.getHeading()).getAngleInRadianAround(0.0);
 
-	if(speed == DriveSpeed::SLOW) {
-		linearSpeed = clamp(linearSpeed, -1000.0, 1000.0);
-		turningSpeed = clamp(turningSpeed, -1000.0, 1000.0);
-	} else {
-		linearSpeed = clamp(linearSpeed, -10000.0, 10000.0);
-		turningSpeed = clamp(turningSpeed, -10000.0, 10000.0);
+	float distance = pm.getPosition().distanceTo(targetPosition)*0.001;
+
+	if(lastDistance < 1.0) {
+		lastDistance = lastDistance + 1.0*CONTROLLER_SAMPLING_TIME;
 	}
 
-	if(direction == DriveDirection::BACKWARD) {
-		linearSpeed = -linearSpeed;
-	}
 
-	// set speed
-	leftMotor.setSpeed(linearSpeed-turningSpeed);
-	rightMotor.setSpeed(linearSpeed+turningSpeed);
+	float distanceToTarget = (1000-targetPosition.distanceTo(pm.getPosition()))*0.001;
+	float driven = (pm.leftWheelDistance + pm.rightWheelDistance)*0.5;
+
+	float uPositionControl = positionControl.update(lastDistance - driven);
+	float uAngleControl = angleControl.update(angle);
+
+	sollLeft = uPositionControl - uAngleControl;
+	sollRight = uPositionControl + uAngleControl;
+
+	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelDistance);
+	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelDistance);
+
+	leftMotorVelocity = clamp(leftMotorVelocity, -1.5, 1.5);
+	rightMotorVelocity = clamp(rightMotorVelocity, -1.5, 1.5);
+
+	leftMotor.setSpeed(leftMotorVelocity*MOTORCONSTANT);
+	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
+
+	printf("%f %f %f %f %f %f %f\r\n",lastDistance, driven, uPositionControl,pm.getHeading());
 }
 
 void DriverFSM::resetControl() {
@@ -75,7 +97,7 @@ void DriverFSM::stop() {
 bool DriverFSM::reachedTargetPosition() {
 	double distance = pm.getPosition().distanceTo(targetPosition);
 
-	if(distance < 2.0) {
+	if(distance < 2.5) {
 		return true;
 	} else {
 		return false;
@@ -87,6 +109,8 @@ DriverFSM::~DriverFSM() {
 }
 
 void DriverFSM::newTargetPosition() {
+	leftMotor.enable();
+	rightMotor.enable();
 	currentState->newTargetPosition();
 }
 
@@ -99,11 +123,9 @@ void DriverFSM::setTargetAngle(Angle targetAngle) {
 }
 
 void DriverFSM::setDriveSpeed(DriveSpeed speed) {
-	this->speed = speed;
+	this->driveSpeed = speed;
 }
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
-	this->direction = direction;
+	this->driveDirection = direction;
 }
-
-
