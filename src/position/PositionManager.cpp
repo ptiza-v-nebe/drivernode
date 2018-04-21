@@ -86,4 +86,12 @@ float PositionManager::getRotationalVelocity() const {
 	return rotationalVelocity;
 }
 
+float PositionManager::getLeftWheelVelocity() const {
+	return leftWheelVelocity;
+}
+
+float PositionManager::getRightWheelVelocity() const {
+	return rightWheelVelocity;
+}
+
 /** @} */
