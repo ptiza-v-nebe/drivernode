@@ -5,7 +5,7 @@
  *      Author: max
  */
 
-#include <PD.h>
+#include "driving/PD.h"
 
 PD::PD(float kP, float Tv, float Ts) {
 	b0 = (kP*Ts+kP*Tv)/Ts;
@@ -13,9 +13,9 @@ PD::PD(float kP, float Tv, float Ts) {
 	e1 = 0;
 }
 
-float PD::update(float e) {
-	float u = b1*e+b0*e1;
-	e1 = e;
+float PD::update(float e0) {
+	float u = b0*e0+b1*e1;
+	e1 = e0;
 	return u;
 }
 

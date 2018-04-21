@@ -19,8 +19,6 @@
 
 class DriverBaseState;
 
-constexpr float MOTORCONSTANT = 14*60*(1/(2*PI*0.03));
-
 class DriverFSM {
 private:
 	DriverBaseState* currentState;
@@ -28,15 +26,15 @@ private:
 	Motor& rightMotor;
 	PIDController positionControl;
 	PIDController angleControl;
-	PD leftWheelControl;
-	PD rightWheelControl;
+	PIDController leftWheelControl;
+	PIDController rightWheelControl;
 	PositionManager& pm;
 	Position targetPosition;
 	Angle targetAngle;
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
 
-	int counter = 0;
+	int n = 0;
 	float lastSpeedLeft = 0;
 	float lastSpeedRight = 0;
 	float sollLeft = 0;

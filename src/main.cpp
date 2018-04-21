@@ -85,6 +85,13 @@ int main(void) {
                 driverFSM.newTargetPosition();
 
             });
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&hal](SetSpeedMessage ssm) {
+    			hal.getLeftMotor().enable();
+    			hal.getRightMotor().enable();
+    			hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
+    			hal.getRightMotor().setSpeed(ssm.getSpeedRight());
+    });
 
     // ////////////////////////////////////////////
     // Setup Tasks

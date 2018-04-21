@@ -30,10 +30,12 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm) :
 				CONTROLLER_SAMPLING_TIME),
 		leftWheelControl(
 				CONTROLLER_SYSTEM_LEFT_WHEEL_KP,
+				CONTROLLER_SYSTEM_LEFT_WHEEL_KI,
 				CONTROLLER_SYSTEM_LEFT_WHEEL_DELAYTIME,
 				CONTROLLER_SAMPLING_TIME),
 		rightWheelControl(
 				CONTROLLER_SYSTEM_RIGHT_WHEEL_KP,
+				CONTROLLER_SYSTEM_RIGHT_WHEEL_KI,
 				CONTROLLER_SYSTEM_RIGHT_WHEEL_DELAYTIME,
 				CONTROLLER_SAMPLING_TIME),
 		pm(pm),
@@ -69,8 +71,11 @@ void DriverFSM::updateControl() {
 	float uPositionControl = positionControl.update(lastDistance - driven);
 	float uAngleControl = angleControl.update(angle);
 
-	sollLeft = uPositionControl - uAngleControl;
-	sollRight = uPositionControl + uAngleControl;
+	//sollLeft = uPositionControl - uAngleControl;
+	//sollRight = uPositionControl + uAngleControl;
+
+	sollRight = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
+	sollLeft = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
 
 	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelDistance);
 	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelDistance);
@@ -81,7 +86,8 @@ void DriverFSM::updateControl() {
 	leftMotor.setSpeed(leftMotorVelocity*MOTORCONSTANT);
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
 
-	printf("%f %f %f %f %f %f %f\r\n",lastDistance, driven, uPositionControl,pm.getHeading());
+	n++; // counting tick up
+	printf("%f %f %f %f %f %f\r\n", sollLeft, pm.leftWheelDistance, leftMotorVelocity, sollRight, pm.rightWheelDistance, rightMotorVelocity);
 }
 
 void DriverFSM::resetControl() {
@@ -98,7 +104,7 @@ bool DriverFSM::reachedTargetPosition() {
 	double distance = pm.getPosition().distanceTo(targetPosition);
 
 	if(distance < 2.5) {
-		return true;
+		return false;
 	} else {
 		return false;
 	}
