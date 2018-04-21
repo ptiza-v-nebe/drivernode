@@ -13,6 +13,7 @@
 #include <cstdint>
 
 void printBytes(const uint8_t* bytes, const int length);
+float clamp(float x, float min, float max);
 
 #endif /* UTIL_UTIL_H_ */
 /** @} */

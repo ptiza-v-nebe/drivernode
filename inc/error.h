@@ -33,15 +33,17 @@
     printf("\r\n"); \
     STOP_PROGRAM()\
 }
-#else // SUPRESS_ERROR
-#define ERROR(...)
-#endif
 
 #define TRY(x) \
     if(int result = (x)) { \
         ERROR("%s failed with result %d", #x, result);\
     }
 
+
+#else // SUPRESS_ERROR
+#define ERROR(...)
+#define TRY(x) x
+#endif // SUPPRESS_ERROR
 #else // HUMAN MODE --> RAW_MODE
 #define ERROR(...)
 #define TRY(x) x
