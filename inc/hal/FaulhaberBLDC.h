@@ -31,7 +31,7 @@ public:
 
     virtual void enable() override;
     virtual void disableAndStop() override;
-    virtual void setSpeed(int16_t speed) override;
+    virtual void setSpeed(int32_t speed) override;
     virtual void stop() override;
 private:
     void sendCommand(const char *command);
