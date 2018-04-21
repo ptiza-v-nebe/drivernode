@@ -32,8 +32,8 @@ static constexpr uint16_t SCARA_TIMER_PIN = GPIO_PIN_5;
 
 ScaraHardware::ScaraHardware(DynamixelCOM& dynamixelCOM) :
         motorPWM(TIM2, TIM_CHANNEL_1), //
-        motor(motorPWM, { GPIOH, GPIO_PIN_1, GPIO_PIN_RESET }, //
-                { GPIOH, GPIO_PIN_0, GPIO_PIN_RESET }), //
+        motor(motorPWM, { GPIOH, GPIO_PIN_0, GPIO_PIN_RESET }, //
+                { GPIOH, GPIO_PIN_1, GPIO_PIN_RESET }), //
         encoder(SCARA_ENCODER_GPIO, SCARA_ENCODER_A, SCARA_ENCODER_B,
                 SCARA_ENCODER_INVERT), //
         endStop(GPIOB, GPIO_PIN_7, GPIO_PIN_SET, GPIO_PULLUP), //
