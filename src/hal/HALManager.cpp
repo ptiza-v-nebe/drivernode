@@ -185,7 +185,7 @@ static constexpr uint8_t SRF08_2_ID = 0xEE;
  * @attention when changing this, also change RCC clock enable as well as GPIO
  *            and pin in HALManager::initializeMotors
  */
-#define LEFT_TIMER TIM2
+#define LEFT_TIMER TIM5
 
 /**
  * the timer channel used for left motor
@@ -202,14 +202,14 @@ static constexpr auto LEFT_CHANNEL = TIM_CHANNEL_1;
  * the GPIO pin used for the left timer
  * @attention depends on LEFT_TIMER and LEFT_CHANNEL!
  */
-static constexpr uint16_t LEFT_TIMER_PIN = GPIO_PIN_5;
+static constexpr uint16_t LEFT_TIMER_PIN = GPIO_PIN_0;
 
 /**
  * the timer used for right motor
  * @attention when changing this, also change RCC clock enable as well as GPIO
  *            and pin in HALManager::initializeMotors
  */
-#define RIGHT_TIMER TIM5
+#define RIGHT_TIMER TIM2
 
 /**
  * timer channel used for right motor
@@ -226,7 +226,7 @@ static constexpr auto RIGHT_CHANNEL = TIM_CHANNEL_1;
  * the GPIO pin used for the right timer
  * @attention depends on RIGHT_TIMER and RIGHT_CHANNEL!
  */
-static constexpr uint16_t RIGHT_TIMER_PIN = GPIO_PIN_0;
+static constexpr uint16_t RIGHT_TIMER_PIN = GPIO_PIN_5;
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Shooting BLDC
@@ -652,7 +652,7 @@ void HALManager::initializeMotors() {
     // initialize left
     timer.Instance = LEFT_TIMER;
     gpio.Pin = LEFT_TIMER_PIN;
-    gpio.Alternate = GPIO_AF1_TIM2;
+    gpio.Alternate = GPIO_AF2_TIM5;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, LEFT_CHANNEL);
@@ -664,7 +664,7 @@ void HALManager::initializeMotors() {
     // initialize right
     timer.Instance = RIGHT_TIMER;
     gpio.Pin = RIGHT_TIMER_PIN;
-    gpio.Alternate = GPIO_AF2_TIM5;
+    gpio.Alternate = GPIO_AF1_TIM2;
 
     HAL_TIM_PWM_Init(&timer);
     HAL_TIM_PWM_ConfigChannel(&timer, &channel, RIGHT_CHANNEL);
