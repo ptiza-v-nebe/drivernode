@@ -359,10 +359,10 @@ HALManager::HALManager() :
 #ifdef SMALL_ROBOT
                 leftMotorPWM(LEFT_TIMER, LEFT_CHANNEL), //
                 rightMotorPWM(RIGHT_TIMER, RIGHT_CHANNEL), //
-                leftMotor(leftMotorPWM, { GPIOC, GPIO_PIN_4 }, //
-                        { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
-                rightMotor(rightMotorPWM, { GPIOH, GPIO_PIN_0 }, //
+                leftMotor(leftMotorPWM, { GPIOH, GPIO_PIN_0 }, //
                         { GPIOH, GPIO_PIN_1 }), //
+                rightMotor(rightMotorPWM, { GPIOC, GPIO_PIN_4 }, //
+                        { GPIOA, GPIO_PIN_1, GPIO_PIN_RESET }), //
                 frontSwitch(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET, GPIO_PULLUP), //
                 shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //
                 shootingBLDC(shootingBLDCPWM), //
