@@ -14,16 +14,17 @@
  * @param T system delay time
  * @param Ts samping time
  */
-PDT1::PDT1(float ks, float T, float Ts) {
+PDT1::PDT1(float ks, float T, float d, float Ts) {
     this->ks = ks;
     this->T = T;
+    this->d = d;
     this->Ts = Ts;
 
     u = 0.0;
     y = 0.0;
 
     Td = T/10;
-    kr = 1/(4*ks*Td);
+    kr = 1/(4*ks*d*d*Td);
 
     b0 = kr*(Ts+2*T)/(Ts+2*Td);
     b1 = kr*(Ts-2*T)/(Ts+2*Td);

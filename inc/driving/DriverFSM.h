@@ -9,7 +9,8 @@
 #define DRIVING_DRIVERFSM_H
 
 #include "driving/DriverBaseState.h"
-#include "driving/PDT1.h"
+#include "driving/PIDController.h"
+#include "driving/PD.h"
 #include "hal/Motor.h"
 #include "position/PositionManager.h"
 #include "position/Position.h"
@@ -18,18 +19,31 @@
 
 class DriverBaseState;
 
+constexpr float MOTORCONSTANT = 14*60*(1/(2*PI*0.03));
+
 class DriverFSM {
 private:
 	DriverBaseState* currentState;
 	Motor& leftMotor;
 	Motor& rightMotor;
-	PDT1 positionControl;
-	PDT1 angleControl;
+	PIDController positionControl;
+	PIDController angleControl;
+	PD leftWheelControl;
+	PD rightWheelControl;
 	PositionManager& pm;
 	Position targetPosition;
 	Angle targetAngle;
-	DriveSpeed speed;
-	DriveDirection direction;
+	DriveSpeed driveSpeed;
+	DriveDirection driveDirection;
+	TurnSpeed turnSpeed;
+	TurnDirection turnDirection;
+
+	int counter = 0;
+	float lastSpeedLeft = 0;
+	float lastSpeedRight = 0;
+	float sollLeft = 0;
+	float sollRight = 0;
+	float lastDistance = 0;
 
 public:
 	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
@@ -47,7 +61,8 @@ public:
 	void setTargetAngle(Angle targetAngle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
-
+	void setTurnSpeed(TurnSpeed speed);
+	void setTurnDirection(TurnDirection direction);
 };
 
 #endif /* DRIVING_DRIVERFSM_H */

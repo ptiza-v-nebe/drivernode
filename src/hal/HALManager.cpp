@@ -122,12 +122,12 @@ static constexpr uint8_t RIGHT_MOTOR_ID = 1;
 /**
  * should the left motor be inverted
  */
-static constexpr bool LEFT_MOTOR_INVERT = false;
+static constexpr bool LEFT_MOTOR_INVERT = true;
 
 /**
  * should the right motor be inverted
  */
-static constexpr bool RIGHT_MOTOR_INVERT = true;
+static constexpr bool RIGHT_MOTOR_INVERT = false;
 
 /**
  * which USART to use for the motors.

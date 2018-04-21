@@ -20,11 +20,12 @@ private:
     float Ts; ///< sampling time
     float ks, T; ///< system parameters
     float kr, Td; ///< controller parameters
+    float d; ///<damping
     float u, y; ///< values for next calculation
     float a1, b0, b1; ///< controller values
 
 public:
-    PDT1(float ks, float T, float Ts);
+    PDT1(float ks, float T, float d, float Ts);
     float calc(float u);
     void reset();
 };
