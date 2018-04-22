@@ -113,8 +113,6 @@ void DynamixelAX12A::moveTo(const Angle& angle) {
     uint8_t result = com.writeWord(id, GOAL_POSITION_ADDR, position);
     if (result) {
         ERROR("Failed to send angle to Dynamixel %d - Result is %x", id, result);
-        HAL_Delay(1);
-        moveTo(angle);
     }
 }
 
