@@ -103,104 +103,6 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
-#if 1
-    // Sensor Test
-    schedule_repeating_task(
-            [&hal]() {
-                printf("\033[2J");
-                printf("SENSOR TEST\r\n\n");
-                printf("Encoders: Left %ld, Right %ld\r\n",
-                        hal.getLeftEncoder().getTick(),
-                        hal.getRightEncoder().getTick());
-                printf("Starter Pin: %s\r\n", hal.getStarterPin().isOn() ? "INSERTED" : "REMOVED");
-                printf("Ultrasonic Sensors: %d cm, %d cm\r\n",
-                        hal.getSRF08s()[0].getRange(),
-                        hal.getSRF08s()[1].getRange());
-#ifdef BIG_ROBOT
-                printf("Scara: Encoder %ld, EndStop: %s\r\n",
-                        hal.getScaraHardware().getLiftEncoder().getTick(),
-                        hal.getScaraHardware().getEndStop().isOn() ? "PRESSED" : "RELEASED");
-#endif
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 500);
-    //Actor Test
-    hal.getLeftMotor().enable();
-    hal.getRightMotor().enable();
-
-#ifdef BIG_ROBOT
-    hal.getScaraHardware().getLiftMotor().enable();
-    hal.getScaraHardware().getPump().enable();
-    hal.getScaraHardware().getValve().enable();
-    hal.getScaraHardware().getStoragePumps()[0].enable();
-    hal.getScaraHardware().getStoragePumps()[1].enable();
-    hal.getScaraHardware().getStoragePumps()[2].enable();
-
-    hal.getScaraHardware().getArmServos()[0].enable();
-    hal.getScaraHardware().getArmServos()[1].enable();
-    hal.getScaraHardware().getArmServos()[2].enable();
-    hal.getScaraHardware().getArmServos()[3].enable();
-
-    hal.getScaraHardware().getArmServos()[0].setRPM(15);
-    hal.getScaraHardware().getArmServos()[1].setRPM(15);
-    hal.getScaraHardware().getArmServos()[2].setRPM(15);
-    hal.getScaraHardware().getArmServos()[3].setRPM(15);
-#endif
-#ifdef SMALL_ROBOT
-    hal.getShootingBLDC().enable();
-    hal.getServo().enable();
-#endif
-    schedule_repeating_task([&hal]() {
-                hal.getLeftMotor().setSpeed(1000);
-                hal.getRightMotor().setSpeed(1000);
-                hal.getErrorLED().setOn();
-
-#ifdef BIG_ROBOT
-                hal.getScaraHardware().getLiftMotor().setSpeed(500);
-                hal.getScaraHardware().getPump().setOff();
-                hal.getScaraHardware().getValve().setOff();
-                hal.getScaraHardware().getStoragePumps()[0].setOn();
-                hal.getScaraHardware().getStoragePumps()[1].setOff();
-                hal.getScaraHardware().getStoragePumps()[2].setOn();
-
-                hal.getScaraHardware().getArmServos()[0].moveTo(150_deg);
-                hal.getScaraHardware().getArmServos()[1].moveTo(150_deg);
-                hal.getScaraHardware().getArmServos()[2].moveTo(60_deg);
-                hal.getScaraHardware().getArmServos()[3].moveTo(150_deg);
-#endif
-#ifdef SMALL_ROBOT
-                hal.getShootingBLDC().start();
-                hal.getServo().moveTo(150_deg);
-#endif
-            }, 5000);
-    schedule_repeating_task([&hal]() {
-                hal.getLeftMotor().setSpeed(-1000);
-                hal.getRightMotor().setSpeed(-1000);
-                hal.getErrorLED().setOff();
-
-#ifdef BIG_ROBOT
-                hal.getScaraHardware().getLiftMotor().setSpeed(-500);
-                hal.getScaraHardware().getPump().setOn();
-                hal.getScaraHardware().getValve().setOn();
-                hal.getScaraHardware().getStoragePumps()[0].setOff();
-                hal.getScaraHardware().getStoragePumps()[1].setOn();
-                hal.getScaraHardware().getStoragePumps()[2].setOff();
-
-                hal.getScaraHardware().getArmServos()[0].moveTo(100_deg);
-                hal.getScaraHardware().getArmServos()[1].moveTo(100_deg);
-                hal.getScaraHardware().getArmServos()[2].moveTo(110_deg);
-                hal.getScaraHardware().getArmServos()[3].moveTo(50_deg);
-#endif
-#ifdef SMALL_ROBOT
-                hal.getShootingBLDC().stop();
-                hal.getServo().moveTo(100_deg);
-#endif
-            }, 5000, 2500);
-
-    dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
-                hal.disableAllActors();
-            });
-#endif
     /*ScaraLift scaraLift(hal.getScaraLiftMotor(), hal.getScaraLiftEncoder());
      scaraLift.initialize();
 
@@ -227,6 +129,18 @@ int main(void) {
      scaraLift.enable();
      });*/
 
+    DynamixelAX12A& servo1 = hal.getScaraHardware().getArmServos()[0];
+    servo1.enable();
+
+    //here no pauses!
+    schedule_repeating_task([&]() {
+    	Angle goalPosition = 90_deg;
+    	servo1.moveTo(goalPosition);
+    }, 10);
+
+    ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder());
+    lift.initialize();
+    lift.moveTo(5000); //0 - 7100 ticks
 
     // ////////////////////////////////////////////
     // END TEST AREA

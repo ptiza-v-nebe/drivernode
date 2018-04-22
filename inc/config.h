@@ -50,7 +50,7 @@
 /**
  * Enable to generate more output in the DynamixelCOM class
  */
-#define DEBUG_DYNAMIXEL_COM
+//#define DEBUG_DYNAMIXEL_COM
 
 /**
  * Enable to generate more output in the DynamixelCOM class
