@@ -53,7 +53,9 @@ void DriverFSM::updateControl() {
 	// read inputs
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
 
-	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	//Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	Angle soll(0.0);
+
 	float angle = (soll - pm.getHeading()).getAngleInRadianAround(0.0);
 
 	float distance = pm.getPosition().distanceTo(targetPosition)*0.001;
@@ -72,11 +74,17 @@ void DriverFSM::updateControl() {
 	//sollLeft = uPositionControl - uAngleControl;
 	//sollRight = uPositionControl + uAngleControl;
 
-	sollRight = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
-	sollLeft = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
+	//sollRight = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
+	//sollLeft = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
 
-	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelDistance);
-	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelDistance);
+
+	if(n*CONTROLLER_SAMPLING_TIME >= (0.5-CONTROLLER_SAMPLING_TIME)) {
+		sollLeft = 0.5;
+		sollRight = 0.5;
+	}
+
+	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelVelocity);
+	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelVelocity);
 
 	leftMotorVelocity = clamp(leftMotorVelocity, -1.5, 1.5);
 	rightMotorVelocity = clamp(rightMotorVelocity, -1.5, 1.5);
@@ -85,7 +93,7 @@ void DriverFSM::updateControl() {
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
 
 	n++; // counting tick up
-	printf("%f %f %f %f %f %f\r\n", sollLeft, pm.leftWheelDistance, leftMotorVelocity, sollRight, pm.rightWheelDistance, rightMotorVelocity);
+	printf("%f %f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME,sollLeft,pm.leftWheelVelocity, pm.rightWheelVelocity, leftMotorVelocity, rightMotorVelocity);
 }
 
 void DriverFSM::resetControl() {

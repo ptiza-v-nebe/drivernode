@@ -85,6 +85,12 @@ int main(void) {
                 driverFSM.newTargetPosition();
 
             });
+
+    dispatcher.registerMessageHandler<ControlledTurnMessage>(
+    		[&driverFSM](ControlledTurnMessage ctm) {
+    			//driverFSM.
+    		});
+
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&hal](SetSpeedMessage ssm) {
     			hal.getLeftMotor().enable();

@@ -11,6 +11,7 @@
 #include "driving/DriverBaseState.h"
 #include "driving/PIDController.h"
 #include "driving/PDController.h"
+#include "driving/PIController.h"
 #include "hal/Motor.h"
 #include "position/PositionManager.h"
 #include "position/Position.h"
@@ -26,8 +27,8 @@ private:
 	Motor& rightMotor;
 	PIDController positionControl;
 	PIDController angleControl;
-	PDController leftWheelControl;
-	PDController rightWheelControl;
+	PIController leftWheelControl;
+	PIController rightWheelControl;
 	PositionManager& pm;
 	Position targetPosition;
 	Angle targetAngle;
