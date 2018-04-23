@@ -40,7 +40,9 @@ private:
 	float lastSpeedRight = 0;
 	float sollLeft = 0;
 	float sollRight = 0;
+	float sollDistance = 0;
 	float lastDistance = 0;
+	float targetDistance = 0;
 
 public:
 	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);

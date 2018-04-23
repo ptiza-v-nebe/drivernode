@@ -12,18 +12,24 @@
 
 STATE(Idle)
 	void newTargetPosition() override;
+	void newTargetAngle() override;
 };
 
-STATE(DrivingForward)
+STATE(Driving)
+	void entryAction() override;
+	void doAction() override;
+	void exitAction() override;
+	void newTargetPosition() override;
+	void stop() override;
+};
+
+STATE(Turning)
 	void entryAction() override;
 	void doAction() override;
 	void exitAction() override;
 };
 
-STATE(DrivingBackward)
+STATE(Stop)
 	void entryAction() override;
-	void doAction() override;
-	void exitAction() override;
 };
-
 #endif /* DRIVING_DRIVERSTATES_H */

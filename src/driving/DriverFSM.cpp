@@ -53,35 +53,22 @@ void DriverFSM::updateControl() {
 	// read inputs
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
 
-	//Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
-	Angle soll(0.0);
+	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
 
 	float angle = (soll - pm.getHeading()).getAngleInRadianAround(0.0);
 
-	float distance = pm.getPosition().distanceTo(targetPosition)*0.001;
+	float distanceToTarget = pm.getPosition().distanceTo(targetPosition)*0.001;
 
-	if(lastDistance < 1.0) {
-		lastDistance = lastDistance + 1.0*CONTROLLER_SAMPLING_TIME;
+	if(sollDistance < targetDistance) {
+		sollDistance = sollDistance + 0.5*CONTROLLER_SAMPLING_TIME;
 	}
 
-
-	float distanceToTarget = (1000-targetPosition.distanceTo(pm.getPosition()))*0.001;
-	float driven = (pm.leftWheelDistance + pm.rightWheelDistance)*0.5;
-
-	float uPositionControl = positionControl.update(lastDistance - driven);
-	float uAngleControl = angleControl.update(angle);
-
-	//sollLeft = uPositionControl - uAngleControl;
-	//sollRight = uPositionControl + uAngleControl;
-
-	//sollRight = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
-	//sollLeft = 1.0 * smoothstep(0, 1, n*CONTROLLER_SAMPLING_TIME ); // one meter in one second smooth driving
-
-
-	if(n*CONTROLLER_SAMPLING_TIME >= (0.5-CONTROLLER_SAMPLING_TIME)) {
-		sollLeft = 0.5;
-		sollRight = 0.5;
+	if(angle > 10*(PI/180)) {
+		sollDistance = 0;
 	}
+
+	sollLeft = (sollDistance - (targetDistance - distanceToTarget))-0.25*angle;
+	sollRight = (sollDistance - (targetDistance - distanceToTarget))+0.25*angle;
 
 	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelVelocity);
 	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelVelocity);
@@ -93,7 +80,7 @@ void DriverFSM::updateControl() {
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
 
 	n++; // counting tick up
-	printf("%f %f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME,sollLeft,pm.leftWheelVelocity, pm.rightWheelVelocity, leftMotorVelocity, rightMotorVelocity);
+	printf("%f %d %d %f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME, pm.getPosition().x, pm.getPosition().y, sollDistance, distanceToTarget, soll.getAngleInRadianAround(0.0), pm.getHeading().getAngleInRadianAround(0.0), angle*0.25);
 }
 
 void DriverFSM::resetControl() {
@@ -107,10 +94,13 @@ void DriverFSM::stop() {
 }
 
 bool DriverFSM::reachedTargetPosition() {
-	double distance = pm.getPosition().distanceTo(targetPosition);
+	float distance = pm.getPosition().distanceTo(targetPosition);
+	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
+	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	Angle angleError = (soll - pm.getHeading());
 
-	if(distance < 2.5) {
-		return false;
+	if(distance < 2.5 && angleError.getAngleInDegreesAround(0.0) < 1.0) {
+		return true;
 	} else {
 		return false;
 	}
@@ -123,6 +113,7 @@ DriverFSM::~DriverFSM() {
 void DriverFSM::newTargetPosition() {
 	leftMotor.enable();
 	rightMotor.enable();
+	targetDistance = targetPosition.distanceTo(pm.getPosition())*0.001;
 	currentState->newTargetPosition();
 }
 

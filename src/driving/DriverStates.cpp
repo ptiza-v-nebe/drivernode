@@ -7,15 +7,21 @@
 
 #include <driving/DriverStates.h>
 
+// Idle actions
 void Idle::newTargetPosition() {
-	CHANGE_STATE(DrivingForward);
+	CHANGE_STATE(Driving);
 }
 
-void DrivingForward::entryAction() {
+void Idle::newTargetAngle() {
+	CHANGE_STATE(Turning);
+}
+
+// Driving actions
+void Driving::entryAction() {
 	ctx.resetControl();
 }
 
-void DrivingForward::doAction() {
+void Driving::doAction() {
 	if(ctx.reachedTargetPosition()) {
 		CHANGE_STATE(Idle)
 	} else {
@@ -23,18 +29,29 @@ void DrivingForward::doAction() {
 	}
 }
 
-void DrivingForward::exitAction() {
+void Driving::exitAction() {
 	ctx.stop();
 }
 
-void DrivingBackward::entryAction() {
+void Driving::newTargetPosition() {
+	CHANGE_STATE(Driving);
+}
+
+void Driving::stop() {
+	CHANGE_STATE(Stop);
+}
+
+void Turning::entryAction() {
 	ctx.resetControl();
 }
 
-void DrivingBackward::doAction() {
+void Turning::doAction() {
 	ctx.updateControl();
 }
 
-void DrivingBackward::exitAction() {
+void Turning::exitAction() {
 	ctx.stop();
 }
+
+// Stop actions
+

@@ -78,6 +78,11 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
+    dispatcher.registerMessageHandler<StopMessage>(
+    		[&driverFSM](StopMessage sm) {
+
+    		});
+
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
             [&driverFSM](ControlledDriveMessage cdm) {
                 driverFSM.setTargetPosition(cdm.getPosition());
@@ -88,7 +93,8 @@ int main(void) {
 
     dispatcher.registerMessageHandler<ControlledTurnMessage>(
     		[&driverFSM](ControlledTurnMessage ctm) {
-    			//driverFSM.
+    			driverFSM.setTargetAngle(ctm.getTargetHeading());
+    			driverFSM.newTargetPosition();
     		});
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
