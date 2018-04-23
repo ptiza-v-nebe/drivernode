@@ -27,6 +27,7 @@
 #include "hal/DynamixelAX12A.h"
 #include "error.h"
 #include "serial/messages/version.h"
+#include "serial/messages/all.h"
 #include "scara/ScaraLift.h"
 
 #include <stm32l4xx.h>
@@ -132,6 +133,10 @@ int main(void) {
             [&speed](const StopMessage&) {
                 speed = 0;
             });
+
+    schedule_repeating_task([&dispatcher, &pm]() {
+            dispatcher.sendMessage(PositionMessage(pm.getPosition(), pm.getHeading()));
+        }, 100);
 
     /*schedule_repeating_task([&hal, &stop]() {
         uint16_t d1 = hal.getSRF08s()[0].getRange();
