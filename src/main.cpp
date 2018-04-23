@@ -80,21 +80,21 @@ int main(void) {
 
     dispatcher.registerMessageHandler<StopMessage>(
     		[&driverFSM](StopMessage sm) {
-
+    			driverFSM.stop();
     		});
 
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
             [&driverFSM](ControlledDriveMessage cdm) {
-                driverFSM.setTargetPosition(cdm.getPosition());
+                driverFSM.setReferencePosition(cdm.getPosition());
                 driverFSM.setDriveSpeed(cdm.getSpeed());
-                driverFSM.newTargetPosition();
-
+                driverFSM.setDriveAccuracy(cdm.getAccuracy());
+                driverFSM.newPosition();
             });
 
     dispatcher.registerMessageHandler<ControlledTurnMessage>(
     		[&driverFSM](ControlledTurnMessage ctm) {
     			driverFSM.setTargetAngle(ctm.getTargetHeading());
-    			driverFSM.newTargetPosition();
+    			driverFSM.newAngle();
     		});
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(

@@ -5,6 +5,7 @@
  *      Author: max
  */
 
+#include <cmath>
 #include "driving/DriverFSM.h"
 #include "driving/DriverBaseState.h"
 #include "driving/DriverStates.h"
@@ -37,10 +38,11 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm) :
 				CONTROLLER_SYSTEM_RIGHT_WHEEL_DELAYTIME,
 				CONTROLLER_SAMPLING_TIME),
 		pm(pm),
-		targetPosition(pm.getPosition()),
-		targetAngle(pm.getHeading()),
+		referencePosition(pm.getPosition()),
+		referenceAngle(pm.getHeading()),
 		driveSpeed(DriveSpeed::SLOW),
-		driveDirection(DriveDirection::FORWARD)
+		driveDirection(DriveDirection::FORWARD),
+		driveAccuracy(DriveAccuracy::LOW)
 		{
 	currentState = new Idle(*this);
 }
@@ -50,28 +52,21 @@ void DriverFSM::update() {
 }
 
 void DriverFSM::updateControl() {
-	// read inputs
+	// distanceError
+	if(distanceError < referenceDistance) {
+		distanceError = distanceError * 0.5*CONTROLLER_SAMPLING_TIME; // ramp up to reference Position
+	}
+
+	// angleError
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
+	referenceAngle = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	angleError = referenceAngle - pm.getHeading();
 
-	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	float referenceSpeedLeft = distanceError-angleError;
+	float referenceSpeedRight = distanceError+angleError;
 
-	float angle = (soll - pm.getHeading()).getAngleInRadianAround(0.0);
-
-	float distanceToTarget = pm.getPosition().distanceTo(targetPosition)*0.001;
-
-	if(sollDistance < targetDistance) {
-		sollDistance = sollDistance + 0.5*CONTROLLER_SAMPLING_TIME;
-	}
-
-	if(angle > 10*(PI/180)) {
-		sollDistance = 0;
-	}
-
-	sollLeft = (sollDistance - (targetDistance - distanceToTarget))-0.25*angle;
-	sollRight = (sollDistance - (targetDistance - distanceToTarget))+0.25*angle;
-
-	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelVelocity);
-	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelVelocity);
+	float leftMotorVelocity = leftWheelControl.update(referenceSpeedLeft - pm.leftWheelVelocity);
+	float rightMotorVelocity = rightWheelControl.update(referenceSpeedRight - pm.rightWheelVelocity);
 
 	leftMotorVelocity = clamp(leftMotorVelocity, -1.5, 1.5);
 	rightMotorVelocity = clamp(rightMotorVelocity, -1.5, 1.5);
@@ -80,7 +75,7 @@ void DriverFSM::updateControl() {
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
 
 	n++; // counting tick up
-	printf("%f %d %d %f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME, pm.getPosition().x, pm.getPosition().y, sollDistance, distanceToTarget, soll.getAngleInRadianAround(0.0), pm.getHeading().getAngleInRadianAround(0.0), angle*0.25);
+	printf("%f %d %d %f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME, pm.getPosition().x, pm.getPosition().y, sollDistance, distanceToTarget, angleError, pm.getHeading().getAngleInRadianAround(0.0));
 }
 
 void DriverFSM::resetControl() {
@@ -88,18 +83,37 @@ void DriverFSM::resetControl() {
 	angleControl.reset();
 }
 
-void DriverFSM::stop() {
-	leftMotor.stop();
-	rightMotor.stop();
+void DriverFSM::enableMotors() {
+	leftMotor.enable();
+	rightMotor.enable();
 }
 
-bool DriverFSM::reachedTargetPosition() {
-	float distance = pm.getPosition().distanceTo(targetPosition);
+void DriverFSM::disableMotors() {
+	leftMotor.disableAndStop();
+	rightMotor.disableAndStop();
+}
+
+bool DriverFSM::referencePositionReached() {
+	float distance = pm.getPosition().distanceTo(referencePosition);
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
-	Angle soll = (targetPosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+	Angle soll = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
 	Angle angleError = (soll - pm.getHeading());
 
 	if(distance < 2.5 && angleError.getAngleInDegreesAround(0.0) < 1.0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool DriverFSM::referenceAngleReached() {
+	if(driveAccuracy == DriveAccuracy::HIGH) {
+		if(angleError)
+	}
+}
+
+bool DriverFSM::isErrorAngleToBig() {
+	if(fabs((referenceAngle - pm.getHeading()).getAngleInDegreesAround(0.0)) > 10.0) {
 		return true;
 	} else {
 		return false;
@@ -110,19 +124,24 @@ DriverFSM::~DriverFSM() {
 	delete currentState;
 }
 
-void DriverFSM::newTargetPosition() {
-	leftMotor.enable();
-	rightMotor.enable();
-	targetDistance = targetPosition.distanceTo(pm.getPosition())*0.001;
-	currentState->newTargetPosition();
+void DriverFSM::newPosition() {
+	currentState->newPosition();
 }
 
-void DriverFSM::setTargetPosition(Position targetPosition) {
-	this->targetPosition = targetPosition;
+void DriverFSM::newAngle() {
+	currentState->newAngle();
 }
 
-void DriverFSM::setTargetAngle(Angle targetAngle) {
-	this->targetAngle = targetAngle;
+void DriverFSM::stop() {
+	currentState->stop();
+}
+
+void DriverFSM::setReferencePosition(Position position) {
+	this->referencePosition = position;
+}
+
+void DriverFSM::setTargetAngle(Angle angle) {
+	this->referenceAngle = angle;
 }
 
 void DriverFSM::setDriveSpeed(DriveSpeed speed) {
@@ -131,4 +150,8 @@ void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
 	this->driveDirection = direction;
+}
+
+void DriverFSM::setDriveAccuracy(DriveAccuracy accuracy) {
+	this->driveAccuracy = accuracy;
 }

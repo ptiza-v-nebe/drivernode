@@ -30,36 +30,44 @@ private:
 	PIController leftWheelControl;
 	PIController rightWheelControl;
 	PositionManager& pm;
-	Position targetPosition;
-	Angle targetAngle;
+
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
+	DriveAccuracy driveAccuracy;
+
+	Position referencePosition;
+	float distanceError = 0;
+	float referenceDistance = 0;
+	float distanceRamp = 0;
+
+	Angle referenceAngle;
+	float angleError = 0;
 
 	int n = 0;
-	float lastSpeedLeft = 0;
-	float lastSpeedRight = 0;
-	float sollLeft = 0;
-	float sollRight = 0;
-	float sollDistance = 0;
-	float lastDistance = 0;
-	float targetDistance = 0;
 
 public:
 	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
 	void update();
 	void updateControl();
 	void resetControl();
-	void stop();
-	bool reachedTargetPosition();
+	void enableMotors();
+	void disableMotors();
+	bool referencePositionReached();
+	bool referenceAngleReached();
+	bool isErrorAngleToBig();
 	virtual ~DriverFSM();
 
 	// transitions
-	void newTargetPosition();
+	void newPosition();
+	void newAngle();
+	void stop();
 
-	void setTargetPosition(Position targetPosition);
+	// setter
+	void setReferencePosition(Position position);
 	void setTargetAngle(Angle targetAngle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
+	void setDriveAccuracy(DriveAccuracy accuracy);
 };
 
 #endif /* DRIVING_DRIVERFSM_H */

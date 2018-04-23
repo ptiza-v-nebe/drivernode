@@ -11,15 +11,18 @@
 #include <driving/DriverBaseState.h>
 
 STATE(Idle)
-	void newTargetPosition() override;
-	void newTargetAngle() override;
+	void entryAction() override;
+	void exitAction() override;
+	void newPosition() override;
+	void newAngle() override;
 };
 
 STATE(Driving)
 	void entryAction() override;
 	void doAction() override;
 	void exitAction() override;
-	void newTargetPosition() override;
+	void newPosition() override;
+	void newAngle() override;
 	void stop() override;
 };
 
@@ -27,9 +30,9 @@ STATE(Turning)
 	void entryAction() override;
 	void doAction() override;
 	void exitAction() override;
+	void newPosition() override;
+	void newAngle() override;
+	void stop() override;
 };
 
-STATE(Stop)
-	void entryAction() override;
-};
 #endif /* DRIVING_DRIVERSTATES_H */
