@@ -68,7 +68,7 @@ int main(void) {
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
 
-    //MainFSMContext mainFSM(dispatcher, { }, { }, { &pm });
+    MainFSMContext mainFSM(dispatcher, { }, { }, { &pm });
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -79,20 +79,19 @@ int main(void) {
             });
 
     /*dispatcher.registerMessageHandler<ControlledDriveMessage>(
-            [&driverFSM](ControlledDriveMessage cdm) {
-                driverFSM.setTargetPosition(cdm.getPosition());
-                driverFSM.setDriveSpeed(cdm.getSpeed());
-                driverFSM.newTargetPosition();
+     [&driverFSM](ControlledDriveMessage cdm) {
+     driverFSM.setTargetPosition(cdm.getPosition());
+     driverFSM.setDriveSpeed(cdm.getSpeed());
+     driverFSM.newTargetPosition();
 
-            });*/
+     });*/
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
-
-    /*schedule_repeating_task([&mainFSM]() {
+    schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
-    }, 10);*/
+    }, 10);
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
@@ -104,6 +103,56 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 #if 1
+    int16_t speed = 0;
+    bool stop = false;
+
+    hal.getLeftMotor().enable();
+    hal.getRightMotor().enable();
+
+    schedule_repeating_task([&hal, &speed, &stop]() {
+        if(speed < 0 && stop) {
+            hal.getLeftMotor().stop();
+            hal.getRightMotor().stop();
+        } else {
+            hal.getLeftMotor().setSpeed(speed);
+            hal.getRightMotor().setSpeed(speed);
+        }
+    }, 10);
+
+    dispatcher.registerMessageHandler<ControlledDriveMessage>(
+            [&speed](const ControlledDriveMessage& cdm) {
+                if(cdm.getDirection() == DriveDirection::FORWARD) {
+                    speed = 600;
+                } else {
+                    speed = -600;
+                }
+            });
+
+    dispatcher.registerMessageHandler<StopMessage>(
+            [&speed](const StopMessage&) {
+                speed = 0;
+            });
+
+    /*schedule_repeating_task([&hal, &stop]() {
+        uint16_t d1 = hal.getSRF08s()[0].getRange();
+        uint16_t d2 = hal.getSRF08s()[1].getRange();
+
+        if(stop) {
+            if(d1 > 30 && d2 > 30) {
+                stop = false;
+            }
+        } else {
+            if(d1 < 20 || d2 < 20) {
+                stop = true;
+            }
+        }
+
+        hal.getSRF08s()[0].startRanging();
+        hal.getSRF08s()[1].startRanging();
+    }, 100);*/
+#endif
+
+#if 0
     // Sensor Test
     schedule_repeating_task(
             [&hal]() {
@@ -124,109 +173,7 @@ int main(void) {
                 hal.getSRF08s()[0].startRanging();
                 hal.getSRF08s()[1].startRanging();
             }, 500);
-    //Actor Test
-    hal.getLeftMotor().enable();
-    hal.getRightMotor().enable();
-
-#ifdef BIG_ROBOT
-    hal.getScaraHardware().getLiftMotor().enable();
-    hal.getScaraHardware().getPump().enable();
-    hal.getScaraHardware().getValve().enable();
-    hal.getScaraHardware().getStoragePumps()[0].enable();
-    hal.getScaraHardware().getStoragePumps()[1].enable();
-    hal.getScaraHardware().getStoragePumps()[2].enable();
-
-    hal.getScaraHardware().getArmServos()[0].enable();
-    hal.getScaraHardware().getArmServos()[1].enable();
-    hal.getScaraHardware().getArmServos()[2].enable();
-    hal.getScaraHardware().getArmServos()[3].enable();
-
-    hal.getScaraHardware().getArmServos()[0].setRPM(15);
-    hal.getScaraHardware().getArmServos()[1].setRPM(15);
-    hal.getScaraHardware().getArmServos()[2].setRPM(15);
-    hal.getScaraHardware().getArmServos()[3].setRPM(15);
 #endif
-#ifdef SMALL_ROBOT
-    hal.getShootingBLDC().enable();
-    hal.getServo().enable();
-#endif
-    schedule_repeating_task([&hal]() {
-                hal.getLeftMotor().setSpeed(1000);
-                hal.getRightMotor().setSpeed(1000);
-                hal.getErrorLED().setOn();
-
-#ifdef BIG_ROBOT
-                hal.getScaraHardware().getLiftMotor().setSpeed(500);
-                hal.getScaraHardware().getPump().setOff();
-                hal.getScaraHardware().getValve().setOff();
-                hal.getScaraHardware().getStoragePumps()[0].setOn();
-                hal.getScaraHardware().getStoragePumps()[1].setOff();
-                hal.getScaraHardware().getStoragePumps()[2].setOn();
-
-                hal.getScaraHardware().getArmServos()[0].moveTo(150_deg);
-                hal.getScaraHardware().getArmServos()[1].moveTo(150_deg);
-                hal.getScaraHardware().getArmServos()[2].moveTo(60_deg);
-                hal.getScaraHardware().getArmServos()[3].moveTo(150_deg);
-#endif
-#ifdef SMALL_ROBOT
-                hal.getShootingBLDC().start();
-                hal.getServo().moveTo(150_deg);
-#endif
-            }, 5000);
-    schedule_repeating_task([&hal]() {
-                hal.getLeftMotor().setSpeed(-1000);
-                hal.getRightMotor().setSpeed(-1000);
-                hal.getErrorLED().setOff();
-
-#ifdef BIG_ROBOT
-                hal.getScaraHardware().getLiftMotor().setSpeed(-500);
-                hal.getScaraHardware().getPump().setOn();
-                hal.getScaraHardware().getValve().setOn();
-                hal.getScaraHardware().getStoragePumps()[0].setOff();
-                hal.getScaraHardware().getStoragePumps()[1].setOn();
-                hal.getScaraHardware().getStoragePumps()[2].setOff();
-
-                hal.getScaraHardware().getArmServos()[0].moveTo(100_deg);
-                hal.getScaraHardware().getArmServos()[1].moveTo(100_deg);
-                hal.getScaraHardware().getArmServos()[2].moveTo(110_deg);
-                hal.getScaraHardware().getArmServos()[3].moveTo(50_deg);
-#endif
-#ifdef SMALL_ROBOT
-                hal.getShootingBLDC().stop();
-                hal.getServo().moveTo(100_deg);
-#endif
-            }, 5000, 2500);
-
-    dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
-                hal.disableAllActors();
-            });
-#endif
-    /*ScaraLift scaraLift(hal.getScaraLiftMotor(), hal.getScaraLiftEncoder());
-     scaraLift.initialize();
-
-     dispatcher.registerMessageHandler<SetSpeedMessage>(
-     [&scaraLift](SetSpeedMessage ssm) {
-     scaraLift.moveTo(ssm.getSpeedLeft());
-     });
-
-     dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
-     hal.getScaraLiftMotor().disableAndStop();
-     });*/
-
-    /*Motor& scaraLift = hal.getScaraLiftMotor();
-     scaraLift.enable();
-
-     dispatcher.registerMessageHandler<SetSpeedMessage>(
-     [&scaraLift](SetSpeedMessage ssm) {
-     scaraLift.setSpeed(ssm.getSpeedLeft());
-     });
-     dispatcher.registerMessageHandler<StopMessage>([&scaraLift](StopMessage) {
-     scaraLift.disableAndStop();
-     });
-     dispatcher.registerMessageHandler<SimpleDriveMessage>([&scaraLift](SimpleDriveMessage) {
-     scaraLift.enable();
-     });*/
-
 
     // ////////////////////////////////////////////
     // END TEST AREA
