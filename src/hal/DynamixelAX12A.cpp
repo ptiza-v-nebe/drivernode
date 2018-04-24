@@ -70,6 +70,7 @@ void DynamixelAX12A::enable() {
     if (result) {
         ERROR("Failed to enable Dynamixel %d - Result is %x", id, result);
     }
+
     enabled = true;
 }
 

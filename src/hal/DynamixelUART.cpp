@@ -51,7 +51,7 @@ int DynamixelUART::receive(uint8_t* buffer, const int size) {
 void DynamixelUART::init() {
     uart.Instance = USART1;
 
-    uart.Init.BaudRate = 500000;
+    uart.Init.BaudRate = 250000;
     uart.Init.Parity = UART_PARITY_NONE;
     uart.Init.Mode = UART_MODE_TX_RX;
     uart.Init.StopBits = UART_STOPBITS_1;
