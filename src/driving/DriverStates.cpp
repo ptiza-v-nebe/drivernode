@@ -30,6 +30,7 @@ void Idle::newAngle() {
 // Driving actions
 void Driving::doAction() {
 	if(ctx.referencePositionReached()) {
+		ctx.sendFinishedMessage();
 		CHANGE_STATE(Idle);
 	} else {
 		ctx.updateControl();
@@ -37,7 +38,7 @@ void Driving::doAction() {
 }
 
 void Driving::exitAction() {
-	ctx.sendFinishedMessage();
+
 }
 
 void Driving::newPosition() {
