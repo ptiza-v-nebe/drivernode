@@ -38,7 +38,7 @@ void Driving::doAction() {
 }
 
 void Driving::exitAction() {
-
+	ctx.stopMotors();
 }
 
 void Driving::newPosition() {

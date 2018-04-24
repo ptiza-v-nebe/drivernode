@@ -14,6 +14,7 @@
 #include <serial/messages/StatusMessage.h>
 #include <serial/MessageDispatcher.h>
 #include <algorithm>
+#include <config.h>
 
 MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
         std::vector<Clocked*> clockedInNormalOperation,
@@ -28,8 +29,11 @@ MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
             [this](InitializeMessage) {
                 currentState->initializeMessageReceived();
             });
-
+#ifdef HUMAN_MODE
+    new(currentState) Initialize(*this); currentState->entry();
+#endif /* HUMAN_MODE */
     dispatcher.setStatusHandler(this);
+
 }
 
 MainFSMContext::~MainFSMContext() {

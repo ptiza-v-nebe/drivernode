@@ -47,7 +47,10 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, M
 		rampAngle(0.0),
 		driveSpeed(DriveSpeed::SLOW),
 		driveDirection(DriveDirection::FORWARD),
-		driveAccuracy(DriveAccuracy::LOW)
+		driveAccuracy(DriveAccuracy::LOW),
+		speed(0.2),
+		direction(1),
+		turningAngle(false)
 		{
 	currentState = new Idle(*this);
 }
@@ -57,33 +60,34 @@ void DriverFSM::tick() {
 }
 
 void DriverFSM::updateControl() {
-	// angleError
-	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
-	referenceAngle = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
-	angleError = referenceAngle - pm.getHeading(); // angleError if angle < 10°
-	float angleGain = 0.5;
-
-	if(fabs(angleError.getAngleInDegreesAround(0.0)) < 10.0) {
-		if(rampDistance < startDistance)
-			rampDistance = rampDistance + 0.5*CONTROLLER_SAMPLING_TIME; // ramp up to reference Position
-	} else {
-		/*if(rampAngle.getAngleInRadianAround(0.0) < startAngle.getAngleInRadianAround(0.0)) {
-			rampAngle = rampAngle+signum(angleError.getAngleInRadianAround(0.0))*0.05*CONTROLLER_SAMPLING_TIME; // ramp up angle
-			Angle currentAngle = startAngle - referenceAngle;
-			angleError = rampAngle - currentAngle;
-		} else if(rampAngle.getAngleInRadianAround(0.0) > startAngle.getAngleInRadianAround(0.0)) {
-			rampAngle = rampAngle-0.05*CONTROLLER_SAMPLING_TIME; // ramp up angle
-			Angle currentAngle = startAngle - referenceAngle;
-			angleError = rampAngle - currentAngle;
-		}*/
-		angleGain = 0.1;
+	// recalculate referenceAngl
+	if(!turningAngle) {
+		Vector targetVector(pm.xum*0.001, pm.yum*0.001);
+		referenceAngle = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
 	}
 
-	float currentDistance = startDistance - referencePosition.distanceTo(pm.getPosition())*0.001;
-	distanceError = rampDistance - currentDistance;
+	if(direction < 0) { // if driving backward
+		referenceAngle = referenceAngle-180_deg;
+	}
 
-	float referenceSpeedLeft = distanceError-angleGain*angleError.getAngleInRadianAround(0.0);
-	float referenceSpeedRight = distanceError+angleGain*angleError.getAngleInRadianAround(0.0);
+	angleError = referenceAngle - pm.getHeading();
+
+	printf("%f %f %f\r\n", angleError.getAngleInRadianAround(0.0), referenceAngle.getAngleInRadianAround(0.0), pm.getHeading().getAngleInRadianAround(0.0));
+
+	if(fabs(angleError.getAngleInDegreesAround(0.0)) < 10.0) {
+		if(fabs(rampDistance) <= startDistance)
+			rampDistance = rampDistance + direction*speed*CONTROLLER_SAMPLING_TIME; // ramp up to reference Position
+	}
+
+	if(turningAngle) {
+		distanceError = 0;
+	} else {
+		float currentDistance = (startDistance - referencePosition.distanceTo(pm.getPosition())*0.001)*direction;
+		distanceError = rampDistance - currentDistance;
+	}
+
+	float referenceSpeedLeft  = distanceError-(TRACK_WIDTH_UM*0.000002)*0.25*angleError.getAngleInRadianAround(0.0);
+	float referenceSpeedRight = distanceError+(TRACK_WIDTH_UM*0.000002)*0.25*angleError.getAngleInRadianAround(0.0);
 
 	float leftMotorVelocity = leftWheelControl.update(referenceSpeedLeft - pm.leftWheelVelocity);
 	float rightMotorVelocity = rightWheelControl.update(referenceSpeedRight - pm.rightWheelVelocity);
@@ -95,7 +99,7 @@ void DriverFSM::updateControl() {
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);
 
 	n++; // counting tick up
-	//printf("%f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME,referenceAngle.getAngleInRadianAround(0.0),pm.getHeading().getAngleInRadianAround(0.0),rampAngle.getAngleInRadianAround(0.0), angleError.getAngleInRadianAround(0.0));
+	//printf("%f %f %f %f %f\r\n",n*CONTROLLER_SAMPLING_TIME,angleError.getAngleInRadianAround(0.0), rampDistance, currentDistance, pm.getHeading().getAngleInRadianAround(0.0));
 	//printf("%f %f %f\r\n", n*CONTROLLER_SAMPLING_TIME, distanceError, angleError.getAngleInRadianAround(0.0));
 }
 void DriverFSM::resetControl() {
@@ -115,35 +119,66 @@ void DriverFSM::disableMotors() {
 	rightMotor.disableAndStop();
 }
 
+void DriverFSM::stopMotors() {
+	leftMotor.stop();
+	rightMotor.stop();
+}
+
 bool DriverFSM::referencePositionReached() {
 	float distance = pm.getPosition().distanceTo(referencePosition);
-	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
-	Angle soll = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
-	Angle angleError = (soll - pm.getHeading());
 
-	if(distance < 2.5 && angleError.getAngleInDegreesAround(0.0) < 1.0) {
-		return true;
+	if(turningAngle) {
+		if(fabs(angleError.getAngleInDegreesAround(0.0)) < 1.0) {
+			return true;
+		} else {
+			return false;
+		}
 	} else {
-		return false;
+		if((distance < 2.5 && fabs(angleError.getAngleInDegreesAround(0.0)) < 1.0 ) ||
+				(1 == pointOnWhichSideOfLine(referencePosition.asVectorFromOrigin()-Vector(startAngle,3.5),Vector(startAngle+90_deg,1), pm.getPosition()))) {
+			return true;
+		} else {
+			return false;
+		}
 	}
+
 }
 
 void DriverFSM::calculateDistance() {
+	turningAngle = false;
 	rampDistance = 0;
 	distanceError = 0;
 	angleError = 0;
 	startDistance = (referencePosition.distanceTo(pm.getPosition()))*0.001;
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
 	referenceAngle = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
+
+	if(direction < 0) { // if driving backward
+		referenceAngle = referenceAngle-180_deg;
+	}
+
 	startAngle = referenceAngle - pm.getHeading();
 }
 
 void DriverFSM::calculateAngle() {
+	turningAngle = true;
+	// calculate angleError
+	angleError = referenceAngle - pm.getHeading();
+
+	// set distance control to zero
+	distanceError = 0;
+	rampDistance = 0;
+	startDistance = 0;
+
+	/*turningAngle = true;
+	angleError = referenceAngle - pm.getHeading();
+	printf("%f %f\n", angleError.getAngleInRadianAround(0.0),referenceAngle.getAngleInRadianAround(0.0));
+	referencePosition = pm.getPosition()+Vector(pm.getHeading()+referenceAngle,1.5);
+
 	rampDistance = 0;
 	distanceError = 0;
-	angleError = 0;
 	startDistance = 0;
-	startAngle = (referenceAngle - pm.getHeading()).getAngleInRadianAround(0.0);
+	startAngle = (referenceAngle - pm.getHeading()).getAngleInRadianAround(0.0);*/
 }
 
 void DriverFSM::sendFinishedMessage() {
@@ -156,6 +191,10 @@ DriverFSM::~DriverFSM() {
 
 void DriverFSM::newPosition() {
 	currentState->newPosition();
+}
+
+void DriverFSM::newAngle() {
+	currentState->newAngle();
 }
 
 void DriverFSM::stop() {
@@ -171,13 +210,27 @@ void DriverFSM::setReferenceAngle(Angle angle) {
 }
 
 void DriverFSM::setDriveSpeed(DriveSpeed speed) {
+	if(speed == DriveSpeed::FAST) {
+		this->speed = 0.5; // meters per second
+	} else {
+		this->speed = 0.2; // meters per second
+	}
 	this->driveSpeed = speed;
 }
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
+	if(direction == DriveDirection::BACKWARD) {
+		this->direction = -1;
+	} else {
+		this->direction = 1;
+	}
 	this->driveDirection = direction;
 }
 
 void DriverFSM::setDriveAccuracy(DriveAccuracy accuracy) {
 	this->driveAccuracy = accuracy;
+}
+
+int DriverFSM::pointOnWhichSideOfLine(Vector ro, Vector rd, Position p) {
+	return signum(rd.y*(p.x-ro.x)-rd.x*(p.y-ro.y));
 }

@@ -51,6 +51,9 @@ private:
 	DriveDirection driveDirection;
 	DriveAccuracy driveAccuracy;
 
+	float speed;
+	int direction;
+	bool turningAngle;
 	int n = 0;
 
 public:
@@ -60,9 +63,11 @@ public:
 	void resetControl();
 	void enableMotors();
 	void disableMotors();
+	void stopMotors();
 	bool referencePositionReached();
 	void calculateDistance();
 	void calculateAngle();
+	int pointOnWhichSideOfLine(Vector ro, Vector rd, Position p);
 	void sendFinishedMessage();
 	virtual ~DriverFSM();
 

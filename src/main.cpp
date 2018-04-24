@@ -88,6 +88,7 @@ int main(void) {
     dispatcher.registerMessageHandler<ControlledDriveMessage>(
             [&driverFSM](const ControlledDriveMessage& cdm) {
                 driverFSM.setReferencePosition(cdm.getPosition());
+                driverFSM.setDriveDirection(cdm.getDirection());
                 driverFSM.setDriveSpeed(cdm.getSpeed());
                 driverFSM.setDriveAccuracy(cdm.getAccuracy());
                 driverFSM.newPosition();
@@ -96,6 +97,8 @@ int main(void) {
     dispatcher.registerMessageHandler<ControlledTurnMessage>(
             [&driverFSM](const ControlledTurnMessage& ctm) {
                 driverFSM.setReferenceAngle(ctm.getTargetHeading());
+                driverFSM.setDriveDirection(DriveDirection::FORWARD);
+                driverFSM.newAngle();
             });
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
@@ -109,11 +112,12 @@ int main(void) {
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
-
+#ifndef HUMAN_MODE
     schedule_repeating_task(
             [&dispatcher, &pm]() {
                 dispatcher.sendMessage(PositionMessage(pm.getPosition(), pm.getHeading()));
             }, 100);
+#endif /* HUMAN_MODE */
 
     schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
