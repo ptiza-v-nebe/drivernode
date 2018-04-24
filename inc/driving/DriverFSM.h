@@ -17,6 +17,7 @@
 #include "position/Position.h"
 #include "position/Angle.h"
 #include "serial/messages/drive_types.h"
+#include "serial/MessageDispatcher.h"
 
 class DriverBaseState;
 
@@ -30,31 +31,37 @@ private:
 	PIController leftWheelControl;
 	PIController rightWheelControl;
 	PositionManager& pm;
+	MessageDispatcher& md;
+
+
+	Position referencePosition;
+	float distanceError = 0;
+	float referenceDistance = 0;
+	float rampDistance = 0;
+	float startDistance = 0;
+
+	Angle referenceAngle;
+	Angle angleError;
+	Angle startAngle;
+	Angle rampAngle;
 
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
 	DriveAccuracy driveAccuracy;
 
-	Position referencePosition;
-	float distanceError = 0;
-	float referenceDistance = 0;
-	float distanceRamp = 0;
-
-	Angle referenceAngle;
-	float angleError = 0;
-
 	int n = 0;
 
 public:
-	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
+	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md);
 	void update();
 	void updateControl();
 	void resetControl();
 	void enableMotors();
 	void disableMotors();
 	bool referencePositionReached();
-	bool referenceAngleReached();
-	bool isErrorAngleToBig();
+	void calculateDistance();
+	void calculateAngle();
+	void sendFinishedMessage();
 	virtual ~DriverFSM();
 
 	// transitions
@@ -64,7 +71,7 @@ public:
 
 	// setter
 	void setReferencePosition(Position position);
-	void setTargetAngle(Angle targetAngle);
+	void setReferenceAngle(Angle angle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
 	void setDriveAccuracy(DriveAccuracy accuracy);

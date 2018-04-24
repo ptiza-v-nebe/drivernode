@@ -18,16 +18,6 @@ STATE(Idle)
 };
 
 STATE(Driving)
-	void entryAction() override;
-	void doAction() override;
-	void exitAction() override;
-	void newPosition() override;
-	void newAngle() override;
-	void stop() override;
-};
-
-STATE(Turning)
-	void entryAction() override;
 	void doAction() override;
 	void exitAction() override;
 	void newPosition() override;

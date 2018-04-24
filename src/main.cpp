@@ -66,7 +66,7 @@ int main(void) {
 
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
-    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
+    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm, dispatcher);
 
     //MainFSMContext mainFSM(dispatcher, { }, { }, { &pm });
 
@@ -93,8 +93,7 @@ int main(void) {
 
     dispatcher.registerMessageHandler<ControlledTurnMessage>(
     		[&driverFSM](ControlledTurnMessage ctm) {
-    			driverFSM.setTargetAngle(ctm.getTargetHeading());
-    			driverFSM.newAngle();
+    			driverFSM.setReferenceAngle(ctm.getTargetHeading());
     		});
 
     dispatcher.registerMessageHandler<SetSpeedMessage>(
