@@ -7,34 +7,47 @@
 
 #include <driving/DriverStates.h>
 
-void Idle::newTargetPosition() {
-	CHANGE_STATE(DrivingForward);
+// Idle actions
+void Idle::entryAction() {
+	ctx.disableMotors();
 }
 
-void DrivingForward::entryAction() {
+void Idle::exitAction() {
 	ctx.resetControl();
+	ctx.enableMotors();
 }
 
-void DrivingForward::doAction() {
-	if(ctx.reachedTargetPosition()) {
-		CHANGE_STATE(Idle)
+void Idle::newPosition() {
+	ctx.calculateDistance();
+	CHANGE_STATE(Driving);
+}
+
+void Idle::newAngle() {
+	ctx.calculateAngle();
+	CHANGE_STATE(Driving);
+}
+
+// Driving actions
+void Driving::doAction() {
+	if(ctx.referencePositionReached()) {
+		CHANGE_STATE(Idle);
 	} else {
 		ctx.updateControl();
 	}
 }
 
-void DrivingForward::exitAction() {
-	ctx.stop();
+void Driving::exitAction() {
+	ctx.sendFinishedMessage();
 }
 
-void DrivingBackward::entryAction() {
-	ctx.resetControl();
+void Driving::newPosition() {
+	ctx.calculateDistance();
 }
 
-void DrivingBackward::doAction() {
-	ctx.updateControl();
+void Driving::newAngle() {
+	ctx.calculateAngle();
 }
 
-void DrivingBackward::exitAction() {
-	ctx.stop();
+void Driving::stop() {
+	CHANGE_STATE(Idle);
 }

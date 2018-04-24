@@ -67,9 +67,10 @@ int main(void) {
 
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
-    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm);
+    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
+            dispatcher);
 
-    MainFSMContext mainFSM(dispatcher, { }, { }, { &pm });
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { }, { &pm });
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -79,17 +80,41 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
-    /*dispatcher.registerMessageHandler<ControlledDriveMessage>(
-     [&driverFSM](ControlledDriveMessage cdm) {
-     driverFSM.setTargetPosition(cdm.getPosition());
-     driverFSM.setDriveSpeed(cdm.getSpeed());
-     driverFSM.newTargetPosition();
+    dispatcher.registerMessageHandler<StopMessage>(
+            [&driverFSM](const StopMessage&) {
+                driverFSM.stop();
+            });
 
-     });*/
+    dispatcher.registerMessageHandler<ControlledDriveMessage>(
+            [&driverFSM](const ControlledDriveMessage& cdm) {
+                driverFSM.setReferencePosition(cdm.getPosition());
+                driverFSM.setDriveSpeed(cdm.getSpeed());
+                driverFSM.setDriveAccuracy(cdm.getAccuracy());
+                driverFSM.newPosition();
+            });
+
+    dispatcher.registerMessageHandler<ControlledTurnMessage>(
+            [&driverFSM](const ControlledTurnMessage& ctm) {
+                driverFSM.setReferenceAngle(ctm.getTargetHeading());
+            });
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&hal](const SetSpeedMessage& ssm) {
+                hal.getLeftMotor().enable();
+                hal.getRightMotor().enable();
+                hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
+                hal.getRightMotor().setSpeed(ssm.getSpeedRight());
+            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+
+    schedule_repeating_task(
+            [&dispatcher, &pm]() {
+                dispatcher.sendMessage(PositionMessage(pm.getPosition(), pm.getHeading()));
+            }, 100);
+
     schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
     }, 10);
@@ -104,82 +129,25 @@ int main(void) {
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 #if 1
-    int16_t speed = 0;
-    bool stop = false;
-
-    hal.getLeftMotor().enable();
-    hal.getRightMotor().enable();
-
-    schedule_repeating_task([&hal, &speed, &stop]() {
-        if(speed < 0 && stop) {
-            hal.getLeftMotor().stop();
-            hal.getRightMotor().stop();
-        } else {
-            hal.getLeftMotor().setSpeed(speed);
-            hal.getRightMotor().setSpeed(speed);
-        }
-    }, 10);
-
-    dispatcher.registerMessageHandler<ControlledDriveMessage>(
-            [&speed](const ControlledDriveMessage& cdm) {
-                if(cdm.getDirection() == DriveDirection::FORWARD) {
-                    speed = 600;
-                } else {
-                    speed = -600;
-                }
-            });
-
-    dispatcher.registerMessageHandler<StopMessage>(
-            [&speed](const StopMessage&) {
-                speed = 0;
-            });
-
-    schedule_repeating_task([&dispatcher, &pm]() {
-            dispatcher.sendMessage(PositionMessage(pm.getPosition(), pm.getHeading()));
-        }, 100);
 
     /*schedule_repeating_task([&hal, &stop]() {
-        uint16_t d1 = hal.getSRF08s()[0].getRange();
-        uint16_t d2 = hal.getSRF08s()[1].getRange();
+     uint16_t d1 = hal.getSRF08s()[0].getRange();
+     uint16_t d2 = hal.getSRF08s()[1].getRange();
 
-        if(stop) {
-            if(d1 > 30 && d2 > 30) {
-                stop = false;
-            }
-        } else {
-            if(d1 < 20 || d2 < 20) {
-                stop = true;
-            }
-        }
+     if(stop) {
+     if(d1 > 30 && d2 > 30) {
+     stop = false;
+     }
+     } else {
+     if(d1 < 20 || d2 < 20) {
+     stop = true;
+     }
+     }
 
-        hal.getSRF08s()[0].startRanging();
-        hal.getSRF08s()[1].startRanging();
-    }, 100);*/
+     hal.getSRF08s()[0].startRanging();
+     hal.getSRF08s()[1].startRanging();
+     }, 100);*/
 #endif
-
-#if 0
-    // Sensor Test
-    schedule_repeating_task(
-            [&hal]() {
-                printf("\033[2J");
-                printf("SENSOR TEST\r\n\n");
-                printf("Encoders: Left %ld, Right %ld\r\n",
-                        hal.getLeftEncoder().getTick(),
-                        hal.getRightEncoder().getTick());
-                printf("Starter Pin: %s\r\n", hal.getStarterPin().isOn() ? "INSERTED" : "REMOVED");
-                printf("Ultrasonic Sensors: %d cm, %d cm\r\n",
-                        hal.getSRF08s()[0].getRange(),
-                        hal.getSRF08s()[1].getRange());
-#ifdef BIG_ROBOT
-                printf("Scara: Encoder %ld, EndStop: %s\r\n",
-                        hal.getScaraHardware().getLiftEncoder().getTick(),
-                        hal.getScaraHardware().getEndStop().isOn() ? "PRESSED" : "RELEASED");
-#endif
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 500);
-#endif
-
     // ////////////////////////////////////////////
     // END TEST AREA
     // ////////////////////////////////////////////

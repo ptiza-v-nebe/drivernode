@@ -43,7 +43,7 @@ void StepperMotor::disableAndStop() {
 /*
  * @see - Motor::setSpeed(uint16_t)
  */
-void StepperMotor::setSpeed(int16_t speed) {
+void StepperMotor::setSpeed(int32_t speed) {
     if (!enabled) {
         return;
     }

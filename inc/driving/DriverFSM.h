@@ -10,55 +10,73 @@
 
 #include "driving/DriverBaseState.h"
 #include "driving/PIDController.h"
-#include "driving/PD.h"
+#include "driving/PDController.h"
+#include "driving/PIController.h"
 #include "hal/Motor.h"
 #include "position/PositionManager.h"
 #include "position/Position.h"
 #include "position/Angle.h"
 #include "serial/messages/drive_types.h"
+#include "serial/MessageDispatcher.h"
+
+#include <control/Clocked.h>
 
 class DriverBaseState;
 
-constexpr float MOTORCONSTANT = 14*60*(1/(2*PI*0.03));
-
-class DriverFSM {
+class DriverFSM : public Clocked {
 private:
 	DriverBaseState* currentState;
 	Motor& leftMotor;
 	Motor& rightMotor;
 	PIDController positionControl;
 	PIDController angleControl;
-	PD leftWheelControl;
-	PD rightWheelControl;
+	PIController leftWheelControl;
+	PIController rightWheelControl;
 	PositionManager& pm;
-	Position targetPosition;
-	Angle targetAngle;
+	MessageDispatcher& md;
+
+
+	Position referencePosition;
+	float distanceError = 0;
+	float referenceDistance = 0;
+	float rampDistance = 0;
+	float startDistance = 0;
+
+	Angle referenceAngle;
+	Angle angleError;
+	Angle startAngle;
+	Angle rampAngle;
+
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
+	DriveAccuracy driveAccuracy;
 
-	int counter = 0;
-	float lastSpeedLeft = 0;
-	float lastSpeedRight = 0;
-	float sollLeft = 0;
-	float sollRight = 0;
-	float lastDistance = 0;
+	int n = 0;
 
 public:
-	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
-	void update();
+	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md);
+	void tick() override;
 	void updateControl();
 	void resetControl();
-	void stop();
-	bool reachedTargetPosition();
+	void enableMotors();
+	void disableMotors();
+	bool referencePositionReached();
+	void calculateDistance();
+	void calculateAngle();
+	void sendFinishedMessage();
 	virtual ~DriverFSM();
 
 	// transitions
-	void newTargetPosition();
+	void newPosition();
+	void newAngle();
+	void stop();
 
-	void setTargetPosition(Position targetPosition);
-	void setTargetAngle(Angle targetAngle);
+	// setter
+	void setReferencePosition(Position position);
+	void setReferenceAngle(Angle angle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
+	void setDriveAccuracy(DriveAccuracy accuracy);
 };
 
 #endif /* DRIVING_DRIVERFSM_H */

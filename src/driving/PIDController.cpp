@@ -8,8 +8,8 @@
 #include "driving/PIDController.h"
 
 PIDController::PIDController(float kP, float Ti, float kD, float Ts) {
-	b2 = kP+kP*Ts/2*Ti+kP*kD/Ts;
-	b1 = -kP+kP*Ts/2*Ti-2*kP*kD/Ts;
+	b2 = kP+kP*Ts/(2*Ti)+kP*kD/Ts;
+	b1 = -kP+kP*Ts/(2*Ti)-2*kP*kD/Ts;
 	b0 = kP*kD/Ts;
 	u1 = 0.0;
 	e1 = 0.0;
