@@ -28,6 +28,7 @@
 #include "error.h"
 #include "serial/messages/version.h"
 #include "scara/ScaraLift.h"
+#include "scara/Scara.h"
 
 #include <stm32l4xx.h>
 
@@ -129,18 +130,15 @@ int main(void) {
      scaraLift.enable();
      });*/
 
-    DynamixelAX12A& servo1 = hal.getScaraHardware().getArmServos()[0];
-    servo1.enable();
+    Scara scara(hal.getScaraHardware());
+    scara.initialize();
 
     //here no pauses!
     schedule_repeating_task([&]() {
-    	Angle goalPosition = 90_deg;
-    	servo1.moveTo(goalPosition);
-    }, 10);
+    	scara.execute();
+    }, 10); //, 10) each 10 milliseconds run this code
 
-    ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder());
-    lift.initialize();
-    lift.moveTo(5000); //0 - 7100 ticks
+
 
     // ////////////////////////////////////////////
     // END TEST AREA
