@@ -101,6 +101,8 @@ void DriverFSM::updateControl() {
 void DriverFSM::resetControl() {
 	positionControl.reset();
 	angleControl.reset();
+	leftWheelControl.reset();
+	rightWheelControl.reset();
 }
 
 void DriverFSM::enableMotors() {
