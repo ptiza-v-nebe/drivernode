@@ -268,12 +268,12 @@ static constexpr uint8_t DYNAMIXEL_ID = 4;
 /**
  * ID of the first SRF08
  */
-static constexpr uint8_t SRF08_1_ID = 0xEE;
+static constexpr uint8_t SRF08_1_ID = 0xE0;
 
 /**
  * ID of the second SRF08
  */
-static constexpr uint8_t SRF08_2_ID = 0xE2;
+static constexpr uint8_t SRF08_2_ID = 0xEA;
 
 #endif
 

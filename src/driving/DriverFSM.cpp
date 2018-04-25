@@ -16,7 +16,7 @@
 #include "util/util.h"
 #include "serial/messages/StatusMessage.h"
 
-DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md) :
+DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md, bool& backwardVision) :
 		currentState(nullptr),
 		leftMotor(motorLeft),
 		rightMotor(motorRight),
@@ -48,8 +48,8 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, M
 		speed(0.2),
 		direction(1),
 		targetRadius(0.25),
-		turningAngle(false)
-		{
+		turningAngle(false),
+		backwardVision(backwardVision) {
 	currentState = new Idle(*this);
 }
 
@@ -191,6 +191,13 @@ bool DriverFSM::isRobotStuck() {
 	return false;
 }
 
+bool DriverFSM::isEnemyBehindRobot() {
+	if(driveDirection == DriveDirection::BACKWARD) {
+		return backwardVision;
+	}
+	return false;
+}
+
 void DriverFSM::sendFinishedMessage() {
 	md.sendMessage(StatusMessage(Status::DRIVER_FINISHED));
 }
@@ -230,6 +237,7 @@ void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 		this->speed = 0.2; // meters per second
 	}
 	this->driveSpeed = speed;
+	this->speed = 0.2;
 }
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
@@ -239,7 +247,6 @@ void DriverFSM::setDriveDirection(DriveDirection direction) {
 		this->direction = 1;
 	}
 	this->driveDirection = direction;
-	this->direction = -1;
 }
 
 void DriverFSM::setDriveAccuracy(DriveAccuracy accuracy) {
