@@ -5,7 +5,7 @@
  *      Author: ivan-zarevich
  */
 
-#include "Trajectory.h"
+#include "scara/Trajectory.h"
 
 Trajectory::Trajectory() :
 		k(0), sumTime(0), actionTime(0),trj() {

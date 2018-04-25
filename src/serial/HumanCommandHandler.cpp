@@ -105,18 +105,21 @@ void HumanCommandHandler::sendPrompt() {
  */
 void HumanCommandHandler::printHelpMessage() {
     printf("Available commands: \r\n");
-    printf("q             - Stop \r\n\n");
+    printf("q                 - Stop \r\n\n");
 
     printf("Driving: \r\n");
-    printf("dp <i> <i>    - ControlledDrive to position x,y (FAST, FORWARD, HIGH accuracy)\r\n\n");
+    printf("dp <i> <i>        - ControlledDrive to position x,y (FAST, FORWARD, HIGH accuracy)\r\n\n");
 
     printf("Turning: \r\n");
-    printf("t <f>         - ControlledTurn to angle in degrees\r\n\n");
+    printf("t <f>             - ControlledTurn to angle in degrees\r\n\n");
+
+    printf("Scara: \r\n");
+    printf("p <i> <i> <f> <i> - Action with the scara - x, y, phi (degreees!), id (of storage location)\r\n\n");
 
     printf("Other: \r\n");
-    printf("s <i>         - SetSpeed same on both wheels\r\n");
-    printf("s <i> <i>     - SetSpeed left, right\r\n");
-    printf("r <i> <i> <f> - ResetOdometry to position x,y and angle in degrees\r\n\n");
+    printf("s <i>             - SetSpeed same on both wheels\r\n");
+    printf("s <i> <i>         - SetSpeed left, right\r\n");
+    printf("r <i> <i> <f>     - ResetOdometry to position x,y and angle in degrees\r\n\n");
 }
 
 /**
