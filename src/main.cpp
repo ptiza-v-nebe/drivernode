@@ -31,6 +31,7 @@
 #include "scara/ScaraLift.h"
 
 #include <control/HoneyControl.h>
+#include <control/StartPinInitializer.h>
 
 #include <stm32l4xx.h>
 
@@ -71,10 +72,18 @@ int main(void) {
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
             dispatcher);
+    StartPinInitializer startPinInit(hal.getStarterPin());
+
+#ifdef SMALL_ROBOT
     HoneyControl honeyControl(hal.getServoLeft(), hal.getServoRight());
 
-    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl },
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl, &startPinInit },
             { &pm });
+#endif
+#ifdef BIG_ROBOT
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &startPinInit },
+                { &pm });
+#endif
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
