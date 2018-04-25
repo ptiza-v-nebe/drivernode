@@ -136,7 +136,7 @@ int main(void) {
     //here no pauses!
     schedule_repeating_task([&]() {
     	scara.execute();
-    }, 100); //, 10) each 10 milliseconds run this code
+    }, 10); //, 10) each 10 milliseconds run this code
 
 
 

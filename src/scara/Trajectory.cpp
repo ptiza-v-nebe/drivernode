@@ -110,7 +110,7 @@ static std::vector<double> linspace(double start, double end, int num_in) {
 
 std::vector<std::vector<double> > Trajectory::interpolate(
 		std::vector<double> timedStartPose, std::vector<double> timedEndPose) {
-	int n = 10;
+	int n = 100;
 
 	double startTime = timedStartPose[0];
 	double endTime = timedEndPose[0];
@@ -225,8 +225,9 @@ Q Trajectory::ik2(std::vector<double> timedPose) {
 
 	//calculate q4 from q1,q2,q3
 	double q4 = theta - (q1+q2+q3);
+	double q5 = map(z, 37.0, 231.5, 0, 7000);
 
-	return {t, q1, q2, q3, q4};
+	return {t, q1, q2, q3, q4, q5};
 }
 
 long Trajectory::map(long x, long in_min, long in_max, long out_min,

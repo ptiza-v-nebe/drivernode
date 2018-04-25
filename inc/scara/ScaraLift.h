@@ -33,9 +33,10 @@ public:
 
     void moveTo(float mm);
     float getPosition();
+    void tick();
+    void stop();
 
 private:
-    void tick();
     int16_t clamp(int16_t value);
 };
 

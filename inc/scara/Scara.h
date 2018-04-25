@@ -31,6 +31,9 @@ private:
 	long map(long x, long in_min, long in_max, long out_min, long out_max);
 	QTrajectory qTrj;
 	int i;
+	double lastTime;
+	double currentTime;
+	int j;
 
 public:
 	Scara(ScaraHardware& hw);
