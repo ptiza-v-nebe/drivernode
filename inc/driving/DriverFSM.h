@@ -53,6 +53,7 @@ private:
 
 	float speed;
 	int direction;
+	float targetRadius;
 	bool turningAngle;
 	int n = 0;
 
@@ -67,6 +68,7 @@ public:
 	bool referencePositionReached();
 	void calculateDistance();
 	void calculateAngle();
+	bool isAccuracyHigh();
 	int pointOnWhichSideOfLine(Vector ro, Vector rd, Position p);
 	void sendFinishedMessage();
 	virtual ~DriverFSM();

@@ -9,7 +9,9 @@
 
 // Idle actions
 void Idle::entryAction() {
-	ctx.disableMotors();
+	if(ctx.isAccuracyHigh()) {
+		ctx.disableMotors();
+	}
 }
 
 void Idle::exitAction() {
@@ -38,7 +40,7 @@ void Driving::doAction() {
 }
 
 void Driving::exitAction() {
-	ctx.stopMotors();
+
 }
 
 void Driving::newPosition() {
@@ -50,5 +52,6 @@ void Driving::newAngle() {
 }
 
 void Driving::stop() {
+	ctx.stopMotors();
 	CHANGE_STATE(Idle);
 }
