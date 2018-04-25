@@ -114,6 +114,8 @@ void HumanCommandHandler::printHelpMessage() {
     printf("t <f>             - ControlledTurn to angle in degrees\r\n\n");
 
     printf("Scara: \r\n");
+    printf("pc                - Cancel current scara action\r\n");
+    printf("pp                - Send scara to park position\r\n");
     printf("p <i> <i> <f> <i> - Action with the scara - x, y, phi (degreees!), id (of storage location)\r\n\n");
 
     printf("Other: \r\n");

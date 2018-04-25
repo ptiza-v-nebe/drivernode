@@ -80,20 +80,19 @@ int main(void) {
             });
 
     /*dispatcher.registerMessageHandler<ControlledDriveMessage>(
-            [&driverFSM](ControlledDriveMessage cdm) {
-                driverFSM.setTargetPosition(cdm.getPosition());
-                driverFSM.setDriveSpeed(cdm.getSpeed());
-                driverFSM.newTargetPosition();
+     [&driverFSM](ControlledDriveMessage cdm) {
+     driverFSM.setTargetPosition(cdm.getPosition());
+     driverFSM.setDriveSpeed(cdm.getSpeed());
+     driverFSM.newTargetPosition();
 
-            });*/
+     });*/
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
-
     /*schedule_repeating_task([&mainFSM]() {
-        mainFSM.tick();
-    }, 10);*/
+     mainFSM.tick();
+     }, 10);*/
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
@@ -130,15 +129,30 @@ int main(void) {
      scaraLift.enable();
      });*/
 
+#if 0
     Scara scara(hal.getScaraHardware());
     scara.initialize();
 
     //here no pauses!
     schedule_repeating_task([&]() {
-    	scara.execute();
+        scara.execute();
     }, 10); //, 10) each 10 milliseconds run this code
+#endif
 
-
+    dispatcher.registerMessageHandler<ScaraActionMessage>(
+            [&](ScaraActionMessage sam) {
+                //scara.doSomething(sam.getX(), sam.getY(), sam.getPhi().getAngleInRadian(), sam.getStorageSpace());
+                //StorageSpace s = StorageSpace::INNER_3;
+                //static_cast<int>(s);//enum as int
+            });
+    dispatcher.registerMessageHandler<BasicScaraMessage>(
+            [&](BasicScaraMessage bsm) {
+                if(bsm.getScaraCommand() == ScaraCommand::CANCEL) {
+                    // TODO
+                } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
+                    // TODO
+                }
+            });
 
     // ////////////////////////////////////////////
     // END TEST AREA
