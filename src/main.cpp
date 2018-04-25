@@ -30,6 +30,8 @@
 #include "serial/messages/all.h"
 #include "scara/ScaraLift.h"
 
+#include <control/HoneyControl.h>
+
 #include <stm32l4xx.h>
 
 int main(void) {
@@ -69,8 +71,9 @@ int main(void) {
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
             dispatcher);
+    HoneyControl honeyControl(hal.getServo(), hal.getServo());
 
-    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { }, { &pm });
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl }, { &pm });
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
