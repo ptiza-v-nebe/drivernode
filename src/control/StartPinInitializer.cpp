@@ -9,7 +9,7 @@
 
 #include <control/StartPinInitializer.h>
 
-StartPinInitializer::StartPinInitializer(const InputPin& startPin) :
+StartPinInitializer::StartPinInitializer(InputPin& startPin) :
         startPin(startPin) {
 }
 

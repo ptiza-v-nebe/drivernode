@@ -18,7 +18,7 @@ class StartPinInitializer: public ClockedInitializable {
 private:
     InputPin& startPin;
 public:
-    StartPinInitializer(const InputPin& startPin);
+    StartPinInitializer(InputPin& startPin);
 
     virtual void startInitializing() override;
     virtual bool tickInit() override;

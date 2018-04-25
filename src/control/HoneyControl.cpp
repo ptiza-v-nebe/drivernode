@@ -9,6 +9,7 @@
 
 #include <control/HoneyControl.h>
 #include <map>
+#include <cmath>
 
 static const std::map<ServoPosition, Angle> ANGLE_MAP_LEFT //
 { //
@@ -36,17 +37,17 @@ void HoneyControl::startInitializing() {
     leftServo.moveTo(ANGLE_MAP_LEFT.at(ServoPosition::STORED));
 
     rightServo.enable();
-    leftServo.moveTo(ANGLE_MAP_RIGHT.at(ServoPosition::STORED));
+    rightServo.moveTo(ANGLE_MAP_RIGHT.at(ServoPosition::STORED));
 }
 
 bool HoneyControl::tickInit() {
-    bool leftInitialized = (leftServo.getAngle()
+    bool leftInitialized = fabs((leftServo.getAngle()
             - ANGLE_MAP_LEFT.at(ServoPosition::STORED)) //
-    .getAngleInDegreesAround(0) < INITIALIZE_MAX_DELTA;
+    .getAngleInDegreesAround(0)) < INITIALIZE_MAX_DELTA;
 
-    bool rightInitialized = (rightServo.getAngle()
+    bool rightInitialized = fabs((rightServo.getAngle()
             - ANGLE_MAP_RIGHT.at(ServoPosition::STORED)) //
-    .getAngleInDegreesAround(0) < INITIALIZE_MAX_DELTA;
+    .getAngleInDegreesAround(0)) < INITIALIZE_MAX_DELTA;
 
     return leftInitialized && rightInitialized;
 }
