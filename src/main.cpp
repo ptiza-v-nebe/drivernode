@@ -72,34 +72,6 @@ int main(void) {
                 pm.reset(rom.getPosition(), rom.getHeading());
             });
 
-    hal.getShootingBLDC().enable();
-    hal.getServo().enable();
-
-    dispatcher.registerMessageHandler<ControlledDriveMessage>(
-            [&hal](const ControlledDriveMessage& cdm) {
-                if(cdm.getPosition().x > 0) {
-                    hal.getShootingBLDC().start();
-                } else {
-                    hal.getShootingBLDC().stop();
-                }
-            });
-    dispatcher.registerMessageHandler<StopMessage>([&hal](const StopMessage&) {
-        hal.getLeftMotor().disableAndStop();
-        hal.getRightMotor().disableAndStop();
-    });
-
-    dispatcher.registerMessageHandler<SetSpeedMessage>(
-            [&hal](const SetSpeedMessage& ssm) {
-                hal.getLeftMotor().enable();
-                hal.getRightMotor().enable();
-                hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
-                hal.getRightMotor().setSpeed(ssm.getSpeedRight());
-            });
-
-    dispatcher.registerMessageHandler<ControlledTurnMessage>(
-            [&hal](const ControlledTurnMessage& ctm) {
-                hal.getServo().moveTo(ctm.getTargetHeading());
-            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
@@ -108,19 +80,6 @@ int main(void) {
     /*schedule_repeating_task([&mainFSM]() {
      mainFSM.tick();
      }, 10);*/
-
-    schedule_repeating_task([&hal]() {
-        static InputPin& front = hal.getFrontSwitch();
-        static bool stopped = false;
-        if(front.isOn() && !stopped) {
-            hal.getLeftMotor().stop();
-            hal.getRightMotor().stop();
-
-            stopped = true;
-        } else if (front.isOff() && stopped) {
-            stopped = false;
-        }
-    }, 50);
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
@@ -131,7 +90,51 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
+#if 1
+    hal.getShootingBLDC().enable();
+       hal.getServoLeft().enable();
+       hal.getServoRight().enable();
 
+       dispatcher.registerMessageHandler<ControlledDriveMessage>(
+               [&hal](const ControlledDriveMessage& cdm) {
+                   if(cdm.getPosition().x > 0) {
+                       hal.getShootingBLDC().start();
+                   } else {
+                       hal.getShootingBLDC().stop();
+                   }
+               });
+       dispatcher.registerMessageHandler<StopMessage>([&hal](const StopMessage&) {
+           hal.getLeftMotor().disableAndStop();
+           hal.getRightMotor().disableAndStop();
+       });
+
+       dispatcher.registerMessageHandler<SetSpeedMessage>(
+               [&hal](const SetSpeedMessage& ssm) {
+                   hal.getLeftMotor().enable();
+                   hal.getRightMotor().enable();
+                   hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
+                   hal.getRightMotor().setSpeed(ssm.getSpeedRight());
+               });
+
+       dispatcher.registerMessageHandler<ControlledTurnMessage>(
+               [&hal](const ControlledTurnMessage& ctm) {
+                   hal.getServoLeft().moveTo(ctm.getTargetHeading());
+               });
+
+       schedule_repeating_task([&hal]() {
+               static InputPin& front = hal.getFrontSwitch();
+               static bool stopped = false;
+               if(front.isOn() && !stopped) {
+                   hal.getLeftMotor().stop();
+                   hal.getRightMotor().stop();
+
+                   stopped = true;
+               } else if (front.isOff() && stopped) {
+                   stopped = false;
+               }
+           }, 50);
+
+#endif
 #if 0
     // Sensor Test
     schedule_repeating_task(
@@ -156,6 +159,8 @@ int main(void) {
             hal.getSRF08s()[0].startRanging();
             hal.getSRF08s()[1].startRanging();
         }, 500);
+
+
     //Actor Test
     hal.getLeftMotor().enable();
     hal.getRightMotor().enable();
@@ -180,7 +185,8 @@ int main(void) {
 #endif
 #ifdef SMALL_ROBOT
     hal.getShootingBLDC().enable();
-    hal.getServo().enable();
+    hal.getServoLeft().enable();
+    hal.getServoRight().enable();
 #endif
     schedule_repeating_task([&hal]() {
         hal.getLeftMotor().setSpeed(1000);
@@ -201,7 +207,8 @@ int main(void) {
 #endif
 #ifdef SMALL_ROBOT
             hal.getShootingBLDC().start();
-            hal.getServo().moveTo(150_deg);
+            hal.getServoLeft().moveTo(150_deg);
+            hal.getServoRight().moveTo(100_deg);
 #endif
         }, 5000);
     schedule_repeating_task([&hal]() {
@@ -223,7 +230,8 @@ int main(void) {
 #endif
 #ifdef SMALL_ROBOT
             hal.getShootingBLDC().stop();
-            hal.getServo().moveTo(100_deg);
+            hal.getServoLeft().moveTo(100_deg);
+            hal.getServoRight().moveTo(150_deg);
 #endif
         }, 5000, 2500);
 
