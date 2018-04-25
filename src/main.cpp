@@ -73,7 +73,8 @@ int main(void) {
             dispatcher);
     HoneyControl honeyControl(hal.getServo(), hal.getServo());
 
-    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl }, { &pm });
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl },
+            { &pm });
 
     // ////////////////////////////////////////////
     // Setup MessageHandlers
@@ -106,13 +107,13 @@ int main(void) {
 
     hal.getShootingBLDC().enable();
     dispatcher.registerMessageHandler<ShootingMechanismMessage>(
-                [&hal](const ShootingMechanismMessage& smm) {
-                    if(smm.getCommand() == ShootingCommand::ENABLE) {
-                        hal.getShootingBLDC().start();
-                    } else {
-                        hal.getShootingBLDC().stop();
-                    }
-                });
+            [&hal](const ShootingMechanismMessage& smm) {
+                if(smm.getCommand() == ShootingCommand::ENABLE) {
+                    hal.getShootingBLDC().start();
+                } else {
+                    hal.getShootingBLDC().stop();
+                }
+            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
@@ -137,25 +138,40 @@ int main(void) {
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
-#if 1
+#if 0
 
-    /*schedule_repeating_task([&hal, &stop]() {
-     uint16_t d1 = hal.getSRF08s()[0].getRange();
-     uint16_t d2 = hal.getSRF08s()[1].getRange();
+    schedule_repeating_task([&hal, &stop]() {
+                uint16_t d1 = hal.getSRF08s()[0].getRange();
+                uint16_t d2 = hal.getSRF08s()[1].getRange();
 
-     if(stop) {
-     if(d1 > 30 && d2 > 30) {
-     stop = false;
-     }
-     } else {
-     if(d1 < 20 || d2 < 20) {
-     stop = true;
-     }
-     }
+                if(stop) {
+                    if(d1 > 30 && d2 > 30) {
+                        stop = false;
+                    }
+                } else {
+                    if(d1 < 20 || d2 < 20) {
+                        stop = true;
+                    }
+                }
 
-     hal.getSRF08s()[0].startRanging();
-     hal.getSRF08s()[1].startRanging();
-     }, 100);*/
+                hal.getSRF08s()[0].startRanging();
+                hal.getSRF08s()[1].startRanging();
+            }, 100);
+#endif
+
+#if 0
+    schedule_repeating_task([&hal]() {
+        static InputPin& front = hal.getFrontSwitch();
+        static bool stopped = false;
+        if(front.isOn() && !stopped) {
+            hal.getLeftMotor().stop();
+            hal.getRightMotor().stop();
+
+            stopped = true;
+        } else if (front.isOff() && stopped) {
+            stopped = false;
+        }
+    }, 50);
 #endif
     // ////////////////////////////////////////////
     // END TEST AREA
