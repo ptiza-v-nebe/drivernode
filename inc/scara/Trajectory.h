@@ -14,10 +14,12 @@
 #include <math.h>
 #include <cstdio>
 
+using namespace std;
+
 using Pose = std::vector<double>;
 using Q = std::vector<double>;
-using QTrajectory = std::vector<std::vector<double>>;
-using XTrajectory = std::vector<std::vector<double>>;
+using QTrajectory = std::vector<std::vector<double> >;
+using XTrajectory = std::vector<std::vector<double> >;
 
 enum class TimeFactors {
 	FAST, MEDIUM, SLOW
@@ -26,8 +28,8 @@ enum class TimeFactors {
 class Trajectory {
 private:
 	std::vector<double> time;
-	std::vector<std::vector<double>> data;
-	std::vector<std::vector<double>> trj;
+	std::vector<std::vector<double> > data;
+	std::vector<std::vector<double> > trj;
 	std::vector<double> dFactors;
 	double actionTime;
 	double sumTime;
@@ -42,20 +44,16 @@ public:
 	void setActionTime(double actiontime);
 	double getActionTime();
 
-	std::vector<std::vector<double>> interpolate(
+	std::vector<std::vector<double> > interpolate(
 			std::vector<double> timedStartPose,
 			std::vector<double> timedEndPose);
 	long map(long x, long in_min, long in_max, long out_min, long out_max);
 	Q ik1(Pose pose);
 	Q ik2(Pose pose);
-	XTrajectory buildJointspace();
+	QTrajectory buildJointspace();
 
-	std::vector<double> getTimeValues();
-	std::vector<double> getXValues();
-	std::vector<double> getYValues();
-	std::vector<double> getZValues();
-	std::vector<double> getThetaValues();
-	std::vector<double> getPumpValues();
+	void showXTrajectory(XTrajectory xTrj);
+	void showQTrajectory(QTrajectory qTrj);
 };
 
 #endif /* TRAJECTORY_H_ */
