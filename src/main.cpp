@@ -101,13 +101,15 @@ int main(void) {
                 driverFSM.newAngle();
             });
 
-    dispatcher.registerMessageHandler<SetSpeedMessage>(
-            [&hal](const SetSpeedMessage& ssm) {
-                hal.getLeftMotor().enable();
-                hal.getRightMotor().enable();
-                hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
-                hal.getRightMotor().setSpeed(ssm.getSpeedRight());
-            });
+    hal.getShootingBLDC().enable();
+    dispatcher.registerMessageHandler<ShootingMechanismMessage>(
+                [&hal](const ShootingMechanismMessage& smm) {
+                    if(smm.getCommand() == ShootingCommand::ENABLE) {
+                        hal.getShootingBLDC().start();
+                    } else {
+                        hal.getShootingBLDC().stop();
+                    }
+                });
 
     // ////////////////////////////////////////////
     // Setup Tasks
