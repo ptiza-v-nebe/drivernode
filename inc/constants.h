@@ -52,4 +52,10 @@ constexpr float CONTROLLER_POSITION_KP = 0.75;
 constexpr float CONTROLLER_ANGLE_KP = 1.0;
 #endif
 
+/**
+ * ultrasonic backwardvision constants
+ */
+constexpr uint16_t ULTRASONIC_LOWERTHRESHOLD = 20;
+constexpr uint16_t ULTRASONIC_HIGHERTHRESHOLD = 30;
+
 #endif /* CONSTANTS_H_ */

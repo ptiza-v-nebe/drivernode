@@ -53,6 +53,8 @@ int main(void) {
     HALManager& hal = HALManager::getInstance();
     hal.enableISRs();
 
+    bool backwardVision = false;
+
 #ifdef CALIBRATION
     CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
 #elif defined(DRIVERMEASUREMENT)
@@ -68,7 +70,7 @@ int main(void) {
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
-            dispatcher);
+            dispatcher, backwardVision);
 
     MainFSMContext mainFSM(dispatcher, { &driverFSM }, { }, { &pm });
 
@@ -129,28 +131,29 @@ int main(void) {
     }, 250);
 #endif
 
+	schedule_repeating_task([&hal, &backwardVision]() {
+		uint16_t d1 = hal.getSRF08s()[0].getRange();
+		uint16_t d2 = hal.getSRF08s()[1].getRange();
+
+		if(backwardVision) {
+			if(d1 > ULTRASONIC_HIGHERTHRESHOLD && d2 > ULTRASONIC_HIGHERTHRESHOLD) {
+				backwardVision = false;
+			}
+		} else {
+			if(d1 < ULTRASONIC_LOWERTHRESHOLD || d2 < ULTRASONIC_LOWERTHRESHOLD) {
+				backwardVision = true;
+			}
+		}
+
+		hal.getSRF08s()[0].startRanging();
+		hal.getSRF08s()[1].startRanging();
+	}, 100);
+
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
     // ////////////////////////////////////////////
 #if 1
 
-    /*schedule_repeating_task([&hal, &stop]() {
-     uint16_t d1 = hal.getSRF08s()[0].getRange();
-     uint16_t d2 = hal.getSRF08s()[1].getRange();
-
-     if(stop) {
-     if(d1 > 30 && d2 > 30) {
-     stop = false;
-     }
-     } else {
-     if(d1 < 20 || d2 < 20) {
-     stop = true;
-     }
-     }
-
-     hal.getSRF08s()[0].startRanging();
-     hal.getSRF08s()[1].startRanging();
-     }, 100);*/
 #endif
     // ////////////////////////////////////////////
     // END TEST AREA
