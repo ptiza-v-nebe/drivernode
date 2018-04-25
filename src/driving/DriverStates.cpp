@@ -15,7 +15,6 @@ void Idle::entryAction() {
 }
 
 void Idle::exitAction() {
-	ctx.resetControl();
 	ctx.enableMotors();
 }
 
@@ -53,5 +52,6 @@ void Driving::newAngle() {
 
 void Driving::stop() {
 	ctx.stopMotors();
+	ctx.resetControl();
 	CHANGE_STATE(Idle);
 }

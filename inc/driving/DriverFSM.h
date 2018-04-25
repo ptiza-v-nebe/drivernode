@@ -41,6 +41,7 @@ private:
 	float referenceDistance = 0;
 	float rampDistance = 0;
 	float startDistance = 0;
+	float currentDistance = 0;
 
 	Angle referenceAngle;
 	Angle angleError;
