@@ -187,9 +187,7 @@ Q Trajectory::ik2(std::vector<double> timedPose) {
 	double theta = timedPose[4]; //how the saug is rotated
 
 	//lengths of links
-	double L1 = 82.5;
-	double L2 = 67.5;
-	double L3 = 67.5;
+
 	double rs2 = L2 + L3;
 
 	double vgAbs = sqrt(pow(x,2) + pow(y,2));
@@ -263,6 +261,14 @@ QTrajectory Trajectory::buildJointspace() {
 	//showQTrajectory(qTrj);
 
 	return qTrj;
+}
+
+std::vector<double> Trajectory::FK(std::vector<double> q){
+	double x = L1*cos(q[0]) + L2*cos(q[0]+q[1]) + L3*cos(q[0]+q[1]+q[3]);
+	double y = L1*sin(q[0]) + L2*sin(q[0]+q[1]) + L3*sin(q[0]+q[1]+q[3]);
+	double th = q[0]+q[1]+q[2]+q[3]+q[4];
+	double z = 0;
+	return {x, y, z, th};
 }
 
 

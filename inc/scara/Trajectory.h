@@ -8,11 +8,18 @@
 #ifndef TRAJECTORY_H_
 #define TRAJECTORY_H_
 
+
+
 #include <vector>
 #include <numeric>
 #include <algorithm>
 #include <math.h>
 #include <cstdio>
+
+const double L1=82.5;
+const double L2=67.5;
+const double L3=67.5;
+
 
 using namespace std;
 
@@ -51,6 +58,8 @@ public:
 	Q ik1(Pose pose);
 	Q ik2(Pose pose);
 	QTrajectory buildJointspace();
+
+	std::vector<double> FK(std::vector<double> q);
 
 	void showXTrajectory(XTrajectory xTrj);
 	void showQTrajectory(QTrajectory qTrj);
