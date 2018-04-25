@@ -38,6 +38,8 @@ int MessageParser::parseMessage(const uint8_t* msg, const int size,
                 return parseSetSpeedMessage(msg, size, buffer, buffersize);
             case 'r':
                 return parseResetMessage(msg, size, buffer, buffersize);
+            case 'p':
+                return parseScaraMessage(msg, size, buffer, buffersize);
             default:
                 return -1;
         }
@@ -196,12 +198,58 @@ int MessageParser::parseResetMessage(const uint8_t* msg, const int,
  * @param message the message to be printed
  */
 #ifdef DEBUG_PARSER
+
+int MessageParser::parseScaraMessage(const uint8_t* msg, const int size,
+        uint8_t* buffer, const int buffersize) {
+
+    if (size >= 2) {
+        switch (msg[1]) {
+            case 'c': {
+                BasicScaraMessage bsm(ScaraCommand::CANCEL);
+                print(bsm);
+                return Serializer::serialize(bsm, buffer, buffersize);
+            }
+            case 'p': {
+                BasicScaraMessage bsm(ScaraCommand::PARK);
+                print(bsm);
+                return Serializer::serialize(bsm, buffer, buffersize);
+            }
+            case ' ': {
+                int16_t x, y;
+                float degrees;
+                uint8_t storageValue;
+
+                if (sscanf(reinterpret_cast<const char*>(msg + 2),
+                        "%hd %hd %f %hhu", &x, &y, &degrees, &storageValue)
+                        == 4) {
+                    // successfully parsed everything
+                    if (storageValue
+                            >= static_cast<uint8_t>(StorageSpace::_Count)) {
+                        return -1;
+                    }
+
+                    ScaraActionMessage sam(x, y, Angle::getFromDegrees(degrees),
+                            static_cast<StorageSpace>(storageValue));
+                    print(sam);
+                    return Serializer::serialize(sam, buffer, buffersize);
+                } else {
+                    return -1;
+                }
+            }
+            default:
+                return -1;
+        }
+    } else {
+        return -1;
+    }
+}
+
 void MessageParser::print(const Message& message) {
-    printf("Received ");
-    message.print();
-    printf("\r\n");
+printf("Received ");
+message.print();
+printf("\r\n");
 #else
-    void MessageParser::print(const Message&) {
+void MessageParser::print(const Message&) {
 #endif
 }
 /** @} */
