@@ -71,7 +71,7 @@ int main(void) {
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
     DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
             dispatcher);
-    HoneyControl honeyControl(hal.getServo(), hal.getServo());
+    HoneyControl honeyControl(hal.getServoLeft(), hal.getServoRight());
 
     MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl },
             { &pm });
