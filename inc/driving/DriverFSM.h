@@ -28,29 +28,29 @@ private:
 	DriverBaseState* currentState;
 	Motor& leftMotor;
 	Motor& rightMotor;
-	PIDController positionControl;
-	PIDController angleControl;
 	PIController leftWheelControl;
 	PIController rightWheelControl;
 	PositionManager& pm;
 	MessageDispatcher& md;
 
-
 	Position referencePosition;
-	float distanceError = 0;
-	float referenceDistance = 0;
-	float rampDistance = 0;
-	float startDistance = 0;
-	float currentDistance = 0;
+	float currentDistance;
+	float rampDistance;
+	float distanceError;
 
 	Angle referenceAngle;
 	Angle angleError;
 	Angle startAngle;
 	Angle rampAngle;
 
+	float leftMotorVelocity;
+	float rightMotorVelocity;
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
 	DriveAccuracy driveAccuracy;
+
+	float referenceSpeedLeft;
+	float referenceSpeedRight;
 
 	float speed;
 	int direction;
@@ -70,8 +70,10 @@ public:
 	void calculateDistance();
 	void calculateAngle();
 	bool isAccuracyHigh();
+	bool isRobotStuck();
 	int pointOnWhichSideOfLine(Vector ro, Vector rd, Position p);
 	void sendFinishedMessage();
+	void sendStuckMessage();
 	virtual ~DriverFSM();
 
 	// transitions

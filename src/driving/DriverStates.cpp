@@ -10,7 +10,7 @@
 // Idle actions
 void Idle::entryAction() {
 	if(ctx.isAccuracyHigh()) {
-		ctx.disableMotors();
+		ctx.stopMotors();
 	}
 }
 
@@ -33,13 +33,14 @@ void Driving::doAction() {
 	if(ctx.referencePositionReached()) {
 		ctx.sendFinishedMessage();
 		CHANGE_STATE(Idle);
+	} else if(ctx.isRobotStuck()) {
+		ctx.sendStuckMessage();
+		ctx.stopMotors();
+		ctx.resetControl();
+		CHANGE_STATE(Idle);
 	} else {
 		ctx.updateControl();
 	}
-}
-
-void Driving::exitAction() {
-
 }
 
 void Driving::newPosition() {
