@@ -16,17 +16,17 @@
 #include <math.h>
 #include <cstdio>
 
-const double L1=82.5;
-const double L2=67.5;
-const double L3=67.5;
+const float L1=82.5;
+const float L2=67.5;
+const float L3=67.5;
 
 
 using namespace std;
 
-using Pose = std::vector<double>;
-using Q = std::vector<double>;
-using QTrajectory = std::vector<std::vector<double> >;
-using XTrajectory = std::vector<std::vector<double> >;
+using Pose = std::vector<float>;
+using Q = std::vector<float>;
+using QTrajectory = std::vector<std::vector<float> >;
+using XTrajectory = std::vector<std::vector<float> >;
 
 enum class TimeFactors {
 	FAST, MEDIUM, SLOW
@@ -34,12 +34,12 @@ enum class TimeFactors {
 
 class Trajectory {
 private:
-	std::vector<double> time;
-	std::vector<std::vector<double> > data;
-	std::vector<std::vector<double> > trj;
-	std::vector<double> dFactors;
-	double actionTime;
-	double sumTime;
+	std::vector<float> time;
+	std::vector<std::vector<float> > data;
+	std::vector<std::vector<float> > trj;
+	std::vector<float> dFactors;
+	float actionTime;
+	float sumTime;
 	int k;
 
 public:
@@ -48,18 +48,19 @@ public:
 
 	void startPose(Pose pose);
 	void addPose(TimeFactors dTimeFactor, Pose pose);
-	void setActionTime(double actiontime);
-	double getActionTime();
+	void setActionTime(float actiontime);
+	float getActionTime();
 
-	std::vector<std::vector<double> > interpolate(
-			std::vector<double> timedStartPose,
-			std::vector<double> timedEndPose);
-	long map(long x, long in_min, long in_max, long out_min, long out_max);
+	std::vector<std::vector<float> > interpolate(
+			std::vector<float> timedStartPose,
+			std::vector<float> timedEndPose);
+	int map(int x, int in_min, int in_max, int out_min, int out_max);
 	Q ik1(Pose pose);
 	Q ik2(Pose pose);
 	QTrajectory buildJointspace();
+	std::vector<float> linspace(float start, float end, int num_in);
 
-	std::vector<double> FK(std::vector<double> q);
+	std::vector<float> FK(std::vector<float> q);
 
 	void showXTrajectory(XTrajectory xTrj);
 	void showQTrajectory(QTrajectory qTrj);

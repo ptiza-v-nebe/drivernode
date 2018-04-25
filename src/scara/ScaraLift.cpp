@@ -31,24 +31,26 @@ void ScaraLift::tick() {
     // calculate
     int16_t deltaEnd = std::abs(targetPosition - currentPosition);
     int16_t speed;
-//    if (deltaEnd < ACCURACY) {
-//        speed = 0;
-//    } else {
-//        int16_t deltaStart = std::abs(currentPosition - startPosition);
-//        int16_t delta = std::min( std::max(std::min(deltaStart, deltaEnd), DELTA_MIN), DELTA_MAX);
-//
-//        if (currentPosition > targetPosition) {
-//            delta = -delta;
-//        }
-//
-//        speed = static_cast<int16_t>(delta * DELTA_TO_SPEED);
-//    }
+    if (deltaEnd < ACCURACY) {
+        speed = 0;
+    } else {
+        //int16_t deltaStart = std::abs(currentPosition - startPosition);
+        //int16_t delta = std::min( std::max(std::min(deltaStart, deltaEnd), DELTA_MIN), DELTA_MAX);
 
-       if (deltaEnd < ACCURACY) {
-            speed = 0;
-       } else {
-            speed = static_cast<int16_t>(7000);
-       }
+        if (currentPosition > targetPosition) {
+            speed = -7000;
+        } else{
+        	speed = 7000;
+        }
+
+        //speed = static_cast<int16_t>(delta * DELTA_TO_SPEED);
+    }
+
+//       if (deltaEnd < ACCURACY) {
+//            speed = 0;
+//       } else {
+//            speed = static_cast<int16_t>(7000);
+//       }
 
     // set output
     motor.setSpeed(speed);
@@ -60,9 +62,9 @@ void ScaraLift::initialize() {
     motor.enable();
     motor.stop();
     initialized = true;
-    schedule_repeating_task([this](){
-       tick();
-    }, 100);
+//    schedule_repeating_task([this](){
+//       tick();
+//    }, 100);
 }
 
 void ScaraLift::stop(){
@@ -73,7 +75,7 @@ void ScaraLift::moveTo(float mm) {
     if (!initialized) {
         return;
     }
-    startPosition = encoder.getTick();
+    //startPosition = encoder.getTick();
     // TODO!!
     targetPosition = /*CONVERSION * mm*/clamp(static_cast<int16_t>(mm));
 }
