@@ -683,7 +683,7 @@ void HALManager::initializeShootingBLDC() {
     GPIO_InitTypeDef gpio = getDefaultGPIO();
 
     timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Prescaler = 1 - 1;
     timer.Init.Period = 1000 - 1;
     timer.Init.CounterMode = TIM_COUNTERMODE_UP;
     timer.Instance = BLDC_TIMER;

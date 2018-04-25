@@ -35,7 +35,7 @@ public:
     void enable() override;
     void disableAndStop() override;
 
-    void setSpeed(int16_t speed) override;
+    void setSpeed(int32_t speed) override;
     void stop() override;
 
 private:

@@ -12,8 +12,8 @@
 /**
  * Select Robot (only one!!!)
  */
-#define BIG_ROBOT
-//#define SMALL_ROBOT
+//#define BIG_ROBOT
+#define SMALL_ROBOT
 
 /**
  * Should the LED blink to signal that the Scheduler is running
@@ -23,7 +23,7 @@
 /**
  * Should the UART-Messages be converted to be human readable
  */
-#define HUMAN_MODE
+//#define HUMAN_MODE
 
 /**
  * Should the program continue when an error occured?
@@ -34,7 +34,7 @@
 /**
  * Use this to prevent showing errors
  */
-#define SUPRESS_ERROR
+//#define SUPRESS_ERROR
 
 /**
  * Enables calibration
@@ -50,7 +50,7 @@
 /**
  * Enable to generate more output in the DynamixelCOM class
  */
-#define DEBUG_DYNAMIXEL_COM
+//#define DEBUG_DYNAMIXEL_COM
 
 /**
  * Enable to generate more output in the DynamixelCOM class

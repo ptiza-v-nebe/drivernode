@@ -25,7 +25,7 @@ public:
      *
      * @param speed the speed to set
      */
-    virtual void setSpeed(int16_t speed) = 0;
+    virtual void setSpeed(int32_t speed) = 0;
 
     /**
      * Stop the motor
