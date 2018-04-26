@@ -16,20 +16,10 @@
 #include "util/util.h"
 #include "serial/messages/StatusMessage.h"
 
-DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md) :
+DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md, bool& backwardVision) :
 		currentState(nullptr),
 		leftMotor(motorLeft),
 		rightMotor(motorRight),
-		positionControl(
-				CONTROLLER_POSITION_KP,
-				CONTROLLER_SYSTEM_DELAYTIME,
-				0.0005,
-				CONTROLLER_SAMPLING_TIME),
-		angleControl(
-				CONTROLLER_ANGLE_KP,
-				CONTROLLER_SYSTEM_DELAYTIME,
-				0.0,
-				CONTROLLER_SAMPLING_TIME),
 		leftWheelControl(
 				CONTROLLER_SYSTEM_LEFT_WHEEL_KP,
 				CONTROLLER_SYSTEM_LEFT_WHEEL_DELAYTIME,
@@ -41,18 +31,25 @@ DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, M
 		pm(pm),
 		md(md),
 		referencePosition(pm.getPosition()),
+		currentDistance(0.0f),
+		rampDistance(0.0f),
+		distanceError(0.0f),
 		referenceAngle(pm.getHeading()),
 		angleError(0.0),
 		startAngle(0.0),
 		rampAngle(0.0),
+		leftMotorVelocity(0.0f),
+		rightMotorVelocity(0.0f),
 		driveSpeed(DriveSpeed::SLOW),
 		driveDirection(DriveDirection::FORWARD),
 		driveAccuracy(DriveAccuracy::LOW),
+		referenceSpeedLeft(0.0f),
+		referenceSpeedRight(0.0f),
 		speed(0.2),
 		direction(1),
 		targetRadius(0.25),
-		turningAngle(false)
-		{
+		turningAngle(false),
+		backwardVision(backwardVision) {
 	currentState = new Idle(*this);
 }
 
@@ -85,19 +82,19 @@ void DriverFSM::updateControl() {
 			currentDistance = referencePosition.distanceTo(pm.getPosition())*0.001f;
 
 			if(fabs(rampDistance) > 0) {
-				rampDistance = rampDistance - direction*speed*CONTROLLER_SAMPLING_TIME;
+				rampDistance = rampDistance - speed*CONTROLLER_SAMPLING_TIME;
 				rampDistance = std::max(rampDistance, 0.0f);
 			}
 
-			distanceError = -(rampDistance - currentDistance);
+			distanceError = -(rampDistance - currentDistance)*direction;
 		}
 	}
 
-	float referenceSpeedLeft  = distanceError-(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
-	float referenceSpeedRight = distanceError+(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
+	referenceSpeedLeft  = distanceError-(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
+	referenceSpeedRight = distanceError+(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
 
-	float leftMotorVelocity = leftWheelControl.update(referenceSpeedLeft - pm.leftWheelVelocity);
-	float rightMotorVelocity = rightWheelControl.update(referenceSpeedRight - pm.rightWheelVelocity);
+	leftMotorVelocity = leftWheelControl.update(referenceSpeedLeft - pm.leftWheelVelocity);
+	rightMotorVelocity = rightWheelControl.update(referenceSpeedRight - pm.rightWheelVelocity);
 
 	leftMotorVelocity = clamp(leftMotorVelocity, -1.5, 1.5);
 	rightMotorVelocity = clamp(rightMotorVelocity, -1.5, 1.5);
@@ -111,10 +108,10 @@ void DriverFSM::updateControl() {
 }
 
 void DriverFSM::resetControl() {
-	positionControl.reset();
-	angleControl.reset();
 	leftWheelControl.reset();
 	rightWheelControl.reset();
+	leftMotorVelocity = 0;
+	rightMotorVelocity = 0;
 }
 
 void DriverFSM::enableMotors() {
@@ -156,7 +153,7 @@ void DriverFSM::calculateDistance() {
 	turningAngle = false;
 	rampDistance = referencePosition.distanceTo(pm.getPosition())*0.001f-distanceError;
 	rampDistance = std::max(rampDistance, 0.0f);
-	printf("RampDistance: %f\r\n", rampDistance);
+
 	angleError = 0;
 	Vector targetVector(pm.xum*0.001, pm.yum*0.001);
 	referenceAngle = (referencePosition.asVectorFromOrigin() - targetVector).getPolarAngle();
@@ -176,7 +173,6 @@ void DriverFSM::calculateAngle() {
 	// set distance control to zero
 	distanceError = 0;
 	rampDistance = 0;
-	startDistance = 0;
 }
 
 bool DriverFSM::isAccuracyHigh() {
@@ -186,8 +182,28 @@ bool DriverFSM::isAccuracyHigh() {
 	return false;
 }
 
+bool DriverFSM::isRobotStuck() {
+	float forwardVelocity = (leftMotorVelocity + rightMotorVelocity)*0.5;
+
+	if( (fabs(forwardVelocity - pm.getForwardVelocity())) > speed+0.5*speed) {
+		return true;
+	}
+	return false;
+}
+
+bool DriverFSM::isEnemyBehindRobot() {
+	if(driveDirection == DriveDirection::BACKWARD) {
+		return backwardVision;
+	}
+	return false;
+}
+
 void DriverFSM::sendFinishedMessage() {
 	md.sendMessage(StatusMessage(Status::DRIVER_FINISHED));
+}
+
+void DriverFSM::sendStuckMessage() {
+	md.sendMessage(StatusMessage(Status::STUCK));
 }
 
 DriverFSM::~DriverFSM() {
@@ -221,6 +237,7 @@ void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 		this->speed = 0.2; // meters per second
 	}
 	this->driveSpeed = speed;
+	this->speed = 0.2;
 }
 
 void DriverFSM::setDriveDirection(DriveDirection direction) {
@@ -234,9 +251,9 @@ void DriverFSM::setDriveDirection(DriveDirection direction) {
 
 void DriverFSM::setDriveAccuracy(DriveAccuracy accuracy) {
 	if(accuracy == DriveAccuracy::HIGH) {
-		targetRadius = 2.5;
+		targetRadius = 2.5; //mm
 	} else {
-		targetRadius = 50;
+		targetRadius = 50; //mm
 	}
 	this->driveAccuracy = accuracy;
 }

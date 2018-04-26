@@ -23,7 +23,7 @@
 /**
  * Should the UART-Messages be converted to be human readable
  */
-//#define HUMAN_MODE
+#define HUMAN_MODE
 
 /**
  * Should the program continue when an error occured?

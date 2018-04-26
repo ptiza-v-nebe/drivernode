@@ -58,6 +58,8 @@ int main(void) {
     HALManager& hal = HALManager::getInstance();
     hal.enableISRs();
 
+    bool backwardVision = false;
+
 #ifdef CALIBRATION
     CalibrationMessageDispatcherFactory factory(hal.getLeftEncoder(), hal.getRightEncoder());
 #elif defined(DRIVERMEASUREMENT)
@@ -72,15 +74,15 @@ int main(void) {
 
     MessageDispatcher& dispatcher = factory.getMessageDispatcher();
     PositionManager pm(hal.getLeftEncoder(), hal.getRightEncoder());
-    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm,
-            dispatcher);
+    DriverFSM driverFSM(hal.getLeftMotor(), hal.getRightMotor(), pm, dispatcher,
+            backwardVision);
     StartPinInitializer startPinInit(hal.getStarterPin());
 
 #ifdef SMALL_ROBOT
     HoneyControl honeyControl(hal.getServoLeft(), hal.getServoRight());
 
-    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl,
-            &startPinInit }, { &pm });
+    MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&honeyControl,
+                &startPinInit}, {&pm});
 #endif
 #ifdef BIG_ROBOT
     MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
@@ -131,12 +133,13 @@ int main(void) {
                 honeyControl.processCommand(scm);
             });
 
-    dispatcher.registerMessageHandler<SetSpeedMessage>([&hal](const SetSpeedMessage& ssm){
-        hal.getLeftMotor().enable();
-        hal.getRightMotor().enable();
-        hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
-        hal.getRightMotor().setSpeed(ssm.getSpeedRight());
-    });
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&hal](const SetSpeedMessage& ssm) {
+                hal.getLeftMotor().enable();
+                hal.getRightMotor().enable();
+                hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
+                hal.getRightMotor().setSpeed(ssm.getSpeedRight());
+            });
 
     // ////////////////////////////////////////////
     // Setup Tasks
@@ -157,6 +160,25 @@ int main(void) {
         hal.getStatusLED().toggle();
     }, 250);
 #endif
+
+    schedule_repeating_task(
+            [&hal, &backwardVision]() {
+                uint16_t d1 = hal.getSRF08s()[0].getRange();
+                uint16_t d2 = hal.getSRF08s()[1].getRange();
+
+                if(backwardVision) {
+                    if(d1 > ULTRASONIC_HIGHERTHRESHOLD && d2 > ULTRASONIC_HIGHERTHRESHOLD) {
+                        backwardVision = false;
+                    }
+                } else {
+                    if(d1 < ULTRASONIC_LOWERTHRESHOLD || d2 < ULTRASONIC_LOWERTHRESHOLD) {
+                        backwardVision = true;
+                    }
+                }
+
+                hal.getSRF08s()[0].startRanging();
+                hal.getSRF08s()[1].startRanging();
+            }, 100);
 
     // ////////////////////////////////////////////
     // BEGIN TEST AREA
@@ -184,20 +206,19 @@ int main(void) {
 
 #if 1
     schedule_repeating_task([&]() {
-                static InputPin& front = hal.getFrontSwitch();
-                static bool stopped = false;
-                if(front.isOn() && !stopped) {
-                    hal.getLeftMotor().stop();
-                    hal.getRightMotor().stop();
-                    dispatcher.sendMessage(StatusMessage(Status::DRIVER_FINISHED));
+        static InputPin& front = hal.getFrontSwitch();
+        static bool stopped = false;
+        if(front.isOn() && !stopped) {
+            hal.getLeftMotor().stop();
+            hal.getRightMotor().stop();
+            dispatcher.sendMessage(StatusMessage(Status::DRIVER_FINISHED));
 
-                    stopped = true;
-                } else if (front.isOff() && stopped) {
-                    stopped = false;
-                }
-            }, 50);
+            stopped = true;
+        } else if (front.isOff() && stopped) {
+            stopped = false;
+        }
+    }, 50);
 #endif
-
 
 #if 0
     // Sensor Test
@@ -304,11 +325,6 @@ int main(void) {
                 hal.disableAllActors();
             });
 #endif
-
-
-
-
-
 
     // ////////////////////////////////////////////
     // END TEST AREA

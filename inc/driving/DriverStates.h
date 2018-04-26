@@ -19,7 +19,6 @@ STATE(Idle)
 
 STATE(Driving)
 	void doAction() override;
-	void exitAction() override;
 	void newPosition() override;
 	void newAngle() override;
 	void stop() override;
