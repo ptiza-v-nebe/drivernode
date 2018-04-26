@@ -129,19 +129,17 @@ int main(void) {
      scaraLift.enable();
      });*/
 
-#if 0
     Scara scara(hal.getScaraHardware());
     scara.initialize();
 
-    //here no pauses!
-    schedule_repeating_task([&]() {
-        scara.execute();
+    schedule_repeating_task([&]() { //here no pauses!
+        scara.tick();
     }, 10); //, 10) each 10 milliseconds run this code
-#endif
 
     dispatcher.registerMessageHandler<ScaraActionMessage>(
             [&](ScaraActionMessage sam) {
-                //scara.doSomething(sam.getX(), sam.getY(), sam.getPhi().getAngleInRadian(), sam.getStorageSpace());
+    			scara.commandReceived(sam);
+                //scara.moveToCartesian(sam.getX(), sam.getY(), sam.getPhi().getAngleInRadian(), sam.getStorageSpace());
                 //StorageSpace s = StorageSpace::INNER_3;
                 //static_cast<int>(s);//enum as int
             });

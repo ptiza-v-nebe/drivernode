@@ -13,6 +13,8 @@
 #include "hal/ScaraHardware.h"
 #include <math.h>
 #include "scara/Trajectory.h"
+#include "serial/messages/ScaraActionMessage.h"
+#include "scara/ScaraStates.h"
 
 static constexpr double ZBase = 0;
 static constexpr double ZLimit = 7100;
@@ -34,13 +36,20 @@ private:
 	double lastTime;
 	double currentTime;
 	int j;
+	bool positionSet;
+	ScaraBaseState* currentState;
 
 public:
 	Scara(ScaraHardware& hw);
 	virtual ~Scara();
-	void execute();
+	void executeTrajectory();
+	void tick();
 	void initialize();
 	void cancelExecute(); //unterbrechung jeglicher Aktionen
+	void generateTrajectoryForCube(float x, float y, float phi, StorageSpace storage);
+	void task();
+	void commandReceived(const ScaraActionMessage& sam);
+	void park();
 };
 
 #endif /* SCARA_SCARA_H_ */

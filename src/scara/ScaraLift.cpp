@@ -81,9 +81,7 @@ void ScaraLift::moveTo(float mm) {
 }
 
 float ScaraLift::getPosition() {
-    // TODO!!
-    // return CONVERSION * mm
-    return 0;
+    return encoder.getTick();
 }
 
 int16_t ScaraLift::clamp(int16_t value) {

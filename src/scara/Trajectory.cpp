@@ -7,9 +7,10 @@
 
 #include "scara/Trajectory.h"
 
+
 Trajectory::Trajectory() :
 		k(0), sumTime(0), actionTime(0),trj() {
-		dFactors.push_back(0);
+		//dFactors.push_back(0);
 }
 
 Trajectory::~Trajectory() {
@@ -19,7 +20,10 @@ void Trajectory::setActionTime(float actiontime) {
 	this->actionTime = actiontime;
 }
 
-void Trajectory::startPose(Pose pose) {
+void Trajectory::startPose(const vector<float>& pose) {
+	dFactors.clear();
+	dFactors.push_back(0);
+	trj.clear();
 	trj.push_back({0.0, pose[0], pose[1], pose[2], pose[3],pose[4]});
 }
 
@@ -43,7 +47,7 @@ void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
 	// 	std::cout << dFactors[i] << std::endl;
 	// }
 
-	float sumOfDFactors;
+	float sumOfDFactors = 0;
 	for(int i=0; i<dFactors.size(); i++){
 		sumOfDFactors +=dFactors[i];
 	}
@@ -60,9 +64,9 @@ void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
 	trj.push_back({0,0,0,0,0,0});
 
 	// // //clear time vector
-	 for (unsigned int i = 0; i < trj.size()-1; i++) {
-	  	trj[i][0] = 0.0;
-	}
+//	 for (unsigned int i = 0; i < trj.size(); i++) {
+//	  	trj[i][0] = 0.0;
+//	}
 
 	// // //calculate times
 	unsigned int i = 0;
@@ -106,14 +110,17 @@ QTrajectory Trajectory::buildJointspace() {
 				qTrj.push_back(ik1(timedPose));
 			});
 
-	//showQTrajectory(qTrj);
+	//copy action control bools
+
+
+	showQTrajectory(qTrj);
 
 	return qTrj;
 }
 
 std::vector<std::vector<float> > Trajectory::interpolate(
 		std::vector<float> timedStartPose, std::vector<float> timedEndPose) {
-	int n = 100;
+	int n = 10;
 
 	float startTime = timedStartPose[0];
 	float endTime = timedEndPose[0];
@@ -265,27 +272,28 @@ int Trajectory::map(int x, int in_min, int in_max, int out_min, int out_max) {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-std::vector<float> Trajectory::FK(std::vector<float> q){
-	float x = L1*cos(q[0]) + L2*cos(q[0]+q[1]) + L3*cos(q[0]+q[1]+q[3]);
-	float y = L1*sin(q[0]) + L2*sin(q[0]+q[1]) + L3*sin(q[0]+q[1]+q[3]);
-	float th = q[0]+q[1]+q[2]+q[3]+q[4];
-	float phi = q[0]+q[1]+q[2]+q[3];
-	float z = 0;
+//TODO z!
+vector<float> Trajectory::FK(const std::vector<float>& q){
+	float x = L1*cos(q[0]) + L2*cos(q[0]+q[1]) + L3*cos(q[0]+q[1]+q[2]);
+	float y = L1*sin(q[0]) + L2*sin(q[0]+q[1]) + L3*sin(q[0]+q[1]+q[2]);
+	float z = map(q[4], 0, 7000, 37.0, 231.5);
+	float phi = q[0]+q[1]+q[2];
+	float th = q[0]+q[1]+q[2]+q[3];
+
 	return {x, y, z, phi, th};
 }
-
 
 void Trajectory::showXTrajectory(XTrajectory xTrj){
 	printf("---------------------\n");
 	for(int i =0; i< xTrj.size();i++){
-		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \n",i,xTrj[i][0],xTrj[i][1],xTrj[i][2],xTrj[i][3],xTrj[i][4],xTrj[i][5]);
+		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",i,xTrj[i][0],xTrj[i][1],xTrj[i][2],xTrj[i][3],xTrj[i][4],xTrj[i][5]);
 	}
 }
 
 void Trajectory::showQTrajectory(QTrajectory qTrj){
 	//printf("---------------------\n");
 	for(int i =0; i< qTrj.size();i++){
-		printf("[%d] t: %f, q1: %f, q2: %f, q3: %f,q4:%f \n",i,qTrj[i][0],qTrj[i][1],qTrj[i][2],qTrj[i][3]);
+		printf("[%d] t: %f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",i,qTrj[i][0],qTrj[i][1],qTrj[i][2],qTrj[i][3],qTrj[i][4]);
 	}
 }
 

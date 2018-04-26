@@ -46,10 +46,11 @@ public:
 	Trajectory();
 	virtual ~Trajectory();
 
-	void startPose(Pose pose);
+	void startPose(const vector<float>& pose);
 	void addPose(TimeFactors dTimeFactor, Pose pose);
 	void setActionTime(float actiontime);
 	float getActionTime();
+
 
 	std::vector<std::vector<float> > interpolate(
 			std::vector<float> timedStartPose,
@@ -60,7 +61,7 @@ public:
 	QTrajectory buildJointspace();
 	std::vector<float> linspace(float start, float end, int num_in);
 
-	std::vector<float> FK(std::vector<float> q);
+	std::vector<float> FK(const std::vector<float>& q);
 
 	void showXTrajectory(XTrajectory xTrj);
 	void showQTrajectory(QTrajectory qTrj);
