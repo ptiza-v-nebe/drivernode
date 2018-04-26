@@ -13,6 +13,7 @@ void Scara::commandReceived(const ScaraActionMessage& sam){
 
 void Scara::tick() {
 	currentState->tick();
+	lift.tick();
 }
 
 void Scara::park(){
@@ -24,10 +25,10 @@ void Scara::park(){
 //Scara::enablePumpForStorageSpace(StorageSpace sam)
 //Scara::disableStoragePumps()
 
-void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace storage) {
+void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace stg) {
 	qTrj.clear();
 	//set actionTime
-	trj.setActionTime(5);
+	trj.setActionTime(8);
 
 	//get actual motor angles
 	Angle q0 = servos[0].getAngle()-150_deg;
@@ -40,12 +41,15 @@ void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace 
 
 	//move first to given x,y,phi
 	trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
-	trj.addPose(TimeFactors::FAST, { x, y, 70, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 51, phi, M_PI/2}); //runter auf klotz saugen
-	trj.addPose(TimeFactors::SLOW, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
-	//trj.addPose(TimeFactors::SLOW, { 50,211,120,M_PI/2,M_PI/2}); // klotz zur wand
-	//trj.addPose(TimeFactors::SLOW, { 50,211,60,M_PI/2,M_PI/2}); // klotz auf position im lager
+	trj.addPose(TimeFactors::SLOW, { pos[0],pos[1], pos[2]-40, pos[3],pos[4]});
+	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2});
+	trj.addPose(TimeFactors::SLOW, { x, y, 50, phi, M_PI/2}); //runter auf klotz saugen
+	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 
+	//move cube to storage
+	trj.addPose(TimeFactors::SLOW, { pLUT[static_cast<int>(stg)].x,pLUT[static_cast<int>(stg)].y,pLUT[static_cast<int>(stg)].z,pLUT[static_cast<int>(stg)].phi,pLUT[static_cast<int>(stg)].theta});
+
+	//build trajectory
 	qTrj = trj.buildJointspace();
 
 	j=0;
@@ -79,12 +83,27 @@ void Scara::task() {
 
 Scara::Scara(ScaraHardware& hw) :
 		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
-				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)) {
+				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
+						   pLUT{{27,211,43,M_PI/2,M_PI/2},
+								{27,211,103,M_PI/2,M_PI/2},
+								{27,211,163,M_PI/2,M_PI/2},
+								{27,211,226,M_PI/2,M_PI/2},
+
+								{27,150,43,M_PI*3/4,M_PI/2},
+								{27,150,103,M_PI*3/4,M_PI/2},
+								{27,150,163,M_PI*3/4,M_PI/2},
+								{27,150,226,M_PI*3/4,M_PI/2},
+
+								{27,93,43,M_PI*0.95,M_PI/2},
+								{27,93,103,M_PI*0.95,M_PI/2},
+								{27,93,163,M_PI*0.95,M_PI/2},
+								{27,93,226,M_PI*0.95,M_PI/2}}{
 	servos[0].enable();
 	servos[1].enable();
 	servos[2].enable();
 	servos[3].enable();
 	lift.initialize();
+	 //damit greift man zu
 }
 
 Scara::~Scara() {
@@ -109,7 +128,7 @@ void Scara::executeTrajectory() {
 	}
 
 	i++;
-	lift.tick();
+
 
 	if(j >= qTrj.size()){
 		currentState->trajectoryEnd();

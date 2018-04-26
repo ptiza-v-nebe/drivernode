@@ -23,7 +23,7 @@ const float L3=67.5;
 
 using namespace std;
 
-using Pose = std::vector<float>;
+//using Pose = std::vector<float>;
 using Q = std::vector<float>;
 using QTrajectory = std::vector<std::vector<float> >;
 using XTrajectory = std::vector<std::vector<float> >;
@@ -47,7 +47,7 @@ public:
 	virtual ~Trajectory();
 
 	void startPose(const vector<float>& pose);
-	void addPose(TimeFactors dTimeFactor, Pose pose);
+	void addPose(TimeFactors dTimeFactor, vector<float> pose);
 	void setActionTime(float actiontime);
 	float getActionTime();
 
@@ -56,8 +56,8 @@ public:
 			std::vector<float> timedStartPose,
 			std::vector<float> timedEndPose);
 	int map(int x, int in_min, int in_max, int out_min, int out_max);
-	Q ik1(Pose pose);
-	Q ik2(Pose pose);
+	Q ik1(vector<float> pose);
+	Q ik2(vector<float> pose);
 	QTrajectory buildJointspace();
 	std::vector<float> linspace(float start, float end, int num_in);
 

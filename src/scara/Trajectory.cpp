@@ -27,7 +27,7 @@ void Trajectory::startPose(const vector<float>& pose) {
 	trj.push_back({0.0, pose[0], pose[1], pose[2], pose[3],pose[4]});
 }
 
-void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
+void Trajectory::addPose(TimeFactors dTimeFactor, vector<float> pose) {
 	float dTimeFactorNum = 0;
 
 	if (dTimeFactor == TimeFactors::FAST)
@@ -120,7 +120,7 @@ QTrajectory Trajectory::buildJointspace() {
 
 std::vector<std::vector<float> > Trajectory::interpolate(
 		std::vector<float> timedStartPose, std::vector<float> timedEndPose) {
-	int n = 10;
+	int n = 30;
 
 	float startTime = timedStartPose[0];
 	float endTime = timedEndPose[0];
@@ -284,7 +284,7 @@ vector<float> Trajectory::FK(const std::vector<float>& q){
 }
 
 void Trajectory::showXTrajectory(XTrajectory xTrj){
-	printf("---------------------\n");
+	printf("---------------------\r\n");
 	for(int i =0; i< xTrj.size();i++){
 		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",i,xTrj[i][0],xTrj[i][1],xTrj[i][2],xTrj[i][3],xTrj[i][4],xTrj[i][5]);
 	}

@@ -25,6 +25,14 @@ static constexpr double ZLimit = 7100;
 //using Pose = std::vector<float>;
 //using Q = std::vector<float>;
 
+struct Pose {
+	float x;
+	float y;
+	float z;
+	float phi;
+	float theta;
+};
+
 class Scara {
 private:
 	ScaraLift lift;
@@ -38,6 +46,7 @@ private:
 	int j;
 	bool positionSet;
 	ScaraBaseState* currentState;
+	Pose pLUT[12];
 
 public:
 	Scara(ScaraHardware& hw);
