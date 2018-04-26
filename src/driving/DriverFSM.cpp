@@ -73,10 +73,10 @@ void DriverFSM::updateControl() {
 	angleError = referenceAngle - pm.getHeading();
 
 	if(fabs(angleError.getAngleInDegreesAround(0.0)) > 10.0) {
-		angleGain = 0.28;
+		angleGain = /*0.28*/0.3;
 	} else {
 		if(turningAngle) {
-			angleGain = 0.28;
+			angleGain = /*0.28*/0.3;
 			distanceError = 0;
 		} else {
 			currentDistance = referencePosition.distanceTo(pm.getPosition())*0.001f;
@@ -90,8 +90,8 @@ void DriverFSM::updateControl() {
 		}
 	}
 
-	referenceSpeedLeft  = distanceError-(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
-	referenceSpeedRight = distanceError+(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
+	referenceSpeedLeft  = 1.75*distanceError-(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
+	referenceSpeedRight = 1.75*distanceError+(TRACK_WIDTH_UM*0.000002)*angleGain*angleError.getAngleInRadianAround(0.0);
 
 	leftMotorVelocity = leftWheelControl.update(referenceSpeedLeft - pm.leftWheelVelocity);
 	rightMotorVelocity = rightWheelControl.update(referenceSpeedRight - pm.rightWheelVelocity);
@@ -233,7 +233,7 @@ void DriverFSM::setReferenceAngle(Angle angle) {
 
 void DriverFSM::setDriveSpeed(DriveSpeed speed) {
 	if(speed == DriveSpeed::FAST) {
-		this->speed = 0.5; // meters per second
+		this->speed = 0.8; // meters per second
 	} else {
 		this->speed = 0.2; // meters per second
 	}
