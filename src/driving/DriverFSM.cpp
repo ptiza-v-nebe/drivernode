@@ -184,11 +184,12 @@ bool DriverFSM::isAccuracyHigh() {
 
 bool DriverFSM::isRobotStuck() {
 	float forwardVelocity = (leftMotorVelocity + rightMotorVelocity)*0.5;
+	float rotationalVelocity = (rightMotorVelocity - leftMotorVelocity) / (TRACK_WIDTH_UM / 1000 / 1000 / 2);
 
-	if( (fabs(forwardVelocity - pm.getForwardVelocity())) > speed+0.5*speed) {
-		return true;
-	}
-	return false;
+	bool forwardStuck = fabs(forwardVelocity - pm.getForwardVelocity()) > speed + 0.5*speed;
+	bool turnStuck = fabs(rotationalVelocity - pm.getRotationalVelocity()) > 0.5;
+
+	return forwardStuck && turnStuck;
 }
 
 bool DriverFSM::isEnemyBehindRobot() {
