@@ -41,9 +41,9 @@ void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace 
 
 	//move first to given x,y,phi
 	trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
-	trj.addPose(TimeFactors::SLOW, { pos[0],pos[1], pos[2]-40, pos[3],pos[4]});
+	trj.addPose(TimeFactors::SLOW, { pos[0],pos[1], pos[2]+50, pos[3],pos[4]});
 	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 50, phi, M_PI/2}); //runter auf klotz saugen
+	trj.addPose(TimeFactors::SLOW, { x, y, 47, phi, M_PI/2}); //runter auf klotz saugen
 	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 
 	//move cube to storage
@@ -90,12 +90,12 @@ Scara::Scara(ScaraHardware& hw) :
 								{27,211,226,M_PI/2,M_PI/2},
 
 								{27,150,43,M_PI*3/4,M_PI/2},
-								{27,150,103,M_PI*3/4,M_PI/2},
+								{27,150,99,M_PI*3/4,M_PI/2},
 								{27,150,163,M_PI*3/4,M_PI/2},
 								{27,150,226,M_PI*3/4,M_PI/2},
 
 								{27,93,43,M_PI*0.95,M_PI/2},
-								{27,93,103,M_PI*0.95,M_PI/2},
+								{27,93,99,M_PI*0.95,M_PI/2},
 								{27,93,163,M_PI*0.95,M_PI/2},
 								{27,93,226,M_PI*0.95,M_PI/2}}{
 	servos[0].enable();
