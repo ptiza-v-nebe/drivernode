@@ -58,8 +58,11 @@ private:
 	bool turningAngle;
 	int n = 0;
 
+	bool& backwardVision;
+
 public:
-	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm, MessageDispatcher& md);
+	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm,
+			MessageDispatcher& md, bool& backwardVision);
 	void tick() override;
 	void updateControl();
 	void resetControl();
@@ -71,6 +74,7 @@ public:
 	void calculateAngle();
 	bool isAccuracyHigh();
 	bool isRobotStuck();
+	bool isEnemyBehindRobot();
 	int pointOnWhichSideOfLine(Vector ro, Vector rd, Position p);
 	void sendFinishedMessage();
 	void sendStuckMessage();

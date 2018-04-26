@@ -38,6 +38,9 @@ void Driving::doAction() {
 		ctx.stopMotors();
 		ctx.resetControl();
 		CHANGE_STATE(Idle);
+	} else if(ctx.isEnemyBehindRobot()) {
+		ctx.stopMotors();
+		ctx.resetControl();
 	} else {
 		ctx.updateControl();
 	}
