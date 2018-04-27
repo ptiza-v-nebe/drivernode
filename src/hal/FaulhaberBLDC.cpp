@@ -88,7 +88,7 @@ void FaulhaberBLDC::disableAndStop() {
 /*
  * @see - Motor::setSpeed(uint16_t)
  */
-void FaulhaberBLDC::setSpeed(int16_t speed) {
+void FaulhaberBLDC::setSpeed(int32_t speed) {
     if (!enabled) {
         return;
     }

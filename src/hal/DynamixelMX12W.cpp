@@ -90,7 +90,7 @@ void DynamixelMX12W::setRPM(float rpm) {
 /*
  * @see - Motor::setSpeed(uint16_t)
  */
-void DynamixelMX12W::setSpeed(int16_t speed) {
+void DynamixelMX12W::setSpeed(int32_t speed) {
     if (!enabled) {
         return;
     }

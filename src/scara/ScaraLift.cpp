@@ -9,51 +9,44 @@
 
 #include <scara/ScaraLift.h>
 #include <scheduler/Scheduler.h>
+#include <position/Angle.h>
+#include "util/util.h"
 
 static constexpr int16_t DELTA_MIN = 50;
 static constexpr int16_t DELTA_MAX = 500;
 static constexpr int16_t ACCURACY = 50;
 static constexpr float DELTA_TO_SPEED = 8.0f;
 
-static constexpr int16_t MAX_POSITION = 7100;
+static constexpr int16_t MAX_POSITION = 7150;
 static constexpr int16_t MIN_POSITION = 0;
 
+static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
+static constexpr float MM_PER_TICK = (253.0f-53)/MAX_POSITION;
+
 ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
-        motor(motor), encoder(encoder), startPosition(0), targetPosition(0), //
-        initialized(false) {
+        motor(motor), encoder(encoder), startPosition(0), targetPosition(53), //
+        initialized(false), currentPosition(53), lastSpeed(0.0) {
 }
 
 void ScaraLift::tick() {
-    // TODO!!
-    // read input
-    int16_t currentPosition = encoder.getTick(); //between 0 and 7100
+	currentPosition = encoder.getTick()*MM_PER_TICK+53;
 
-    // calculate
-    int16_t deltaEnd = std::abs(targetPosition - currentPosition);
-    int16_t speed;
-    if (deltaEnd < ACCURACY) {
-        speed = 0;
-    } else {
-        //int16_t deltaStart = std::abs(currentPosition - startPosition);
-        //int16_t delta = std::min( std::max(std::min(deltaStart, deltaEnd), DELTA_MIN), DELTA_MAX);
+    float speed = 2*(targetPosition-currentPosition);
 
-        if (currentPosition > targetPosition) {
-            speed = -7000;
-        } else{
-        	speed = 7000;
-        }
+    float rate = (speed - lastSpeed)/0.01;
 
-        //speed = static_cast<int16_t>(delta * DELTA_TO_SPEED);
+    if(rate > 3000) {
+    	speed = lastSpeed + 3000*0.01;
+    } else if(rate < -3000) {
+    	speed = lastSpeed - 3000*0.01;
     }
 
-//       if (deltaEnd < ACCURACY) {
-//            speed = 0;
-//       } else {
-//            speed = static_cast<int16_t>(7000);
-//       }
+	printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
 
-    // set output
-    motor.setSpeed(speed);
+	lastSpeed = speed;
+
+    // calculat
+    motor.setSpeed(MOTORCONSTANT*speed);
 }
 
 void ScaraLift::initialize() {
@@ -62,9 +55,9 @@ void ScaraLift::initialize() {
     motor.enable();
     motor.stop();
     initialized = true;
-//    schedule_repeating_task([this](){
-//       tick();
-//    }, 100);
+    schedule_repeating_task([this](){
+       tick();
+    }, 100);
 }
 
 void ScaraLift::stop(){
@@ -75,8 +68,6 @@ void ScaraLift::moveTo(float mm) {
     if (!initialized) {
         return;
     }
-    //startPosition = encoder.getTick();
-    // TODO!!
     targetPosition = /*CONVERSION * mm*/clamp(static_cast<int16_t>(mm));
 }
 

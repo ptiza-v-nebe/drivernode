@@ -20,6 +20,9 @@ private:
     int32_t startPosition; ///< the starting position for a movement
     int32_t targetPosition; ///< the target position
     bool initialized; ///< is the lift initialized
+
+    float lastSpeed;
+    int16_t currentPosition;
 public:
     ScaraLift(Motor& motor, Encoder& encoder);
 
