@@ -16,8 +16,8 @@
 #include "serial/messages/ScaraActionMessage.h"
 #include "scara/ScaraStates.h"
 
-static constexpr double ZBase = 0;
-static constexpr double ZLimit = 7100;
+//static constexpr double ZBase = 0;
+//static constexpr double ZLimit = 7100;
 
 //using Pose = std::vector<std::vector<double>>;
 //using Q = std::vector<std::vector<double>>;
@@ -51,6 +51,7 @@ private:
 	bool positionSet;
 	ScaraBaseState* currentState;
 	Pose pLUT[12];
+	StorageSpace storageSpace;
 
 public:
 	Scara(ScaraHardware& hw);
@@ -68,6 +69,8 @@ public:
 	void disableStoragePumps();
 	bool isValid(vector<float> qTrjP);
 	void showQPoint(vector<double> qTrj);
+	void generateTrajectoryForLiftUp();
+	vector<float> readMotorAngles();
 };
 
 #endif /* SCARA_SCARA_H_ */

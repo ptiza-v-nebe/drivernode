@@ -11,20 +11,20 @@ Scara::Scara(ScaraHardware& hw) :
 		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
-					pLUT{{10,200,40,M_PI/2,M_PI/2},
-						{10,200,103,M_PI/2,M_PI/2},
-						{10,200,163,M_PI/2,M_PI/2},
-						{10,200,226,M_PI/2,M_PI/2},
+					pLUT{{5,206,37,M_PI/2,M_PI/2},
+						{5,206,103,M_PI/2,M_PI/2},
+						{5,206,163,M_PI/2,M_PI/2},
+						{5,206,226,M_PI/2,M_PI/2},
 
-						{20,150,40,M_PI*3/4,M_PI/2},
-						{20,150,99,M_PI*3/4,M_PI/2},
-						{20,150,163,M_PI*3/4,M_PI/2},
-						{20,150,226,M_PI*3/4,M_PI/2},
+						{5,150,37,M_PI*3/4,M_PI/2},
+						{5,150,99,M_PI*3/4,M_PI/2},
+						{5,150,163,M_PI*3/4,M_PI/2},
+						{5,150,226,M_PI*3/4,M_PI/2},
 
-						{20,93,40,M_PI*0.95,M_PI/2},
-						{20,93,99,M_PI*0.95,M_PI/2},
-						{20,93,163,M_PI*0.95,M_PI/2},
-						{20,93,226,M_PI*0.95,M_PI/2}}
+						{5,93,37,M_PI*0.95,M_PI/2},
+						{5,93,99,M_PI*0.95,M_PI/2},
+						{5,93,163,M_PI*0.95,M_PI/2},
+						{5,93,226,M_PI*0.95,M_PI/2}}
 {
 	servos[0].enable();
 	servos[1].enable();
@@ -43,11 +43,12 @@ Scara::Scara(ScaraHardware& hw) :
 }
 
 void Scara::commandReceived(const ScaraActionMessage& sam){
+
+	//reset servos to prevent getting false angles
 	servos[0].disableAndStop();
 	servos[1].disableAndStop();
 	servos[2].disableAndStop();
 	servos[3].disableAndStop();
-
 	servos[0].enable();
 	servos[1].enable();
 	servos[2].enable();
@@ -63,42 +64,44 @@ void Scara::tick() {
 	lift.tick();
 }
 
-//unloadstoragepumpoffFunc
-
 void Scara::park(){
 	currentState->park();
 }
 
+vector<float> Scara::readMotorAngles(){
+	Angle q0;
+	Angle q1;
+	Angle q2;
+	Angle q3;
+	vector<float> q;
+	for(int i = 0; i< 10; i++){
+		q0 = (servos[0].getAngle()-150_deg);
+		q1 = (servos[1].getAngle()-150_deg);
+		q2 = (servos[2].getAngle()-60_deg);
+		q3 = (servos[3].getAngle()-105_deg);
+		q.push_back(0);
+		q.push_back(q0.getAngleInRadianAround(0));
+		q.push_back(q1.getAngleInRadianAround(0));
+		q.push_back(q2.getAngleInRadianAround(0));
+		q.push_back(q3.getAngleInRadianAround(0));
+		if(isValid(q)){
+			break;
+		}
+	}
 
+	return q;
+}
 
-void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace stg) {
+void Scara::generateTrajectoryForLiftUp(){
+	StorageSpace stg = storageSpace;
 	qTrj.clear();
-	//set actionTime
-	trj.setActionTime(10);
+	trj.setActionTime(2);
 
-	//get actual motor angles
-	Angle q0 = servos[0].getAngle()-150_deg;
-	Angle q1 = servos[1].getAngle()-150_deg;
-	Angle q2 = servos[2].getAngle()-60_deg;
-	Angle q3 = servos[3].getAngle()-105_deg;
-
-	trj.showQPoint({q0.getAngleInRadianAround(0),q1.getAngleInRadianAround(0),q2.getAngleInRadianAround(0),q3.getAngleInRadianAround(0),0});
-
-	//get actual position from FK
-	vector<float> pos = trj.FK({q0.getAngleInRadianAround(0),q1.getAngleInRadianAround(0),q2.getAngleInRadianAround(0),q3.getAngleInRadianAround(0),lift.getPosition()});
-	trj.showPosition(pos);
-	//move first to given x,y,phi
-	trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
-	trj.addPose(TimeFactors::SLOW, { pos[0],pos[1], pos[2]+50, pos[3],pos[4]});
-	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 47, phi, M_PI/2}); //runter auf klotz saugen
-	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
-
-		float cx = 0;
-		float cy = 0;
-		float cz = 0;
-		float cphi = 0;
-		float ctheta = 0;
+	float cx = 0;
+	float cy = 0;
+	float cz = 0;
+	float cphi = 0;
+	float ctheta = 0;
 
 	//move cube befor storage
 	cx = pLUT[static_cast<int>(stg)].x;
@@ -106,7 +109,53 @@ void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace 
 	cz = pLUT[static_cast<int>(stg)].z;
 	cphi = pLUT[static_cast<int>(stg)].phi;
 	ctheta = pLUT[static_cast<int>(stg)].theta;
-	trj.addPose(TimeFactors::FAST, { cx+20,cy,cz,cphi,ctheta});
+	trj.startPose({cx,cy,cz,cphi,ctheta});
+	trj.addPose(TimeFactors::MEDIUM, { cx,cy,cz+20,cphi,ctheta});
+	qTrj = trj.buildJointspace();
+
+	j=0;
+	i=0;
+}
+
+void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace stg) {
+	storageSpace = stg;
+
+	qTrj.clear();
+	//set actionTime
+	trj.setActionTime(10);
+
+	vector<float> ma = readMotorAngles();
+	vector<float> pos = trj.FK({ma[0],ma[1],ma[2],ma[3],lift.getPosition()});
+
+	//move first to given x,y,phi
+	//trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
+	trj.startPose({120,120,200,M_PI/4,M_PI/2});
+	//trj.addPose(TimeFactors::SLOW, { pos[0],pos[1], pos[2]+50, pos[3],pos[4]});
+	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2});
+	trj.addPose(TimeFactors::SLOW, { x, y, 37, phi, M_PI/2}); //runter auf klotz saugen
+	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+
+	float cx = 0;
+	float cy = 0;
+	float cz = 0;
+	float cphi = 0;
+	float ctheta = 0;
+
+	if(stg==StorageSpace::INNER_2 || stg==StorageSpace::MIDDLE_2 || stg==StorageSpace::OUTER_2){
+		trj.addPose(TimeFactors::FAST, { x, y, 163, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+	}
+
+	if(stg==StorageSpace::INNER_3 || stg==StorageSpace::MIDDLE_3 || stg==StorageSpace::OUTER_3){
+			trj.addPose(TimeFactors::FAST, { x, y, 226, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+		}
+
+	//move cube befor storage
+	cx = pLUT[static_cast<int>(stg)].x;
+	cy = pLUT[static_cast<int>(stg)].y;
+	cz = pLUT[static_cast<int>(stg)].z;
+	cphi = pLUT[static_cast<int>(stg)].phi;
+	ctheta = pLUT[static_cast<int>(stg)].theta;
+	trj.addPose(TimeFactors::MEDIUM, { cx+30,cy,cz,cphi,ctheta});
 
 	//put in
 	cx = pLUT[static_cast<int>(stg)].x;
@@ -118,7 +167,7 @@ void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace 
 
 	//build trajectory
 	qTrj = trj.buildJointspace();
-	trj.showQTrajectory(qTrj);
+	//trj.showQTrajectory(qTrj);
 
 	//reset trajectory
 	j=0;

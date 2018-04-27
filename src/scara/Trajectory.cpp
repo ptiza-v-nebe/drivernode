@@ -119,7 +119,7 @@ QTrajectory Trajectory::buildJointspace() {
 
 std::vector<std::vector<float> > Trajectory::interpolate(
 		std::vector<float> timedStartPose, std::vector<float> timedEndPose) {
-	int n = 5;
+	int n = 24;
 
 	float startTime = timedStartPose[0];
 	float endTime = timedEndPose[0];
@@ -313,7 +313,7 @@ void Trajectory::showQTrajectory(QTrajectory qTrj){
 
 void Trajectory::showQPoint(vector<float> qTrj){
 	//printf("---------------------\n");
-	printf("q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",qTrj[1],qTrj[2],qTrj[3],qTrj[4],qTrj[5]);
+	printf("t:%f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",qTrj[0], qTrj[1],qTrj[2],qTrj[3],qTrj[4],qTrj[5]);
 }
 
 float Trajectory::getActionTime() {
