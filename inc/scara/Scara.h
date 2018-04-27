@@ -63,6 +63,9 @@ public:
 	void task();
 	void commandReceived(const ScaraActionMessage& sam);
 	void park();
+	void scaraPumpValveControl(bool on);
+	void storagePumpsControl(StorageSpace sam);
+	void disableStoragePumps();
 };
 
 #endif /* SCARA_SCARA_H_ */

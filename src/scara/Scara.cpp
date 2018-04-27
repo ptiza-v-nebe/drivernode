@@ -22,10 +22,7 @@ void Scara::park(){
 	currentState->park();
 }
 
-//Scara::scaraPumpOn()
-//Scara::scaraPumpOff()
-//Scara::enablePumpForStorageSpace(StorageSpace sam)
-//Scara::disableStoragePumps()
+
 
 void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace stg) {
 	qTrj.clear();
@@ -54,53 +51,30 @@ void Scara::generateTrajectoryForCube(float x, float y, float phi, StorageSpace 
 	//build trajectory
 	qTrj = trj.buildJointspace();
 
+	//reset trajectory
 	j=0;
 	i=0;
 }
 
-//vector<vector<float>> Scara::moveToCartesian(vector<float> sp, vector<float> ep, float time) {
-//	Trajectory trj;
-//
-//	//set actionTime
-//	trj.setActionTime(time);
-//
-//	//move first to given x,y,phi
-//	trj.startPose(sp);
-//	trj.addPose(TimeFactors::FAST, ep);
-//	return trj.buildJointspace();
-//}
-
-void Scara::task() {
-	//get actual motor angles
-	//	Angle q0 = servos[0].getAngle()-150_deg;
-	//	Angle q1 = servos[1].getAngle()-150_deg;
-	//	Angle q2 = servos[2].getAngle()-60_deg;
-	//	Angle q3 = servos[3].getAngle()-105_deg;
-	//
-	//	//get actual position from FK
-	//	vector<float> pos = trj.FK({q0.getAngleInRadianAround(0),q1.getAngleInRadianAround(0),q2.getAngleInRadianAround(0),q3.getAngleInRadianAround(0),lift.getPosition()});
-
-	//qTrj = moveToCartesian({},{},3);
-}
 
 Scara::Scara(ScaraHardware& hw) :
 		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
-							pLUT{{27,211,43,M_PI/2,M_PI/2},
-								{27,211,103,M_PI/2,M_PI/2},
-								{27,211,163,M_PI/2,M_PI/2},
-								{27,211,226,M_PI/2,M_PI/2},
+							pLUT{{23,211,43,M_PI/2,M_PI/2},
+								{23,211,103,M_PI/2,M_PI/2},
+								{23,211,163,M_PI/2,M_PI/2},
+								{23,211,226,M_PI/2,M_PI/2},
 
-								{27,150,43,M_PI*3/4,M_PI/2},
-								{27,150,99,M_PI*3/4,M_PI/2},
-								{27,150,163,M_PI*3/4,M_PI/2},
-								{27,150,226,M_PI*3/4,M_PI/2},
+								{23,150,43,M_PI*3/4,M_PI/2},
+								{23,150,99,M_PI*3/4,M_PI/2},
+								{23,150,163,M_PI*3/4,M_PI/2},
+								{23,150,226,M_PI*3/4,M_PI/2},
 
-								{27,93,43,M_PI*0.95,M_PI/2},
-								{27,93,99,M_PI*0.95,M_PI/2},
-								{27,93,163,M_PI*0.95,M_PI/2},
-								{27,93,226,M_PI*0.95,M_PI/2}}
+								{23,93,43,M_PI*0.95,M_PI/2},
+								{23,93,99,M_PI*0.95,M_PI/2},
+								{23,93,163,M_PI*0.95,M_PI/2},
+								{23,93,226,M_PI*0.95,M_PI/2}}
 {
 	servos[0].enable();
 	servos[1].enable();
@@ -115,11 +89,39 @@ Scara::Scara(ScaraHardware& hw) :
 	storagePumps[1].enable();
 	storagePumps[2].enable();
 
-	 //damit greift man zu
 }
 
-//scarapumpOnOffFunc()
-//storagePumpOn(StorageSpace sam);
+void Scara::scaraPumpValveControl(bool on){
+	if(on){
+		scaraPump.setOn();
+		scaraValve.setOn();
+	} else {
+		scaraPump.setOff();
+		scaraValve.setOff();
+	}
+}
+
+void Scara::storagePumpsControl(StorageSpace sam){
+	if (sam == StorageSpace::INNER_0 || sam == StorageSpace::INNER_1
+			|| sam == StorageSpace::INNER_2 || sam == StorageSpace::INNER_3) {
+		storagePumps[0].setOn();
+	}
+
+	if (sam == StorageSpace::MIDDLE_0 || sam == StorageSpace::MIDDLE_1
+				|| sam == StorageSpace::MIDDLE_2 || sam == StorageSpace::MIDDLE_3) {
+			storagePumps[1].setOn();
+	}
+	if (sam == StorageSpace::OUTER_0 || sam == StorageSpace::OUTER_1
+				|| sam == StorageSpace::OUTER_2 || sam == StorageSpace::OUTER_3) {
+			storagePumps[2].setOn();
+	}
+}
+
+void Scara::disableStoragePumps(){
+	storagePumps[0].setOff();
+	storagePumps[1].setOff();
+	storagePumps[2].setOff();
+}
 
 Scara::~Scara() {
 	delete currentState;
@@ -151,10 +153,5 @@ void Scara::executeTrajectory() {
 }
 
 void Scara::initialize() {
-	scaraPump.setOff();
-	scaraValve.setOff();
-	storagePumps[0].setOff();
-	storagePumps[1].setOff();
-	storagePumps[2].setOff();
 	currentState->entry();
 }
