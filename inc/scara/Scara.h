@@ -37,6 +37,10 @@ class Scara {
 private:
 	ScaraLift lift;
 	DynamixelAX12A *servos;
+	OutputPin& scaraPump;
+	OutputPin& scaraValve;
+	OutputPin* storagePumps;
+
 	bool runOnce;
 	QTrajectory qTrj;
 	Trajectory trj;

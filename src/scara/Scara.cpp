@@ -16,6 +16,8 @@ void Scara::tick() {
 	lift.tick();
 }
 
+//unloadstoragepumpoffFunc
+
 void Scara::park(){
 	currentState->park();
 }
@@ -84,7 +86,8 @@ void Scara::task() {
 Scara::Scara(ScaraHardware& hw) :
 		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
-						   pLUT{{27,211,43,M_PI/2,M_PI/2},
+				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
+							pLUT{{27,211,43,M_PI/2,M_PI/2},
 								{27,211,103,M_PI/2,M_PI/2},
 								{27,211,163,M_PI/2,M_PI/2},
 								{27,211,226,M_PI/2,M_PI/2},
@@ -97,14 +100,26 @@ Scara::Scara(ScaraHardware& hw) :
 								{27,93,43,M_PI*0.95,M_PI/2},
 								{27,93,99,M_PI*0.95,M_PI/2},
 								{27,93,163,M_PI*0.95,M_PI/2},
-								{27,93,226,M_PI*0.95,M_PI/2}}{
+								{27,93,226,M_PI*0.95,M_PI/2}}
+{
 	servos[0].enable();
 	servos[1].enable();
 	servos[2].enable();
 	servos[3].enable();
 	lift.initialize();
+
+	scaraPump.enable();
+	scaraValve.enable();
+
+	storagePumps[0].enable();
+	storagePumps[1].enable();
+	storagePumps[2].enable();
+
 	 //damit greift man zu
 }
+
+//scarapumpOnOffFunc()
+//storagePumpOn(StorageSpace sam);
 
 Scara::~Scara() {
 	delete currentState;
@@ -136,5 +151,10 @@ void Scara::executeTrajectory() {
 }
 
 void Scara::initialize() {
+	scaraPump.setOff();
+	scaraValve.setOff();
+	storagePumps[0].setOff();
+	storagePumps[1].setOff();
+	storagePumps[2].setOff();
 	currentState->entry();
 }

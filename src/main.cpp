@@ -129,6 +129,16 @@ int main(void) {
      scaraLift.enable();
      });*/
 
+    //supply for scara and storage relais
+//    OutputPin scaraRelaisSupply(GPIOC, GPIO_PIN_9);
+//    scaraRelaisSupply.enable();
+//    scaraRelaisSupply.setOn();
+//
+//    OutputPin storageRelaisSupply(GPIOD, GPIO_PIN_2);
+//    scaraRelaisSupply.enable();
+//    scaraRelaisSupply.setOn();
+
+
     Scara scara(hal.getScaraHardware());
     scara.initialize();
 
@@ -150,6 +160,9 @@ int main(void) {
                 } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
                     // TODO
                 }
+                //else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+                    // TODO
+                //}
             });
 
     // ////////////////////////////////////////////
