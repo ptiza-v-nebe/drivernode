@@ -149,10 +149,9 @@ int main(void) {
     dispatcher.registerMessageHandler<ScaraActionMessage>(
             [&](ScaraActionMessage sam) {
     			scara.commandReceived(sam);
-                //scara.moveToCartesian(sam.getX(), sam.getY(), sam.getPhi().getAngleInRadian(), sam.getStorageSpace());
-                //StorageSpace s = StorageSpace::INNER_3;
-                //static_cast<int>(s);//enum as int
+    			//wie gebe ich statuscodes raus?
             });
+
     dispatcher.registerMessageHandler<BasicScaraMessage>(
             [&](BasicScaraMessage bsm) {
                 if(bsm.getScaraCommand() == ScaraCommand::CANCEL) {

@@ -66,6 +66,8 @@ public:
 	void scaraPumpValveControl(bool on);
 	void storagePumpsControl(StorageSpace sam);
 	void disableStoragePumps();
+	bool isValid(vector<float> qTrjP);
+	void showQPoint(vector<double> qTrj);
 };
 
 #endif /* SCARA_SCARA_H_ */

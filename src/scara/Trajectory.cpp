@@ -112,15 +112,14 @@ QTrajectory Trajectory::buildJointspace() {
 
 	//copy action control bools
 
-
-	showQTrajectory(qTrj);
+	//showQTrajectory(qTrj);
 
 	return qTrj;
 }
 
 std::vector<std::vector<float> > Trajectory::interpolate(
 		std::vector<float> timedStartPose, std::vector<float> timedEndPose) {
-	int n = 30;
+	int n = 5;
 
 	float startTime = timedStartPose[0];
 	float endTime = timedEndPose[0];
@@ -203,11 +202,22 @@ Q Trajectory::ik1(std::vector<float> timedPose) {
 	float gamma = atan2((-yp / sqrt(pow(xp, 2) + pow(yp, 2))),
 			(-xp / sqrt(pow(xp, 2) + pow(yp, 2))));
 	int sign = 1;
+
+
+	float qOffset = 0;
+	if(yp > 0){
+		qOffset = 0;
+	}
+	if(yp<0){
+		qOffset = -M_PI*2;
+	}
+
 	float q1 = gamma
-			+ sign
-					* acos(
-							-(pow(xp, 2) + pow(yp, 2) + pow(L1, 2) - pow(L2, 2))
-									/ (2 * L1 * sqrt(pow(xp, 2) + pow(yp, 2))));
+				+ sign
+						* acos(
+								-(pow(xp, 2) + pow(yp, 2) + pow(L1, 2) - pow(L2, 2))
+										/ (2 * L1 * sqrt(pow(xp, 2) + pow(yp, 2)))) + qOffset;
+
 
 	float q2 = (atan2((yp - L1 * sin(q1)) / L2, (xp - L1 * cos(q1)) / L2) - q1);
 
@@ -283,11 +293,15 @@ vector<float> Trajectory::FK(const std::vector<float>& q){
 	return {x, y, z, phi, th};
 }
 
-void Trajectory::showXTrajectory(XTrajectory xTrj){
+void Trajectory::showXTrajectory(vector<vector<float>> xTrj){
 	printf("---------------------\r\n");
 	for(int i =0; i< xTrj.size();i++){
 		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",i,xTrj[i][0],xTrj[i][1],xTrj[i][2],xTrj[i][3],xTrj[i][4],xTrj[i][5]);
 	}
+}
+
+void Trajectory::showPosition(vector<float> xTrj){
+	printf("x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",xTrj[0],xTrj[1],xTrj[2],xTrj[3],xTrj[4]);
 }
 
 void Trajectory::showQTrajectory(QTrajectory qTrj){
@@ -295,6 +309,11 @@ void Trajectory::showQTrajectory(QTrajectory qTrj){
 	for(int i =0; i< qTrj.size();i++){
 		printf("[%d] t: %f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",i,qTrj[i][0],qTrj[i][1],qTrj[i][2],qTrj[i][3],qTrj[i][4]);
 	}
+}
+
+void Trajectory::showQPoint(vector<float> qTrj){
+	//printf("---------------------\n");
+	printf("q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",qTrj[1],qTrj[2],qTrj[3],qTrj[4],qTrj[5]);
 }
 
 float Trajectory::getActionTime() {

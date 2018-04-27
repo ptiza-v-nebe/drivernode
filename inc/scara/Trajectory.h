@@ -65,6 +65,8 @@ public:
 
 	void showXTrajectory(XTrajectory xTrj);
 	void showQTrajectory(QTrajectory qTrj);
+	void showQPoint(vector<float> qTrj);
+	void showPosition(vector<float> xTrj);
 };
 
 #endif /* TRAJECTORY_H_ */
