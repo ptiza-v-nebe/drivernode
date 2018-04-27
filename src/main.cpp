@@ -155,13 +155,13 @@ int main(void) {
     dispatcher.registerMessageHandler<BasicScaraMessage>(
             [&](BasicScaraMessage bsm) {
                 if(bsm.getScaraCommand() == ScaraCommand::CANCEL) {
-                    // TODO
+                   scara.cancelExecute();
                 } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
-                    // TODO
+                    scara.park();
                 }
-                //else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
-                    // TODO
-                //}
+//                else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+//                     //TODO
+//                }
             });
 
     // ////////////////////////////////////////////

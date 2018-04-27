@@ -41,7 +41,7 @@ void ScaraLift::tick() {
     	speed = lastSpeed - 3000*0.01;
     }
 
-	printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
+	//printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
 
 	lastSpeed = speed;
 
@@ -55,9 +55,9 @@ void ScaraLift::initialize() {
     motor.enable();
     motor.stop();
     initialized = true;
-    schedule_repeating_task([this](){
-       tick();
-    }, 100);
+//    schedule_repeating_task([this](){
+//       tick();
+//    }, 100);
 }
 
 void ScaraLift::stop(){

@@ -20,24 +20,32 @@ void Trajectory::setActionTime(float actiontime) {
 	this->actionTime = actiontime;
 }
 
-void Trajectory::startPose(const vector<float>& pose) {
+void Trajectory::startPose(const Pose& pose) {
 	dFactors.clear();
 	dFactors.push_back(0);
 	trj.clear();
-	trj.push_back({0.0, pose[0], pose[1], pose[2], pose[3],pose[4]});
+
+	TimedPose tp(0,pose);
+	trj.push_back(tp);
 }
 
-void Trajectory::addPose(TimeFactors dTimeFactor, vector<float> pose) {
+void Trajectory::clear(){
+	dFactors.clear();
+	dFactors.push_back(0);
+	trj.clear();
+}
+
+void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
 	float dTimeFactorNum = 0;
 
 	if (dTimeFactor == TimeFactors::FAST)
-		dTimeFactorNum = 10;
+		dTimeFactorNum = 5;
 
 	if (dTimeFactor == TimeFactors::MEDIUM)
-		dTimeFactorNum = 25;
+		dTimeFactorNum = 30;
 
 	if (dTimeFactor == TimeFactors::SLOW)
-		dTimeFactorNum = 50;
+		dTimeFactorNum = 60;
 
 	dFactors.push_back(dTimeFactorNum / 100);
 
@@ -61,12 +69,15 @@ void Trajectory::addPose(TimeFactors dTimeFactor, vector<float> pose) {
 	}
 	sumOfDFactors = 0;
 
-	trj.push_back({0,0,0,0,0,0});
+	TimedPose nullPose;
+	nullPose.t = 0;
+	nullPose.x = 0;
+	nullPose.y = 0;
+	nullPose.z = 0;
+	nullPose.phi = 0;
+	nullPose.theta = 0;
 
-	// // //clear time vector
-//	 for (unsigned int i = 0; i < trj.size(); i++) {
-//	  	trj[i][0] = 0.0;
-//	}
+	trj.push_back(nullPose);
 
 	// // //calculate times
 	unsigned int i = 0;
@@ -74,39 +85,39 @@ void Trajectory::addPose(TimeFactors dTimeFactor, vector<float> pose) {
 
 	 for (i = 0; i < newDFactors.size(); i++) {
 	 	accOfDFactors = accOfDFactors + newDFactors[i];
-	 	trj[i][0] = actionTime * accOfDFactors;
+	 	trj[i].t = actionTime * accOfDFactors;
 		//std::cout << " accOfDFactors: " << accOfDFactors << " newDFactors[i]: " << newDFactors[i]  << " trj[ " << i << " ][0]: " << trj[i][0] <<endl;
 	 }
 
-	// // //copy poses
-	trj[i-1][1] = pose[0];
-	trj[i-1][2] = pose[1];
-	trj[i-1][3] = pose[2];
-	trj[i-1][4] = pose[3];
-	trj[i-1][5] = pose[4];
+	//copy poses
+	trj[i-1].x = pose.x;
+	trj[i-1].y = pose.y;
+	trj[i-1].z = pose.z;
+	trj[i-1].phi = pose.phi;
+	trj[i-1].theta = pose.theta;
 }
 
-QTrajectory Trajectory::buildJointspace() {
-	XTrajectory totalTrj;
-	QTrajectory qTrj;
+vector<TimedAngles> Trajectory::buildJointspace() {
+	vector<TimedPose> totalTrj;
+	vector<TimedAngles> qTrj;
 
 	for (unsigned int i = 0; i < trj.size()-1; i++) {
 		//interpolate on each trj element paar
-		XTrajectory interTrj = interpolate(trj[i], trj[i + 1]);
+		vector<TimedPose> interTrj = interpolate(trj[i], trj[i + 1]);
 		//showXTrajectory(interTrj);
 
 		//copy row to total trajectory
 		std::for_each(interTrj.begin(), interTrj.end(),
-				[&](std::vector<float> & timedPose) {
+				[&](TimedPose& timedPose) {
 					totalTrj.push_back(timedPose);
 				});
 	}
 
-	//showXTrajectory(totalTrj);
+	showXTrajectory(totalTrj);
 
 	//inverse Kinematic
 	std::for_each(totalTrj.begin(), totalTrj.end(),
-			[&](std::vector<float> & timedPose) {
+			[&](TimedPose & timedPose) {
 				qTrj.push_back(ik1(timedPose));
 			});
 
@@ -117,27 +128,27 @@ QTrajectory Trajectory::buildJointspace() {
 	return qTrj;
 }
 
-std::vector<std::vector<float> > Trajectory::interpolate(
-		std::vector<float> timedStartPose, std::vector<float> timedEndPose) {
+std::vector<TimedPose> Trajectory::interpolate(
+		TimedPose timedStartPose, TimedPose timedEndPose) {
 	int n = 24;
 
-	float startTime = timedStartPose[0];
-	float endTime = timedEndPose[0];
+	float startTime = timedStartPose.t;
+	float endTime = timedEndPose.t;
 
-	float startX = timedStartPose[1];
-	float endX = timedEndPose[1];
+	float startX = timedStartPose.x;
+	float endX = timedEndPose.x;
 
-	float startY = timedStartPose[2];
-	float endY = timedEndPose[2];
+	float startY = timedStartPose.y;
+	float endY = timedEndPose.y;
 
-	float startZ = timedStartPose[3];
-	float endZ = timedEndPose[3];
+	float startZ = timedStartPose.z;
+	float endZ = timedEndPose.z;
 
-	float startPhi=timedStartPose[4];
-	float endPhi=timedEndPose[4];
+	float startPhi=timedStartPose.phi;
+	float endPhi=timedEndPose.phi;
 
-	float startTheta = timedStartPose[5];
-	float endTheta = timedEndPose[5];
+	float startTheta = timedStartPose.theta;
+	float endTheta = timedEndPose.theta;
 
 	std::vector<float> interTimes = linspace(startTime, endTime, n);
 	std::vector<float> interPoseX = linspace(startX, endX, n);
@@ -146,10 +157,17 @@ std::vector<std::vector<float> > Trajectory::interpolate(
 	std::vector<float> interPoseP = linspace(startPhi,endPhi,n);
 	std::vector<float> interPoseT = linspace(startTheta, endTheta, n);
 
-	std::vector<std::vector<float> > interTrajectory;
+	std::vector<TimedPose> interTrajectory;
 
 	for (unsigned int i = 0; i < interTimes.size(); i++) {
-		interTrajectory.push_back({interTimes[i],interPoseX[i],interPoseY[i],interPoseZ[i], interPoseP[i],interPoseT[i]});
+		TimedPose in;
+		in.t = interTimes[i];
+		in.x = interPoseX[i];
+		in.y = interPoseY[i];
+		in.z = interPoseZ[i];
+		in.phi = interPoseP[i];
+		in.theta = interPoseT[i];
+		interTrajectory.push_back(in);
 	}
 
 	return interTrajectory;
@@ -179,22 +197,17 @@ std::vector<float> Trajectory::linspace(float start, float end, int num_in) {
 	return linspaced;
 }
 
-
-
-
-//TODO: correct phi!
-Q Trajectory::ik1(std::vector<float> timedPose) {
-	float t = timedPose[0];
-	float x = timedPose[1];
-	float y = timedPose[2];
-	float z = timedPose[3];
-	float phi = timedPose[4]; //how the last point is rotated
-	float theta = timedPose[5]; //how the saug is rotated
+TimedAngles Trajectory::ik1(TimedPose timedPose) {
+	float t = timedPose.t;
+	float x = timedPose.x;
+	float y = timedPose.y;
+	float z = timedPose.z;
+	float phi = timedPose.phi; //how the last point is rotated
+	float theta = timedPose.theta; //how the saug is rotated
 
 	float L1 = 82.5;
 	float L2 = 67.5;
 	float L3 = 67.5;
-	float L4 = 51.0;
 
 	float xp = x - L3 * cos(phi);
 	float yp = y - L3 * sin(phi);
@@ -224,17 +237,27 @@ Q Trajectory::ik1(std::vector<float> timedPose) {
 	float q3 = phi - (q1 + q2);
 
 	float q4 = -(theta - (q1 + q2 + q3));
-	float q5 = map(z, 37.0, 231.5, 0, 7000);
+	//float q5 = map(z, 53.0, 253, 0, 7150);
+	float q5 = z;
 
-	return {t, q1, q2, q3, q4, q5};
+	TimedAngles ta;
+	ta.t = t;
+	ta.q1 = q1;
+	ta.q2 = q2;
+	ta.q3 = q3;
+	ta.q4 = q4;
+	ta.q5 = q5;
+
+	return ta;
 }
 
-Q Trajectory::ik2(std::vector<float> timedPose) {
-	float t = timedPose[0];
-	float x = timedPose[1];
-	float y = timedPose[2];
-	float z = timedPose[3];
-	float theta = timedPose[4]; //how the saug is rotated
+TimedAngles Trajectory::ik2(TimedPose timedPose) {
+	float t = timedPose.t;
+	float x = timedPose.x;
+	float y = timedPose.y;
+	float z = timedPose.z;
+	float phi = timedPose.phi; //how the last point is rotated
+	float theta = timedPose.theta; //how the saug is rotated
 
 	//lengths of links
 
@@ -275,45 +298,61 @@ Q Trajectory::ik2(std::vector<float> timedPose) {
 	float q4 = theta - (q1 + q2 + q3);
 	float q5 = map(z, 37.0, 231.5, 0, 7000);
 
-	return {t, q1, q2, q3, q4, q5};
+	TimedAngles ta;
+	ta.t = t;
+	ta.q1 = q1;
+	ta.q2 = q2;
+	ta.q3 = q3;
+	ta.q4 = q4;
+	ta.q5 = q5;
+
+	return ta;
 }
 
-int Trajectory::map(int x, int in_min, int in_max, int out_min, int out_max) {
+float Trajectory::map(float x, float in_min, float in_max, float out_min, float out_max) {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 //TODO z!
-vector<float> Trajectory::FK(const std::vector<float>& q){
-	float x = L1*cos(q[0]) + L2*cos(q[0]+q[1]) + L3*cos(q[0]+q[1]+q[2]);
-	float y = L1*sin(q[0]) + L2*sin(q[0]+q[1]) + L3*sin(q[0]+q[1]+q[2]);
-	float z = map(q[4], 0, 7000, 37.0, 231.5);
-	float phi = q[0]+q[1]+q[2];
-	float th = q[0]+q[1]+q[2]+q[3];
+TimedPose Trajectory::FK(const TimedAngles& q){
+	float q1 = q.q1;
+	float q2 = q.q2;
+	float q3 = q.q3;
+	float q4 = q.q4;
+	float q5 = q.q5;
 
-	return {x, y, z, phi, th};
+	TimedPose tp;
+
+	tp.x = L1*cos(q1) + L2*cos(q1+q2) + L3*cos(q1+q2+q3);
+	tp.y = L1*sin(q1) + L2*sin(q1+q2) + L3*sin(q1+q2+q3);
+	tp.z = map(q5, 0, 7000, 37.0, 231.5);
+	tp.phi = q1+q2+q3;
+	tp.theta = q1+q2+q3+q4;
+
+	return tp;
 }
 
-void Trajectory::showXTrajectory(vector<vector<float>> xTrj){
+void Trajectory::showXTrajectory(vector<TimedPose> xTrj){
 	printf("---------------------\r\n");
 	for(int i =0; i< xTrj.size();i++){
-		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",i,xTrj[i][0],xTrj[i][1],xTrj[i][2],xTrj[i][3],xTrj[i][4],xTrj[i][5]);
+		printf("[%d] t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",i,xTrj[i].t,xTrj[i].x,xTrj[i].y,xTrj[i].z,xTrj[i].phi,xTrj[i].theta);
 	}
 }
 
-void Trajectory::showPosition(vector<float> xTrj){
-	printf("x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",xTrj[0],xTrj[1],xTrj[2],xTrj[3],xTrj[4]);
+void Trajectory::showPosition(TimedPose xTrj){
+	printf("t: %f,x: %f,y: %f,z: %f, ph: %f,th: %f \r\n",xTrj.t,xTrj.x,xTrj.y,xTrj.z,xTrj.phi,xTrj.theta);
 }
 
-void Trajectory::showQTrajectory(QTrajectory qTrj){
+void Trajectory::showQTrajectory(vector<TimedAngles> qTrj){
 	//printf("---------------------\n");
 	for(int i =0; i< qTrj.size();i++){
-		printf("[%d] t: %f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",i,qTrj[i][0],qTrj[i][1],qTrj[i][2],qTrj[i][3],qTrj[i][4]);
+		printf("[%d] t: %f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",i,qTrj[i].q1,qTrj[i].q2,qTrj[i].q3,qTrj[i].q4,qTrj[i].q5);
 	}
 }
 
-void Trajectory::showQPoint(vector<float> qTrj){
+void Trajectory::showQPoint(TimedAngles qTrj){
 	//printf("---------------------\n");
-	printf("t:%f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",qTrj[0], qTrj[1],qTrj[2],qTrj[3],qTrj[4],qTrj[5]);
+	printf("t: %f, q1: %f, q2: %f, q3: %f,q4:%f,q5:%f \r\n",qTrj.q1,qTrj.q2,qTrj.q3,qTrj.q4,qTrj.q5);
 }
 
 float Trajectory::getActionTime() {
