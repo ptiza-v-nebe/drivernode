@@ -21,7 +21,7 @@ static constexpr int16_t MAX_POSITION = 253; // mm from floor
 static constexpr int16_t MIN_POSITION = 53; // mm from floor
 
 static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
-static constexpr float MM_PER_TICK = (253.0f-53)/MAX_POSITION;
+static constexpr float MM_PER_TICK = (253.0f-53)/7150;
 
 ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
         motor(motor), encoder(encoder), startPosition(0), targetPosition(53), //

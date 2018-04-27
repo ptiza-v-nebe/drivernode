@@ -11,6 +11,7 @@
 Trajectory::Trajectory() :
 		k(0), sumTime(0), actionTime(0),trj() {
 		//dFactors.push_back(0);
+		trj.reserve(50);
 }
 
 Trajectory::~Trajectory() {
@@ -130,7 +131,8 @@ vector<TimedAngles> Trajectory::buildJointspace() {
 
 std::vector<TimedPose> Trajectory::interpolate(
 		TimedPose timedStartPose, TimedPose timedEndPose) {
-	int n = 24;
+
+	int n = 10;
 
 	float startTime = timedStartPose.t;
 	float endTime = timedEndPose.t;

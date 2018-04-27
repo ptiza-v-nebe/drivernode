@@ -12,17 +12,17 @@ Scara::Scara(ScaraHardware& hw) :
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
 					pLUT{{ 5,206,59,M_PI/2,M_PI/2},
-						{ 5,206,116,M_PI/2,M_PI/2},
+						{ 5,206,119,M_PI/2,M_PI/2},
 						{ 5,206,175,M_PI/2,M_PI/2},
 						{ 5,206,233,M_PI/2,M_PI/2},
 
 						{ 5,150,59,M_PI*3/4,M_PI/2},
-						{ 5,150,116,M_PI*3/4,M_PI/2},
+						{ 5,150,119,M_PI*3/4,M_PI/2},
 						{ 5,150,175,M_PI*3/4,M_PI/2},
 						{ 5,150,233,M_PI*3/4,M_PI/2},
 
 						{ 5,93,59,M_PI*0.95,M_PI/2},
-						{ 5,93,116,M_PI*0.95,M_PI/2},
+						{ 5,93,119,M_PI*0.95,M_PI/2},
 						{ 5,93,175,M_PI*0.95,M_PI/2},
 						{ 5,93,233,M_PI*0.95,M_PI/2}}
 {
@@ -38,6 +38,15 @@ Scara::Scara(ScaraHardware& hw) :
 	storagePumps[0].enable();
 	storagePumps[1].enable();
 	storagePumps[2].enable();
+
+	currentPosition.t = 0;
+	currentPosition.q1 = 0;
+	currentPosition.q2 = 0;
+	currentPosition.q3 = 0;
+	currentPosition.q4 = 0;
+	currentPosition.q5 = 70;
+
+	qTrj.reserve(50);
 }
 
 void Scara::commandReceived(const ScaraActionMessage& sam){
@@ -96,6 +105,7 @@ TimedAngles Scara::readMotorAngles() {
 
 void Scara::generateParkTrajectory(){
 //	qTrj.clear();
+//	trj.clear();
 //	trj.setActionTime(2);
 //	trj.startPose({cx,cy,cz,cphi,ctheta});
 //	trj.addPose(TimeFactors::MEDIUM, { cx,cy,cz+20,cphi,ctheta});
@@ -131,17 +141,18 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 
 	qTrj.clear();
 	//set actionTime
-	trj.setActionTime(10);
+	trj.setActionTime(15);
 
-	TimedAngles ma = readMotorAngles();
-	TimedPose pos = trj.FK({ma.q1,ma.q2,ma.q3,ma.q4,lift.getPosition()});
+	//TimedAngles ma = readMotorAngles();
+	//TimedPose pos = trj.FK({ma.q1,ma.q2,ma.q3,ma.q4,lift.getPosition()});
 	//trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
-	trj.startPose({120,120,200,M_PI/4,M_PI/2});
+	trj.startPose({120,120,100,M_PI/4,M_PI/2});
 
 	//move first to given x,y,phi
-	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 59, phi, M_PI/2}); //runter auf klotz saugen
-	trj.addPose(TimeFactors::FAST, { x, y, 120, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2});
+	trj.addPose(TimeFactors::SLOW, { x, y, 48, phi, M_PI/2}); //runter auf klotz saugen
+	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+
 
 	float cx = 0;
 	float cy = 0;
@@ -149,38 +160,33 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 	float cphi = 0;
 	float ctheta = 0;
 
-#if 0
 	if(stg==StorageSpace::INNER_1 || stg==StorageSpace::MIDDLE_1 || stg==StorageSpace::OUTER_1){
-			trj.addPose(TimeFactors::SLOW, { x, y, 115, phi, M_PI/2}); // um klotze nicht zu zerst hoch
-			trj.addPose(TimeFactors::SLOW, { x, y, 115, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+			trj.addPose(TimeFactors::FAST, { x, y, 115, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 		}
 
 	if(stg==StorageSpace::INNER_2 || stg==StorageSpace::MIDDLE_2 || stg==StorageSpace::OUTER_2){
-		trj.addPose(TimeFactors::SLOW, { x, y, 175, phi, M_PI/2}); // um klotze nicht zu zerst hoch
-		trj.addPose(TimeFactors::SLOW, { x, y, 175, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+		trj.addPose(TimeFactors::FAST, { x, y, 175, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 	}
 
 	if(stg==StorageSpace::INNER_3 || stg==StorageSpace::MIDDLE_3 || stg==StorageSpace::OUTER_3){
-			trj.addPose(TimeFactors::SLOW, { x, y, 230, phi, M_PI/2}); // um klotze nicht zu zerst hoch
-			trj.addPose(TimeFactors::SLOW, { x, y, 230, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+			trj.addPose(TimeFactors::FAST, { x, y, 230, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 		}
 
-	//move cube befor storage
+//	//move cube befor storage
 	cx = pLUT[static_cast<int>(stg)].x;
 	cy = pLUT[static_cast<int>(stg)].y;
 	cz = pLUT[static_cast<int>(stg)].z;
 	cphi = pLUT[static_cast<int>(stg)].phi;
 	ctheta = pLUT[static_cast<int>(stg)].theta;
-	trj.addPose(TimeFactors::SLOW, { cx+30,cy,cz,cphi,ctheta});
-
-	//put in
+	trj.addPose(TimeFactors::MEDIUM, { cx+30,cy,cz,cphi,ctheta});
+//
+//	//put in
 	cx = pLUT[static_cast<int>(stg)].x;
 	cy = pLUT[static_cast<int>(stg)].y;
 	cz = pLUT[static_cast<int>(stg)].z;
 	cphi = pLUT[static_cast<int>(stg)].phi;
 	ctheta = pLUT[static_cast<int>(stg)].theta;
-	trj.addPose(TimeFactors::SLOW, { cx,cy,cz,cphi,ctheta});
-#endif
+	trj.addPose(TimeFactors::MEDIUM, { cx,cy,cz,cphi,ctheta});
 
 	//build trajectory
 	qTrj = trj.buildJointspace();
