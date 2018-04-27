@@ -17,8 +17,8 @@ static constexpr int16_t DELTA_MAX = 500;
 static constexpr int16_t ACCURACY = 50;
 static constexpr float DELTA_TO_SPEED = 8.0f;
 
-static constexpr int16_t MAX_POSITION = 7150;
-static constexpr int16_t MIN_POSITION = 0;
+static constexpr int16_t MAX_POSITION = 253; // mm from floor
+static constexpr int16_t MIN_POSITION = 53; // mm from floor
 
 static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
 static constexpr float MM_PER_TICK = (253.0f-53)/MAX_POSITION;
@@ -68,14 +68,11 @@ void ScaraLift::moveTo(float mm) {
     if (!initialized) {
         return;
     }
-    targetPosition = /*CONVERSION * mm*/clamp(static_cast<int16_t>(mm));
+    targetPosition = clamp<int16_t>(static_cast<int16_t>(mm), MIN_POSITION, MAX_POSITION);
 }
 
 float ScaraLift::getPosition() {
     return encoder.getTick();
 }
 
-int16_t ScaraLift::clamp(int16_t value) {
-    return std::min(std::max(value, MIN_POSITION), MAX_POSITION);
-}
 /** @} */

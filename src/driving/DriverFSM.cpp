@@ -75,8 +75,8 @@ void DriverFSM::updateControl() {
 	float leftMotorVelocity = leftWheelControl.update(sollLeft - pm.leftWheelDistance);
 	float rightMotorVelocity = rightWheelControl.update(sollRight - pm.rightWheelDistance);
 
-	leftMotorVelocity = clamp(leftMotorVelocity, -1.5, 1.5);
-	rightMotorVelocity = clamp(rightMotorVelocity, -1.5, 1.5);
+	leftMotorVelocity = clamp<float>(leftMotorVelocity, -1.5, 1.5);
+	rightMotorVelocity = clamp<float>(rightMotorVelocity, -1.5, 1.5);
 
 	leftMotor.setSpeed(leftMotorVelocity*MOTORCONSTANT);
 	rightMotor.setSpeed(rightMotorVelocity*MOTORCONSTANT);

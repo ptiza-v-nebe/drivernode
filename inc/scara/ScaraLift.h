@@ -38,9 +38,6 @@ public:
     float getPosition();
     void tick();
     void stop();
-
-private:
-    int16_t clamp(int16_t value);
 };
 
 #endif /* SCARA_SCARALIFT_H_ */
