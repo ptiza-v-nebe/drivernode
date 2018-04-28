@@ -11,6 +11,7 @@ Scara::Scara(ScaraHardware& hw) :
 		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
+				currentAnglesPosition({0,0,0,0,0}),
 					pLUT{{ 5,206,59,M_PI/2,M_PI/2},
 						{ 5,206,119,M_PI/2,M_PI/2},
 						{ 5,206,175,M_PI/2,M_PI/2},
@@ -39,13 +40,6 @@ Scara::Scara(ScaraHardware& hw) :
 	storagePumps[1].enable();
 	storagePumps[2].enable();
 
-	currentPosition.t = 0;
-	currentPosition.q1 = 0;
-	currentPosition.q2 = 0;
-	currentPosition.q3 = 0;
-	currentPosition.q4 = 0;
-	currentPosition.q5 = 70;
-
 	qTrj.reserve(50);
 }
 
@@ -62,7 +56,7 @@ void Scara::commandReceived(const ScaraActionMessage& sam){
 	servos[2].enable();
 	servos[3].enable();
 
-	printf("[scara.cpp] command received, reset servos\r\n");
+	//printf("[scara.cpp] command received, reset servos\r\n");
 
 	currentState->commandReceived(sam);
 }
@@ -104,34 +98,37 @@ TimedAngles Scara::readMotorAngles() {
 }
 
 void Scara::generateParkTrajectory(){
-//	qTrj.clear();
-//	trj.clear();
-//	trj.setActionTime(2);
-//	trj.startPose({cx,cy,cz,cphi,ctheta});
-//	trj.addPose(TimeFactors::MEDIUM, { cx,cy,cz+20,cphi,ctheta});
-//	qTrj = trj.buildJointspace();
-//
-//	j=0;
-//	i=0;
+	qTrj.clear();
+	trj.clear();
+
+	trj.setActionTime(4);
+	trj.startPose({82,135,100,M_PI/2,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 82,135,253,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 5,207,253,M_PI/2});
+	qTrj = trj.buildJointspace();
+
+	currentAnglesPosition = {qTrj[qTrj.size()-1].q1,qTrj[qTrj.size()-1].q2,
+			qTrj[qTrj.size()-1].q3,qTrj[qTrj.size()-1].q4,qTrj[qTrj.size()-1].q5};
+
+	j=0;
+	i=0;
 }
 
 void Scara::generatePreventAttachTrajectory() {
-	StorageSpace stg = storageSpace;
 	qTrj.clear();
 	trj.setActionTime(2);
 
-	float cx = pLUT[static_cast<int>(stg)].x;
-	float cy = pLUT[static_cast<int>(stg)].y;
-	float cz = pLUT[static_cast<int>(stg)].z;
-	float cphi = pLUT[static_cast<int>(stg)].phi;
-	float ctheta = pLUT[static_cast<int>(stg)].theta;
+	Angles cap = {currentAnglesPosition.q1,currentAnglesPosition.q2,currentAnglesPosition.q3,currentAnglesPosition.q4,currentAnglesPosition.q5};
+	TimedPose p = trj.FK({0,cap.q1,cap.q2,cap.q3,cap.q4,cap.q5});
+	trj.startPose({p.x,p.y,p.z,p.phi,p.theta});
 
-	//move cube befor storage
-
-	trj.startPose( { cx, cy, cz, cphi, ctheta });
-	trj.addPose(TimeFactors::MEDIUM, { cx, cy, cz + 20, cphi, ctheta });
+	trj.addPose(TimeFactors::MEDIUM, { p.x,p.y,p.z+20,p.phi,p.theta });
 	qTrj = trj.buildJointspace();
 
+	currentAnglesPosition = {qTrj[qTrj.size()-1].q1,qTrj[qTrj.size()-1].q2,
+				qTrj[qTrj.size()-1].q3,qTrj[qTrj.size()-1].q4,qTrj[qTrj.size()-1].q5};
+
+	trj.showQTrajectory(qTrj);
 	j = 0;
 	i = 0;
 }
@@ -146,7 +143,10 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 	//TimedAngles ma = readMotorAngles();
 	//TimedPose pos = trj.FK({ma.q1,ma.q2,ma.q3,ma.q4,lift.getPosition()});
 	//trj.startPose({pos[0],pos[1],pos[2],pos[3],pos[4]});
-	trj.startPose({120,120,100,M_PI/4,M_PI/2});
+
+	Angles cap = {currentAnglesPosition.q1,currentAnglesPosition.q2,currentAnglesPosition.q3,currentAnglesPosition.q4,currentAnglesPosition.q5};
+	TimedPose p = trj.FK({0,cap.q1,cap.q2,cap.q3,cap.q4,cap.q5});
+	trj.startPose({p.x,p.y,p.z,p.phi,p.theta});
 
 	//move first to given x,y,phi
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2});
@@ -190,6 +190,9 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 
 	//build trajectory
 	qTrj = trj.buildJointspace();
+	currentAnglesPosition = {qTrj[qTrj.size()-1].q1,qTrj[qTrj.size()-1].q2,
+				qTrj[qTrj.size()-1].q3,qTrj[qTrj.size()-1].q4,qTrj[qTrj.size()-1].q5};
+
 	//trj.showQTrajectory(qTrj);
 
 	//reset trajectory
@@ -248,15 +251,18 @@ void Scara::executeTrajectory() {
 		//trj.showQPoint(qTrj[j]);
 
 		if (!isValid(qTrj[j])) {
-			printf("[Scara.cpp] not valid point!\r\n");
+			printf("[Scara.cpp] Got non-valid point! t:%f,x:%f,y:%f,z:%f,phi:%f,theta:%f \r\n",
+					qTrj[j].t,qTrj[j].q1,qTrj[j].q2,qTrj[j].q3,qTrj[j].q4,qTrj[j].q5);
 			currentState->cancelExecute();
 		} else {
+			//calculate
 			servos[0].moveTo(qTrj[j].q1 + 150 * M_PI / 180);
 			servos[1].moveTo(qTrj[j].q2 + 150 * M_PI / 180);
 			servos[2].moveTo(qTrj[j].q3 + 60 * M_PI / 180);
 			servos[3].moveTo(qTrj[j].q4 + 105 * M_PI / 180);
 			lift.moveTo(qTrj[j].q5);
-			currentPosition = qTrj[j];
+			printf("q5: %f \r\n",qTrj[j].q5);
+			currentAnglesPosition = {qTrj[j].q1,qTrj[j].q2,qTrj[j].q3,qTrj[j].q4,qTrj[j].q5};
 			j++;
 		}
 	}

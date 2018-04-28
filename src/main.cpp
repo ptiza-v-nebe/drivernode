@@ -159,9 +159,9 @@ int main(void) {
                 } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
                     scara.park();
                 }
-//                else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
-//                     //TODO
-//                }
+                else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+                     scara.disableStoragePumps();
+                }
             });
 
     // ////////////////////////////////////////////

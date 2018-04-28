@@ -11,7 +11,6 @@
 Trajectory::Trajectory() :
 		k(0), sumTime(0), actionTime(0),trj() {
 		//dFactors.push_back(0);
-		trj.reserve(50);
 }
 
 Trajectory::~Trajectory() {
@@ -114,7 +113,8 @@ vector<TimedAngles> Trajectory::buildJointspace() {
 				});
 	}
 
-	showXTrajectory(totalTrj);
+	//showXTrajectory(totalTrj);
+	printf("size of xtrajectory: %d\r\n",totalTrj.size());
 
 	//inverse Kinematic
 	std::for_each(totalTrj.begin(), totalTrj.end(),
@@ -125,6 +125,7 @@ vector<TimedAngles> Trajectory::buildJointspace() {
 	//copy action control bools
 
 	//showQTrajectory(qTrj);
+	printf("size of qtrajectory: %d\r\n",qTrj.size());
 
 	return qTrj;
 }
@@ -327,7 +328,7 @@ TimedPose Trajectory::FK(const TimedAngles& q){
 
 	tp.x = L1*cos(q1) + L2*cos(q1+q2) + L3*cos(q1+q2+q3);
 	tp.y = L1*sin(q1) + L2*sin(q1+q2) + L3*sin(q1+q2+q3);
-	tp.z = map(q5, 0, 7000, 37.0, 231.5);
+	tp.z = q.q5;
 	tp.phi = q1+q2+q3;
 	tp.theta = q1+q2+q3+q4;
 

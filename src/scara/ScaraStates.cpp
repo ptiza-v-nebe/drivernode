@@ -16,7 +16,7 @@ void Park::entry() {
 	//1.clear previous trajectory
 	context.clearTrajectory();
 	//2.generate new trajectory
-	//context.generateParkTrajectory();
+	context.generateParkTrajectory();
 }
 
 void Park::tick() {

@@ -38,7 +38,7 @@ private:
 	Pose pLUT[12];
 	StorageSpace storageSpace;
 
-	TimedAngles currentPosition;
+	Angles currentAnglesPosition;
 
 public:
 	Scara(ScaraHardware& hw);
