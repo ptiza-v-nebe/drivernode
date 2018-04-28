@@ -257,9 +257,14 @@ static constexpr auto BLDC_CHANNEL = TIM_CHANNEL_1;
 static constexpr uint16_t BLDC_TIMER_PIN = GPIO_PIN_7;
 
 /**
- * the id of the dynamixel with the little arm
+ * the id of the dynamixel on the left side
  */
-static constexpr uint8_t DYNAMIXEL_ID = 4;
+static constexpr uint8_t DYNAMIXEL_LEFT_ID = 4;
+
+/**
+ * the id of the dynamixel on the right side
+ */
+static constexpr uint8_t DYNAMIXEL_RIGHT_ID = 1;
 
 // ///////////////////////////////////////////////////////////////////////////////
 // Ultrasonic sensors
@@ -268,12 +273,12 @@ static constexpr uint8_t DYNAMIXEL_ID = 4;
 /**
  * ID of the first SRF08
  */
-static constexpr uint8_t SRF08_1_ID = 0xEE;
+static constexpr uint8_t SRF08_1_ID = 0xE0;
 
 /**
  * ID of the second SRF08
  */
-static constexpr uint8_t SRF08_2_ID = 0xE2;
+static constexpr uint8_t SRF08_2_ID = 0xEA;
 
 #endif
 
@@ -366,7 +371,8 @@ HALManager::HALManager() :
                 frontSwitch(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET, GPIO_PULLUP), //
                 shootingBLDCPWM(BLDC_TIMER, BLDC_CHANNEL), //
                 shootingBLDC(shootingBLDCPWM), //
-                servo( { DYNAMIXEL_ID, dynamixelCom }) //
+                servoLeft( { DYNAMIXEL_LEFT_ID, dynamixelCom }), //
+                servoRight( { DYNAMIXEL_RIGHT_ID, dynamixelCom }) //
 
 #endif
 { //
@@ -547,7 +553,8 @@ void HALManager::disableAllActors() {
 #endif
 #ifdef SMALL_ROBOT
     shootingBLDC.disableAndStop();
-    servo.disableAndStop();
+    servoLeft.disableAndStop();
+    servoRight.disableAndStop();
 #endif
 
 }
@@ -604,10 +611,17 @@ ShootingBLDC& HALManager::getShootingBLDC() {
 }
 
 /**
- * @return reference to the dynamixel with the little arm
+ * @return reference to the dynamixel on the left
  */
-DynamixelAX12A& HALManager::getServo() {
-    return servo;
+DynamixelAX12A& HALManager::getServoLeft() {
+    return servoLeft;
+}
+
+/**
+ * @return reference to the dynamixel on the right
+ */
+DynamixelAX12A& HALManager::getServoRight() {
+    return servoRight;
 }
 
 /**
@@ -683,7 +697,7 @@ void HALManager::initializeShootingBLDC() {
     GPIO_InitTypeDef gpio = getDefaultGPIO();
 
     timer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    timer.Init.Prescaler = 80 - 1;
+    timer.Init.Prescaler = 1 - 1;
     timer.Init.Period = 1000 - 1;
     timer.Init.CounterMode = TIM_COUNTERMODE_UP;
     timer.Instance = BLDC_TIMER;

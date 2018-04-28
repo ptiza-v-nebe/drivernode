@@ -77,7 +77,8 @@ private:
 
     PWM shootingBLDCPWM; ///<
     ShootingBLDC shootingBLDC; ///< the BLDC used to shoot
-    DynamixelAX12A servo; ///< the dynamixel used for bee and switch
+    DynamixelAX12A servoLeft; ///< the dynamixel used for bee
+    DynamixelAX12A servoRight; ///< the dynamixel used for bee
 #endif
 
     // /////////////////////////////////////////////////////////////
@@ -116,7 +117,8 @@ private:
 #ifdef SMALL_ROBOT
 public:
     ShootingBLDC& getShootingBLDC();
-    DynamixelAX12A& getServo();
+    DynamixelAX12A& getServoLeft();
+    DynamixelAX12A& getServoRight();
     InputPin& getFrontSwitch();
 private:
     void initializeMotors();

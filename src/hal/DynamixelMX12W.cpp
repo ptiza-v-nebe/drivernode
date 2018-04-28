@@ -105,7 +105,7 @@ void DynamixelMX12W::setSpeed(int32_t speed) {
         speed += CW_OFFSET;
     }
 
-    uint8_t result = com.writeWord(id, MOVING_SPEED_ADDR, speed);
+    uint8_t result = com.writeWord(id, MOVING_SPEED_ADDR, static_cast<int16_t>(speed));
     if (result) {
         ERROR("Failed to send speed to Dynamixel %d - Result is %x", id, result);
     }

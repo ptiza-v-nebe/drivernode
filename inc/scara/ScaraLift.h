@@ -12,11 +12,13 @@
 
 #include <hal/Encoder.h>
 #include <hal/Motor.h>
+#include <hal/InputPin.h>
 
 class ScaraLift {
 private:
     Motor& motor; ///< reference to the motor
     Encoder& encoder; ///< reference to the encoder
+    InputPin& endStop; ///< reference to the end stop
     int32_t startPosition; ///< the starting position for a movement
     int32_t targetPosition; ///< the target position
     bool initialized; ///< is the lift initialized
@@ -24,7 +26,7 @@ private:
     float lastSpeed;
     int16_t currentPosition;
 public:
-    ScaraLift(Motor& motor, Encoder& encoder);
+    ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop);
 
     // prevent copy and move
     ScaraLift(const ScaraLift&) = delete;
@@ -33,6 +35,7 @@ public:
     ScaraLift& operator=(ScaraLift&&) = delete;
 
     void initialize();
+    bool tickInit();
 
     void moveTo(float mm);
     float getPosition();

@@ -50,7 +50,7 @@ PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
  *
  * @param hz the frequency in hz
  */
-void PWM::setFrequency(unsigned int hz) {
+void PWM::setFrequency(uint32_t hz) {
     if(hz == 0){
         ERROR("0 Hz is not a valid frequency!");
         return;

@@ -35,7 +35,9 @@ public:
 	virtual void doAction() {}
 	virtual void exitAction() {}
 
-	virtual void newTargetPosition() {}
+	virtual void newPosition() {}
+	virtual void newAngle() {}
+	virtual void stop() {}
 };
 
 #endif /* DRIVING_DRIVERBASESTATE_H */
