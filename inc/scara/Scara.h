@@ -21,7 +21,7 @@
 
 class Scara : public Clocked, public ClockedInitializable {
 private:
-	ScaraLift lift;
+	ScaraLift& lift;
 	DynamixelAX12A *servos;
 	OutputPin& scaraPump;
 	OutputPin& scaraValve;
@@ -42,7 +42,7 @@ private:
 	Angles currentAnglesPosition;
 
 public:
-	Scara(ScaraHardware& hw);
+	Scara(ScaraHardware& hw, ScaraLift& lift);
 	virtual ~Scara();
 	void executeTrajectory();
 
@@ -62,6 +62,7 @@ public:
 	void disableStoragePumps();
 	bool isValid(TimedAngles qTrjP);
 	void showQPoint(TimedAngles qTrj);
+	void finalPark();
 
 	TimedAngles readMotorAngles();
 	void clearTrajectory();

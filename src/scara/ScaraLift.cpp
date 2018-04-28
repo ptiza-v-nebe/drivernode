@@ -29,6 +29,9 @@ ScaraLift::ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop) :
 }
 
 void ScaraLift::tick() {
+	if(!initialized){
+		return;
+	}
 	currentPosition = encoder.getTick()*MM_PER_TICK+53;
 
     float speed = 2*(targetPosition-currentPosition);
@@ -77,7 +80,7 @@ bool ScaraLift::tickInit() {
         initialized = true;
         return true;
     } else {
-        motor.setSpeed(-2000);
+        motor.setSpeed(-4000);
         return false;
     }
 }

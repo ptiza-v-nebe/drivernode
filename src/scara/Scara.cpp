@@ -7,26 +7,44 @@
 
 #include "scara/Scara.h"
 
-Scara::Scara(ScaraHardware& hw) :
-		lift(hw.getLiftMotor(), hw.getLiftEncoder(), hw.getEndStop()), servos(hw.getArmServos()), runOnce(
+Scara::Scara(ScaraHardware& hw, ScaraLift& lift):
+		lift(lift), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
-				currentAnglesPosition({0,0,0,0,0}),
-					pLUT{{ 5,206,59,M_PI/2,M_PI/2},
-						{ 5,206,119,M_PI/2,M_PI/2},
-						{ 5,206,175,M_PI/2,M_PI/2},
-						{ 5,206,233,M_PI/2,M_PI/2},
-
-						{ 5,150,59,M_PI*3/4,M_PI/2},
-						{ 5,150,119,M_PI*3/4,M_PI/2},
-						{ 5,150,175,M_PI*3/4,M_PI/2},
-						{ 5,150,233,M_PI*3/4,M_PI/2},
-
-						{ 5,93,59,M_PI*0.95,M_PI/2},
-						{ 5,93,119,M_PI*0.95,M_PI/2},
-						{ 5,93,175,M_PI*0.95,M_PI/2},
-						{ 5,93,233,M_PI*0.95,M_PI/2}}
+				currentAnglesPosition({0,0,0,0,0})
 {
+//	pLUT = {				 { 5,206,59,M_PI/2,M_PI/2},
+//							 { 5,206,119,M_PI/2,M_PI/2},
+//							 { 5,206,175,M_PI/2,M_PI/2},
+//							 { 5,206,233,M_PI/2,M_PI/2},
+//
+//							 { 5,150,59,M_PI*3/4,M_PI/2},
+//							 { 5,150,119,M_PI*3/4,M_PI/2},
+//							 { 5,150,175,M_PI*3/4,M_PI/2},
+//							 { 5,150,233,M_PI*3/4,M_PI/2},
+//
+//							 { 5,93,59,M_PI*0.95,M_PI/2},
+//							 { 5,93,119,M_PI*0.95,M_PI/2},
+//							 { 5,93,175,M_PI*0.95,M_PI/2},
+//							 { 5,93,233,M_PI*0.95,M_PI/2}};
+
+	float verticalOffset = -3;
+
+	pLUT[0] = { 5,206,59+verticalOffset,M_PI/2,M_PI/2};
+	pLUT[1] = { 5,206,119+verticalOffset,M_PI/2,M_PI/2};
+	pLUT[2] = { 5,206,175+verticalOffset,M_PI/2,M_PI/2};
+	pLUT[3] = { 5,206,233+verticalOffset,M_PI/2,M_PI/2};
+
+	pLUT[4] = { 5,150,59+verticalOffset,M_PI*3/4,M_PI/2};
+	pLUT[5] = { 5,150,119+verticalOffset,M_PI*3/4,M_PI/2};
+	pLUT[6] = { 5,150,175+verticalOffset,M_PI*3/4,M_PI/2};
+	pLUT[7] = { 5,150,233+verticalOffset,M_PI*3/4,M_PI/2};
+
+	pLUT[8] = { 5,93,59+verticalOffset,M_PI*0.95,M_PI/2};
+	pLUT[9] = { 5,93,119+verticalOffset,M_PI*0.95,M_PI/2};
+	pLUT[10] = { 5,93,175+verticalOffset,M_PI*0.95,M_PI/2};
+	pLUT[11] = { 5,93,233+verticalOffset,M_PI*0.95,M_PI/2};
+
 	servos[0].enable();
 	servos[1].enable();
 	servos[2].enable();
@@ -40,11 +58,17 @@ Scara::Scara(ScaraHardware& hw) :
 	storagePumps[1].enable();
 	storagePumps[2].enable();
 
-	qTrj.reserve(50);
+	qTrj.reserve(200);
+}
+
+void Scara::finalPark(){
+	servos[0].moveTo((90 + 150) * M_PI / 180);
+	servos[1].moveTo(0 + 150 * M_PI / 180);
+	servos[2].moveTo(0 + 60 * M_PI / 180);
+	servos[3].moveTo(0 + 105 * M_PI / 180);
 }
 
 void Scara::commandReceived(const ScaraActionMessage& sam){
-
 	//reset servos to prevent getting false angles
 	servos[0].disableAndStop();
 	servos[1].disableAndStop();
@@ -63,7 +87,6 @@ void Scara::commandReceived(const ScaraActionMessage& sam){
 
 void Scara::tick() {
 	currentState->tick();
-	lift.tick();
 }
 
 void Scara::startInitializing() {
@@ -71,7 +94,14 @@ void Scara::startInitializing() {
 }
 
 bool Scara::tickInit() {
-    return lift.tickInit();
+	static bool liftInitialized = false;
+
+	if(!liftInitialized) {
+		liftInitialized = lift.tickInit();
+		return false;
+	} else {
+		return currentState->tickInit();
+	}
 }
 
 void Scara::park(){
@@ -111,8 +141,8 @@ void Scara::generateParkTrajectory(){
 
 	trj.setActionTime(4);
 	trj.startPose({82,135,100,M_PI/2,M_PI/2});
-	trj.addPose(TimeFactors::MEDIUM, { 82,135,253,M_PI/2});
-	trj.addPose(TimeFactors::MEDIUM, { 5,207,253,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 82,135,230,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 0,210,230,M_PI/2});
 	qTrj = trj.buildJointspace();
 
 	currentAnglesPosition = {qTrj[qTrj.size()-1].q1,qTrj[qTrj.size()-1].q2,
@@ -260,8 +290,8 @@ void Scara::executeTrajectory() {
 		//trj.showQPoint(qTrj[j]);
 
 		if (!isValid(qTrj[j])) {
-			printf("[Scara.cpp] Got non-valid point! t:%f,x:%f,y:%f,z:%f,phi:%f,theta:%f \r\n",
-					qTrj[j].t,qTrj[j].q1,qTrj[j].q2,qTrj[j].q3,qTrj[j].q4,qTrj[j].q5);
+			//printf("[Scara.cpp] Got non-valid point! t:%f,x:%f,y:%f,z:%f,phi:%f,theta:%f \r\n",
+			//		qTrj[j].t,qTrj[j].q1,qTrj[j].q2,qTrj[j].q3,qTrj[j].q4,qTrj[j].q5);
 			currentState->cancelExecute();
 		} else {
 			//calculate
@@ -270,7 +300,7 @@ void Scara::executeTrajectory() {
 			servos[2].moveTo(qTrj[j].q3 + 60 * M_PI / 180);
 			servos[3].moveTo(qTrj[j].q4 + 105 * M_PI / 180);
 			lift.moveTo(qTrj[j].q5);
-			printf("q5: %f \r\n",qTrj[j].q5);
+			//printf("q5: %f \r\n",qTrj[j].q5);
 			currentAnglesPosition = {qTrj[j].q1,qTrj[j].q2,qTrj[j].q3,qTrj[j].q4,qTrj[j].q5};
 			j++;
 		}

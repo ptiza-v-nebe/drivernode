@@ -86,10 +86,14 @@ int main(void) {
                 &startPinInit}, {&pm});
 #endif
 #ifdef BIG_ROBOT
-    Scara scara(hal.getScaraHardware());
+    ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder(), hal.getScaraHardware().getEndStop());
+    Scara scara(hal.getScaraHardware(), lift);
 
     MainFSMContext mainFSM(dispatcher, {&driverFSM, &scara}, {&startPinInit, &scara},
-            {   &pm});
+            {&pm, &lift});
+
+//        MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
+//                {&pm});
 #endif
 
     // ////////////////////////////////////////////

@@ -56,6 +56,10 @@ public:
 
     virtual void tick() {
     }
+
+    virtual bool tickInit() {
+    	return true;
+    }
 };
 
 // /////////////////////////////////////////////////////////////
@@ -63,6 +67,7 @@ public:
 // /////////////////////////////////////////////////////////////
 STATE(Park)
     void tick() override;
+	bool tickInit() override;
     void cancelExecute() override;
     void trajectoryEnd() override;
     void entry() override;

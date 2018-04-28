@@ -13,8 +13,9 @@
 #include <hal/Encoder.h>
 #include <hal/Motor.h>
 #include <hal/InputPin.h>
+#include <control/Clocked.h>
 
-class ScaraLift {
+class ScaraLift : public Clocked {
 private:
     Motor& motor; ///< reference to the motor
     Encoder& encoder; ///< reference to the encoder
@@ -39,7 +40,7 @@ public:
 
     void moveTo(float mm);
     float getPosition();
-    void tick();
+    void tick() override;
     void stop();
 };
 

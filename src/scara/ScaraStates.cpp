@@ -23,7 +23,13 @@ void Park::tick() {
 	context.executeTrajectory();
 }
 
+bool Park::tickInit() {
+	tick();
+	return false;
+}
+
 void Park::trajectoryEnd(){
+	context.finalPark();
 	CHANGE_STATE(IdleScara);
 }
 
