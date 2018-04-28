@@ -14,6 +14,8 @@
 #include <serial/messages/StatusMessage.h>
 #include <serial/MessageDispatcher.h>
 #include <algorithm>
+#include <config.h>
+#include <util/GameTimer.h>
 
 MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
         std::vector<Clocked*> clockedInNormalOperation,
@@ -28,8 +30,12 @@ MainFSMContext::MainFSMContext(MessageDispatcher& dispatcher,
             [this](InitializeMessage) {
                 currentState->initializeMessageReceived();
             });
-
+#ifdef HUMAN_MODE
+    new(currentState) Initialize(*this); currentState->entry();
+#endif /* HUMAN_MODE */
     dispatcher.setStatusHandler(this);
+    GameTimer::getInstance().setFSM(this);
+
 }
 
 MainFSMContext::~MainFSMContext() {
@@ -76,7 +82,7 @@ void MainFSMContext::sendStartMessage() {
 }
 
 void MainFSMContext::startGameTimer() {
-    // TODO: start game timer
+    GameTimer::getInstance().start();
 }
 
 void MainFSMContext::handleComEstablished() {

@@ -34,7 +34,7 @@
 /**
  * Use this to prevent showing errors
  */
-#define SUPRESS_ERROR
+//#define SUPRESS_ERROR
 
 /**
  * Enables calibration

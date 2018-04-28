@@ -22,7 +22,7 @@ private:
 public:
     PWM(TIM_TypeDef *timer, uint32_t channel);
 
-    void setFrequency(unsigned int hz);
+    void setFrequency(uint32_t hz);
     void setPrescale(uint16_t prescale);
     void setDutyCycle(float percent);
 

@@ -10,55 +10,87 @@
 
 #include "driving/DriverBaseState.h"
 #include "driving/PIDController.h"
-#include "driving/PD.h"
+#include "driving/PDController.h"
+#include "driving/PIController.h"
 #include "hal/Motor.h"
 #include "position/PositionManager.h"
 #include "position/Position.h"
 #include "position/Angle.h"
 #include "serial/messages/drive_types.h"
+#include "serial/MessageDispatcher.h"
+
+#include <control/Clocked.h>
 
 class DriverBaseState;
 
-constexpr float MOTORCONSTANT = 14*60*(1/(2*PI*0.03));
-
-class DriverFSM {
+class DriverFSM : public Clocked {
 private:
 	DriverBaseState* currentState;
 	Motor& leftMotor;
 	Motor& rightMotor;
-	PIDController positionControl;
-	PIDController angleControl;
-	PD leftWheelControl;
-	PD rightWheelControl;
+	PIController leftWheelControl;
+	PIController rightWheelControl;
 	PositionManager& pm;
-	Position targetPosition;
-	Angle targetAngle;
+	MessageDispatcher& md;
+
+	Position referencePosition;
+	float currentDistance;
+	float rampDistance;
+	float distanceError;
+
+	Angle referenceAngle;
+	Angle angleError;
+	Angle startAngle;
+	Angle rampAngle;
+
+	float leftMotorVelocity;
+	float rightMotorVelocity;
 	DriveSpeed driveSpeed;
 	DriveDirection driveDirection;
+	DriveAccuracy driveAccuracy;
 
-	int counter = 0;
-	float lastSpeedLeft = 0;
-	float lastSpeedRight = 0;
-	float sollLeft = 0;
-	float sollRight = 0;
-	float lastDistance = 0;
+	float referenceSpeedLeft;
+	float referenceSpeedRight;
+
+	float speed;
+	int direction;
+	float targetRadius;
+	bool turningAngle;
+	int n = 0;
+
+	bool& backwardVision;
 
 public:
-	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm);
-	void update();
+	DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm,
+			MessageDispatcher& md, bool& backwardVision);
+	void tick() override;
 	void updateControl();
 	void resetControl();
-	void stop();
-	bool reachedTargetPosition();
+	void enableMotors();
+	void disableMotors();
+	void stopMotors();
+	bool referencePositionReached();
+	void calculateDistance();
+	void calculateAngle();
+	bool isAccuracyHigh();
+	bool isRobotStuck();
+	bool isEnemyBehindRobot();
+	int pointOnWhichSideOfLine(Vector ro, Vector rd, Position p);
+	void sendFinishedMessage();
+	void sendStuckMessage();
 	virtual ~DriverFSM();
 
 	// transitions
-	void newTargetPosition();
+	void newPosition();
+	void newAngle();
+	void stop();
 
-	void setTargetPosition(Position targetPosition);
-	void setTargetAngle(Angle targetAngle);
+	// setter
+	void setReferencePosition(Position position);
+	void setReferenceAngle(Angle angle);
 	void setDriveSpeed(DriveSpeed speed);
 	void setDriveDirection(DriveDirection direction);
+	void setDriveAccuracy(DriveAccuracy accuracy);
 };
 
 #endif /* DRIVING_DRIVERFSM_H */

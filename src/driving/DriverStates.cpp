@@ -7,34 +7,55 @@
 
 #include <driving/DriverStates.h>
 
-void Idle::newTargetPosition() {
-	CHANGE_STATE(DrivingForward);
+// Idle actions
+void Idle::entryAction() {
+	if(ctx.isAccuracyHigh()) {
+		ctx.stopMotors();
+	}
 }
 
-void DrivingForward::entryAction() {
-	ctx.resetControl();
+void Idle::exitAction() {
+	ctx.enableMotors();
 }
 
-void DrivingForward::doAction() {
-	if(ctx.reachedTargetPosition()) {
-		CHANGE_STATE(Idle)
+void Idle::newPosition() {
+	ctx.calculateDistance();
+	CHANGE_STATE(Driving);
+}
+
+void Idle::newAngle() {
+	ctx.calculateAngle();
+	CHANGE_STATE(Driving);
+}
+
+// Driving actions
+void Driving::doAction() {
+	if(ctx.referencePositionReached()) {
+		ctx.sendFinishedMessage();
+		CHANGE_STATE(Idle);
+	} else if(ctx.isRobotStuck()) {
+		ctx.sendStuckMessage();
+		ctx.stopMotors();
+		ctx.resetControl();
+		CHANGE_STATE(Idle);
+	} else if(ctx.isEnemyBehindRobot()) {
+		ctx.stopMotors();
+		ctx.resetControl();
 	} else {
 		ctx.updateControl();
 	}
 }
 
-void DrivingForward::exitAction() {
-	ctx.stop();
+void Driving::newPosition() {
+	ctx.calculateDistance();
 }
 
-void DrivingBackward::entryAction() {
+void Driving::newAngle() {
+	ctx.calculateAngle();
+}
+
+void Driving::stop() {
+	ctx.stopMotors();
 	ctx.resetControl();
-}
-
-void DrivingBackward::doAction() {
-	ctx.updateControl();
-}
-
-void DrivingBackward::exitAction() {
-	ctx.stop();
+	CHANGE_STATE(Idle);
 }

@@ -14,6 +14,8 @@
 
 void printBytes(const uint8_t* bytes, const int length);
 float clamp(float x, float min, float max);
+float smoothstep(float edge0, float edge1, float x);
+int signum(float x);
 
 
 template <typename T>
