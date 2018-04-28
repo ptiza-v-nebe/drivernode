@@ -16,7 +16,7 @@
 #include "util/util.h"
 #include "serial/messages/StatusMessage.h"
 
-static constexpr float MINIMUM_DELTA_SPEED_FOR_STUCK = 0.2f;
+static constexpr float MINIMUM_DELTA_SPEED_FOR_STUCK = 0.3f;
 
 DriverFSM::DriverFSM(Motor& motorLeft, Motor& motorRight, PositionManager& pm,
         MessageDispatcher& md, bool& backwardVision) :
@@ -180,15 +180,11 @@ bool DriverFSM::isAccuracyHigh() {
 
 bool DriverFSM::isRobotStuck() {
     float forwardVelocity = (leftMotorVelocity + rightMotorVelocity) * 0.5;
-    float rotationalVelocity = (rightMotorVelocity - leftMotorVelocity)
-            / (TRACK_WIDTH_UM / 1000 / 1000 / 2);
 
     bool forwardStuck = fabs(forwardVelocity - pm.getForwardVelocity())
             > std::max(speed + 0.5f * speed, MINIMUM_DELTA_SPEED_FOR_STUCK);
-    bool turnStuck = fabs(rotationalVelocity - pm.getRotationalVelocity())
-            > 0.5;
 
-    return forwardStuck && turnStuck;
+    return forwardStuck;
 }
 
 bool DriverFSM::isEnemyBehindRobot() {
