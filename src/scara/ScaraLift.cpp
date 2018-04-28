@@ -23,9 +23,9 @@ static constexpr int16_t MIN_POSITION = 53; // mm from floor
 static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
 static constexpr float MM_PER_TICK = (253.0f-53)/7150;
 
-ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
-        motor(motor), encoder(encoder), startPosition(0), targetPosition(53), //
-        initialized(false), currentPosition(53), lastSpeed(0.0) {
+ScaraLift::ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop) :
+        motor(motor), encoder(encoder), endStop(endStop), startPosition(0), targetPosition(53), //
+        initialized(false),  lastSpeed(0.0) , currentPosition(53){
 }
 
 void ScaraLift::tick() {
@@ -50,14 +50,9 @@ void ScaraLift::tick() {
 }
 
 void ScaraLift::initialize() {
-    // TODO!!
     encoder.reset();
     motor.enable();
     motor.stop();
-    initialized = true;
-//    schedule_repeating_task([this](){
-//       tick();
-//    }, 100);
 }
 
 void ScaraLift::stop(){
@@ -75,4 +70,15 @@ float ScaraLift::getPosition() {
     return encoder.getTick();
 }
 
+bool ScaraLift::tickInit() {
+    if(endStop.isOn()) {
+        encoder.reset();
+        motor.stop();
+        initialized = true;
+        return true;
+    } else {
+        motor.setSpeed(-2000);
+        return false;
+    }
+}
 /** @} */

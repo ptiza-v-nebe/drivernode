@@ -8,7 +8,7 @@
 #include "scara/Scara.h"
 
 Scara::Scara(ScaraHardware& hw) :
-		lift(hw.getLiftMotor(), hw.getLiftEncoder()), servos(hw.getArmServos()), runOnce(
+		lift(hw.getLiftMotor(), hw.getLiftEncoder(), hw.getEndStop()), servos(hw.getArmServos()), runOnce(
 				false),i(0),qTrj(),j(0),currentTime(0),lastTime(0),positionSet(false),currentState(new Park(*this)),
 				scaraPump(hw.getPump()),scaraValve(hw.getValve()), storagePumps(hw.getStoragePumps()),
 				currentAnglesPosition({0,0,0,0,0}),
@@ -64,6 +64,14 @@ void Scara::commandReceived(const ScaraActionMessage& sam){
 void Scara::tick() {
 	currentState->tick();
 	lift.tick();
+}
+
+void Scara::startInitializing() {
+    currentState->entry();
+}
+
+bool Scara::tickInit() {
+    return lift.tickInit();
 }
 
 void Scara::park(){
@@ -307,8 +315,4 @@ bool Scara::isValid(TimedAngles qTrjP){
 void Scara::clearTrajectory(){
 	qTrj.clear();
 	trj.clear();
-}
-
-void Scara::initialize() {
-	currentState->entry();
 }

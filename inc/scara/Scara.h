@@ -16,9 +16,10 @@
 #include "serial/messages/ScaraActionMessage.h"
 #include "scara/ScaraStates.h"
 
+#include <control/Clocked.h>
+#include <control/ClockedInitializable.h>
 
-
-class Scara {
+class Scara : public Clocked, public ClockedInitializable {
 private:
 	ScaraLift lift;
 	DynamixelAX12A *servos;
@@ -44,8 +45,11 @@ public:
 	Scara(ScaraHardware& hw);
 	virtual ~Scara();
 	void executeTrajectory();
-	void tick();
-	void initialize();
+
+	void tick() override;
+	void startInitializing() override;
+	bool tickInit() override;
+
 	void cancelExecute(); //unterbrechung jeglicher Aktionen
 	void generatePickCubeTrajectory(float x, float y, float phi, StorageSpace storage);
 	void generatePreventAttachTrajectory();
