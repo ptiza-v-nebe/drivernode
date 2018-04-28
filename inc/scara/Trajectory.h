@@ -20,6 +20,8 @@ const float L1=82.5;
 const float L2=67.5;
 const float L3=67.5;
 
+const float verticalZOffset = -3;
+
 using namespace std;
 
 struct Pose {
@@ -79,7 +81,6 @@ public:
 	void addPose(TimeFactors dTimeFactor, Pose pose);
 	void setActionTime(float actiontime);
 	float getActionTime();
-
 
 	std::vector<TimedPose> interpolate(
 			TimedPose timedStartPose,

@@ -249,7 +249,7 @@ TimedAngles Trajectory::ik1(TimedPose timedPose) {
 	ta.q2 = q2;
 	ta.q3 = q3;
 	ta.q4 = q4;
-	ta.q5 = q5;
+	ta.q5 = q5 + verticalZOffset;
 
 	return ta;
 }

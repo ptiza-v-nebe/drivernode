@@ -28,22 +28,22 @@ Scara::Scara(ScaraHardware& hw, ScaraLift& lift):
 //							 { 5,93,175,M_PI*0.95,M_PI/2},
 //							 { 5,93,233,M_PI*0.95,M_PI/2}};
 
-	float verticalOffset = -3;
 
-	pLUT[0] = { 5,206,59+verticalOffset,M_PI/2,M_PI/2};
-	pLUT[1] = { 5,206,119+verticalOffset,M_PI/2,M_PI/2};
-	pLUT[2] = { 5,206,175+verticalOffset,M_PI/2,M_PI/2};
-	pLUT[3] = { 5,206,233+verticalOffset,M_PI/2,M_PI/2};
 
-	pLUT[4] = { 5,150,59+verticalOffset,M_PI*3/4,M_PI/2};
-	pLUT[5] = { 5,150,119+verticalOffset,M_PI*3/4,M_PI/2};
-	pLUT[6] = { 5,150,175+verticalOffset,M_PI*3/4,M_PI/2};
-	pLUT[7] = { 5,150,233+verticalOffset,M_PI*3/4,M_PI/2};
+	pLUT[0] = { 5,206,59,M_PI/2,M_PI/2};
+	pLUT[1] = { 5,206,119,M_PI/2,M_PI/2};
+	pLUT[2] = { 5,206,175,M_PI/2,M_PI/2};
+	pLUT[3] = { 5,206,233,M_PI/2,M_PI/2};
 
-	pLUT[8] = { 5,93,59+verticalOffset,M_PI*0.95,M_PI/2};
-	pLUT[9] = { 5,93,119+verticalOffset,M_PI*0.95,M_PI/2};
-	pLUT[10] = { 5,93,175+verticalOffset,M_PI*0.95,M_PI/2};
-	pLUT[11] = { 5,93,233+verticalOffset,M_PI*0.95,M_PI/2};
+	pLUT[4] = { 5,150,59,M_PI*3/4,M_PI/2};
+	pLUT[5] = { 5,150,119,M_PI*3/4,M_PI/2};
+	pLUT[6] = { 5,150,175,M_PI*3/4,M_PI/2};
+	pLUT[7] = { 5,150,233,M_PI*3/4,M_PI/2};
+
+	pLUT[8] = { 5,93,59,M_PI*0.95,M_PI/2};
+	pLUT[9] = { 5,93,119,M_PI*0.95,M_PI/2};
+	pLUT[10] = { 5,93,175,M_PI*0.95,M_PI/2};
+	pLUT[11] = { 5,93,233,M_PI*0.95,M_PI/2};
 
 	servos[0].enable();
 	servos[1].enable();
@@ -141,8 +141,8 @@ void Scara::generateParkTrajectory(){
 
 	trj.setActionTime(4);
 	trj.startPose({82,135,100,M_PI/2,M_PI/2});
-	trj.addPose(TimeFactors::MEDIUM, { 82,135,230,M_PI/2});
-	trj.addPose(TimeFactors::MEDIUM, { 0,210,230,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 82,135,250,M_PI/2});
+	trj.addPose(TimeFactors::MEDIUM, { 0,210,250,M_PI/2});
 	qTrj = trj.buildJointspace();
 
 	currentAnglesPosition = {qTrj[qTrj.size()-1].q1,qTrj[qTrj.size()-1].q2,
@@ -188,7 +188,6 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 
 	//move first to given x,y,phi
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 48, phi, M_PI/2}); //runter auf klotz saugen
 	trj.addPose(TimeFactors::SLOW, { x, y, 48, phi, M_PI/2}); //runter auf klotz saugen
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 

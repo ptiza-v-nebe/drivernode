@@ -37,6 +37,7 @@ private:
 	bool positionSet;
 	ScaraBaseState* currentState;
 	Pose pLUT[12];
+
 	StorageSpace storageSpace;
 
 	Angles currentAnglesPosition;
