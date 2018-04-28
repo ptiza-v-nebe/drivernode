@@ -7,7 +7,7 @@
 //nichts in den Klassen der Zustaenden was merken!
 
 
-#include <ScaraStates.h>
+#include <scara/ScaraStates.h>
 #include "serial/messages/ScaraActionMessage.h"
 #include "scara/Scara.h"
 
