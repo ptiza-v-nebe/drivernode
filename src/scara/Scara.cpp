@@ -150,7 +150,7 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 
 	//move first to given x,y,phi
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2});
-	trj.addPose(TimeFactors::SLOW, { x, y, 48, phi, M_PI/2}); //runter auf klotz saugen
+	trj.addPose(TimeFactors::MEDIUM, { x, y, 48, phi, M_PI/2}); //runter auf klotz saugen
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 
 
@@ -161,15 +161,15 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi, StorageSpace
 	float ctheta = 0;
 
 	if(stg==StorageSpace::INNER_1 || stg==StorageSpace::MIDDLE_1 || stg==StorageSpace::OUTER_1){
-			trj.addPose(TimeFactors::FAST, { x, y, 115, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+			trj.addPose(TimeFactors::FAST, { x, y, 125, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 		}
 
 	if(stg==StorageSpace::INNER_2 || stg==StorageSpace::MIDDLE_2 || stg==StorageSpace::OUTER_2){
-		trj.addPose(TimeFactors::FAST, { x, y, 175, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+		trj.addPose(TimeFactors::FAST, { x, y, 184, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 	}
 
 	if(stg==StorageSpace::INNER_3 || stg==StorageSpace::MIDDLE_3 || stg==StorageSpace::OUTER_3){
-			trj.addPose(TimeFactors::FAST, { x, y, 230, phi, M_PI/2}); // um klotze nicht zu zerst hoch
+			trj.addPose(TimeFactors::FAST, { x, y, 243, phi, M_PI/2}); // um klotze nicht zu zerst hoch
 		}
 
 //	//move cube befor storage
