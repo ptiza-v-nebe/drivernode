@@ -9,7 +9,7 @@
 
 
 Trajectory::Trajectory() :
-		k(0), sumTime(0), actionTime(0),trj() {
+		k(0), sumTime(0), actionTime(0),xTrj() {
 		//dFactors.push_back(0);
 }
 
@@ -23,19 +23,20 @@ void Trajectory::setActionTime(float actiontime) {
 void Trajectory::startPose(const Pose& pose) {
 	dFactors.clear();
 	dFactors.push_back(0);
-	trj.clear();
+	xTrj.clear();
 
 	TimedPose tp(0,pose);
-	trj.push_back(tp);
+	xTrj.push_back(tp);
 }
 
 void Trajectory::clear(){
 	dFactors.clear();
 	dFactors.push_back(0);
-	trj.clear();
+	xTrj.clear();
 }
 
-void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
+//calculate new times, add null pose
+int Trajectory::addTime(TimeFactors dTimeFactor) {
 	float dTimeFactorNum = 0;
 
 	if (dTimeFactor == TimeFactors::FAST)
@@ -56,16 +57,16 @@ void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
 	// }
 
 	float sumOfDFactors = 0;
-	for(int i=0; i<dFactors.size(); i++){
-		sumOfDFactors +=dFactors[i];
+	for (int i = 0; i < dFactors.size(); i++) {
+		sumOfDFactors += dFactors[i];
 	}
 	//std::cout << "----" << std::endl;
 	//std::cout << "sumOfDFactors" << sumOfDFactors << std::endl;
 
 	//std::cout << "----" << std::endl;
 	std::vector<float> newDFactors;
-	for(int i =0; i<dFactors.size();i++){
-		newDFactors.push_back(dFactors[i]/sumOfDFactors);
+	for (int i = 0; i < dFactors.size(); i++) {
+		newDFactors.push_back(dFactors[i] / sumOfDFactors);
 	}
 	sumOfDFactors = 0;
 
@@ -77,33 +78,48 @@ void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
 	nullPose.phi = 0;
 	nullPose.theta = 0;
 
-	trj.push_back(nullPose);
+	xTrj.push_back(nullPose);
 
 	// // //calculate times
 	unsigned int i = 0;
 	float accOfDFactors = 0;
 
-	 for (i = 0; i < newDFactors.size(); i++) {
-	 	accOfDFactors = accOfDFactors + newDFactors[i];
-	 	trj[i].t = actionTime * accOfDFactors;
+	for (i = 0; i < newDFactors.size(); i++) {
+		accOfDFactors = accOfDFactors + newDFactors[i];
+		xTrj[i].t = actionTime * accOfDFactors;
 		//std::cout << " accOfDFactors: " << accOfDFactors << " newDFactors[i]: " << newDFactors[i]  << " trj[ " << i << " ][0]: " << trj[i][0] <<endl;
-	 }
+	}
+	return i;
+}
 
+void Trajectory::addPose(TimeFactors dTimeFactor, Pose pose) {
+	int i = addTime(dTimeFactor);
 	//copy poses
-	trj[i-1].x = pose.x;
-	trj[i-1].y = pose.y;
-	trj[i-1].z = pose.z;
-	trj[i-1].phi = pose.phi;
-	trj[i-1].theta = pose.theta;
+	xTrj[i-1].x = pose.x;
+	xTrj[i-1].y = pose.y;
+	xTrj[i-1].z = pose.z;
+	xTrj[i-1].phi = pose.phi;
+	xTrj[i-1].theta = pose.theta;
+}
+
+void Trajectory::addQ(TimeFactors dTimeFactor, Angles angles){
+		int i = addTime(dTimeFactor);
+		TimedPose pose = FK({0,angles.q1,angles.q2,angles.q3,angles.q4,angles.q5});
+		//copy poses
+		xTrj[i-1].x = pose.x;
+		xTrj[i-1].y = pose.y;
+		xTrj[i-1].z = pose.z;
+		xTrj[i-1].phi = pose.phi;
+		xTrj[i-1].theta = pose.theta;
 }
 
 vector<TimedAngles> Trajectory::buildJointspace() {
 	vector<TimedPose> totalTrj;
 	vector<TimedAngles> qTrj;
 
-	for (unsigned int i = 0; i < trj.size()-1; i++) {
+	for (unsigned int i = 0; i < xTrj.size()-1; i++) {
 		//interpolate on each trj element paar
-		vector<TimedPose> interTrj = interpolate(trj[i], trj[i + 1]);
+		vector<TimedPose> interTrj = interpolate(xTrj[i], xTrj[i + 1]);
 		//showXTrajectory(interTrj);
 
 		//copy row to total trajectory
@@ -200,7 +216,7 @@ std::vector<float> Trajectory::linspace(float start, float end, int num_in) {
 	return linspaced;
 }
 
-TimedAngles Trajectory::ik1(TimedPose timedPose) {
+TimedAngles Trajectory::ik1(TimedPose& timedPose) {
 	float t = timedPose.t;
 	float x = timedPose.x;
 	float y = timedPose.y;
@@ -252,6 +268,11 @@ TimedAngles Trajectory::ik1(TimedPose timedPose) {
 	ta.q5 = q5 + verticalZOffset;
 
 	return ta;
+}
+
+Angles Trajectory::ikNonTimed(Pose& pose){
+	TimedPose tp(0,pose);
+	ik1(tp);
 }
 
 TimedAngles Trajectory::ik2(TimedPose timedPose) {
@@ -361,3 +382,63 @@ void Trajectory::showQPoint(TimedAngles qTrj){
 float Trajectory::getActionTime() {
 	return actionTime;
 }
+
+Vector3 Trajectory::vectorSubstract(Vector3 v1, Vector3 v2){
+	return {v1.x-v2.x, v1.y-v2.y, v1.z-v2.z};
+}
+
+float Trajectory::vectorAbsolut(Vector3 v){
+	return sqrt(v.x*v.x+v.y*v.y+v.z*v.z);
+}
+
+Vector3 Trajectory::vectorUnit(Vector3 v){
+	return {v.x/vectorAbsolut(v), v.y/vectorAbsolut(v), v.z/vectorAbsolut(v)};
+}
+
+TimedPose Trajectory::interpolateStep(TimedPose& trjActual, TimedPose& trjNext, int n, int i){
+	//calculate Position
+	float startX = trjActual.x;
+	float startY = trjActual.y;
+	float startZ = trjActual.z;
+
+	Vector3 b = {trjNext.x, trjNext.y, trjNext.z};
+	Vector3 a = {trjActual.x, trjActual.y, trjActual.z};
+	Vector3 dV = vectorSubstract(b,a);
+
+	//make length of result = length
+	float lVector = vectorAbsolut(dV);
+
+	//divide length/n
+	float KVector = lVector/n;
+
+	//multiply ki * e = trjn
+	Vector3 e = vectorUnit(dV);
+
+	//calculate orientation
+	float lPhi = trjNext.phi - trjActual.phi;
+	float KPhi = lPhi/n;
+	float startPhi = trjActual.phi;
+
+	float lTheta = trjNext.theta - trjActual.theta;
+	float KTheta = lTheta/n;
+	float startTheta = trjActual.theta;
+
+	//calculate time
+
+	float lTime = trjNext.phi - trjActual.phi;
+	float KTime = lTime/n;
+	float startTime = trjActual.t;
+
+	TimedPose tp(i*KTime+startTime,
+			{i*KVector*e.x+startX,
+			i*KVector*e.y+startY,
+			i*KVector*e.z+startZ,
+			i*KPhi+startPhi,
+			i*KTheta+startTheta});
+
+	return tp;
+}
+
+
+
+

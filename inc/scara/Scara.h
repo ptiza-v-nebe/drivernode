@@ -28,19 +28,19 @@ private:
 	OutputPin* storagePumps;
 
 	bool runOnce;
-	vector<TimedAngles> qTrj;
 	Trajectory trj;
-	int i;
-	double lastTime;
-	double currentTime;
-	int j;
-	bool positionSet;
+	int timeStep;
 	ScaraBaseState* currentState;
 	Pose pLUT[12];
 
-	StorageSpace storageSpace;
-
 	Angles currentAnglesPosition;
+	int actualTrajectoryStep;
+	int actualInterpolationStep;
+
+	TimedAngles itaActual;
+	TimedAngles itaLast;
+
+	float currentTime;
 
 public:
 	Scara(ScaraHardware& hw, ScaraLift& lift);
@@ -55,7 +55,6 @@ public:
 	void generatePickCubeTrajectory(float x, float y, float phi, StorageSpace storage);
 	void generatePreventAttachTrajectory();
 	void generateParkTrajectory();
-	void task();
 	void commandReceived(const ScaraActionMessage& sam);
 	void park();
 	void scaraPumpValveControl(bool on);
@@ -64,6 +63,7 @@ public:
 	bool isValid(TimedAngles qTrjP);
 	void showQPoint(TimedAngles qTrj);
 	void finalPark();
+	TimedAngles calculateQ(int trjElement, int interElement, int numOfInterPoints);
 
 	TimedAngles readMotorAngles();
 	void clearTrajectory();
