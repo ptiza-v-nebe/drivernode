@@ -129,7 +129,7 @@ TimedAngles Scara::readMotorAngles() {
 }
 
 void Scara::generateParkTrajectory() {
-	trj.setActionTime(2);
+	trj.setActionTime(2.5);
 	trj.startPose( { 82, 135, 100, M_PI / 2, M_PI / 2 });
 	trj.addPose(TimeFactors::MEDIUM, { 82, 135, 250, M_PI / 2 });
 	trj.addPose(TimeFactors::MEDIUM, { 0, 210, 250, M_PI / 2 });
@@ -157,10 +157,7 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi,
 
 	//move first to given x,y,phi
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI / 2 });
-
 	trj.addPose(TimeFactors::SLOW, { x, y, 46, phi, M_PI / 2 }); //runter auf klotz saugen
-	//trj.addPose(TimeFactors::SLOW, { x, y, 47, phi, M_PI / 2 }); //runter auf klotz saugen
-	//trj.addPose(TimeFactors::SLOW, { x, y, 46, phi, M_PI / 2 }); //runter auf klotz saugen
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
 
 	float cx = 0;
@@ -251,7 +248,7 @@ TimedAngles Scara::calculateQ(int trjElement, int interElement,
 void Scara::executeTrajectory() {
 	currentTime = timeStep * 0.010;
 
-	int numOfInterSteps = 40;
+	int numOfInterSteps = 40; //40
 
 	if ((trj.xTrj.size() > 0)) {
 		itaActual = calculateQ(actualTrajectoryStep, actualInterpolationStep,
@@ -266,19 +263,23 @@ void Scara::executeTrajectory() {
 		} else {
 			//printf("[Valid]: t:%f,q1:%f,q2:%f,q3:%f,q4:%f,q5:%f \r\n",itaActual.t,itaActual.q1,itaActual.q2,itaActual.q3,itaActual.q4,itaActual.q5);
 
-			float tpm = (itaActual.t-itaLast.t)*(2*M_PI);
+			float tpm = (itaActual.t-itaLast.t)*(2*M_PI)/60;
 
 			servos[0].moveTo(itaActual.q1 + 150 * M_PI / 180);
 			//servos[0].setRPM((itaActual.q1-itaLast.q1)/tpm);
+			servos[0].setRPM(114);
 
 			servos[1].moveTo(itaActual.q2 + 150 * M_PI / 180);
 			//servos[1].setRPM((itaActual.q2-itaLast.q2)/tpm);
+			servos[1].setRPM(114);
 
 			servos[2].moveTo(itaActual.q3 + 60 * M_PI / 180);
 			//servos[2].setRPM((itaActual.q3-itaLast.q3)/tpm);
+			servos[2].setRPM(114);
 
 			servos[3].moveTo(itaActual.q4 + 105 * M_PI / 180);
 			//servos[3].setRPM((itaActual.q4-itaLast.q4)/tpm);
+			servos[3].setRPM(114);
 
 			lift.moveTo(itaActual.q5);
 
