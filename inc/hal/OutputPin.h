@@ -10,7 +10,7 @@
 #ifndef HAL_OUTPUTPIN_H_
 #define HAL_OUTPUTPIN_H_
 
-#include <Actor.h>
+#include "Actor.h"
 #include <stm32l4xx.h>
 
 class OutputPin: public Actor {

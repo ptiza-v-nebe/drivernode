@@ -7,7 +7,7 @@
  ******************************************************************************
  */
 
-#include <OutputPin.h>
+#include <hal/OutputPin.h>
 #include <hal/util.h>
 
 /**
