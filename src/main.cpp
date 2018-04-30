@@ -89,7 +89,7 @@ int main(void) {
     ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder(), hal.getScaraHardware().getEndStop());
     Scara scara(hal.getScaraHardware(), lift);
 
-    MainFSMContext mainFSM(dispatcher, {&driverFSM, &scara}, {&startPinInit, &scara},
+    MainFSMContext mainFSM(dispatcher, {&driverFSM, &scara}, {/*&startPinInit,*/ &scara},
             {&pm, &lift});
 
 //        MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},

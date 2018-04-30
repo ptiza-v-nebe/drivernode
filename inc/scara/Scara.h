@@ -63,6 +63,7 @@ public:
 	bool isValid(TimedAngles qTrjP);
 	void showQPoint(TimedAngles qTrj);
 	void finalPark();
+	void startPark();
 	TimedAngles calculateQ(int trjElement, int interElement, int numOfInterPoints);
 
 	TimedAngles readMotorAngles();

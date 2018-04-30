@@ -26,6 +26,7 @@ private:
 
     float lastSpeed;
     int16_t currentPosition;
+    int16_t speed;
 public:
     ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop);
 

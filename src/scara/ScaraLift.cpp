@@ -23,6 +23,8 @@ static constexpr int16_t MIN_POSITION = 53; // mm from floor
 static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
 static constexpr float MM_PER_TICK = (253.0f-53)/7150;
 
+
+
 ScaraLift::ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop) :
         motor(motor), encoder(encoder), endStop(endStop), startPosition(0), targetPosition(53), //
         initialized(false),  lastSpeed(0.0) , currentPosition(53){
@@ -34,14 +36,31 @@ void ScaraLift::tick() {
 	}
 	currentPosition = encoder.getTick()*MM_PER_TICK+53;
 
-    float speed = 2*(targetPosition-currentPosition);
+	float speed = 0;
+	float MAX_ACCELERATION = 1000;
+
+	//if go up, we can use more power on controller
+	if((targetPosition-currentPosition) > 0){
+		MAX_ACCELERATION = 3000; //3000
+		speed = 4*(targetPosition-currentPosition); //P = 2
+	}
+
+	//if go down we have earth acceleration, we have to go slower with controller
+	if((targetPosition-currentPosition) < 0){
+		MAX_ACCELERATION = 3000;
+		speed = 3*(targetPosition-currentPosition); //P = 2
+	}
+
+	if((targetPosition-currentPosition) == 0){
+			speed = 0; //P = 2
+	}
 
     float rate = (speed - lastSpeed)/0.01;
 
-    if(rate > 3000) {
-    	speed = lastSpeed + 3000*0.01;
-    } else if(rate < -3000) {
-    	speed = lastSpeed - 3000*0.01;
+    if(rate > MAX_ACCELERATION) {
+    	speed = lastSpeed + MAX_ACCELERATION*0.01;
+    } else if(rate < -MAX_ACCELERATION) {
+    	speed = lastSpeed - MAX_ACCELERATION*0.01;
     }
 
 	//printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
@@ -80,7 +99,7 @@ bool ScaraLift::tickInit() {
         initialized = true;
         return true;
     } else {
-        motor.setSpeed(-4000);
+        motor.setSpeed(-5000);
         return false;
     }
 }

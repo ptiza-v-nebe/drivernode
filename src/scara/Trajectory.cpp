@@ -46,7 +46,7 @@ int Trajectory::addTime(TimeFactors dTimeFactor) {
 		dTimeFactorNum = 30;
 
 	if (dTimeFactor == TimeFactors::SLOW)
-		dTimeFactorNum = 60;
+		dTimeFactorNum = 200;
 
 	dFactors.push_back(dTimeFactorNum / 100);
 
@@ -129,7 +129,7 @@ vector<TimedAngles> Trajectory::buildJointspace() {
 				});
 	}
 
-	//showXTrajectory(totalTrj);
+	showXTrajectory(totalTrj);
 	printf("size of xtrajectory: %d\r\n",totalTrj.size());
 
 	//inverse Kinematic
@@ -425,7 +425,7 @@ TimedPose Trajectory::interpolateStep(TimedPose& trjActual, TimedPose& trjNext, 
 
 	//calculate time
 
-	float lTime = trjNext.phi - trjActual.phi;
+	float lTime = trjNext.t - trjActual.t;
 	float KTime = lTime/n;
 	float startTime = trjActual.t;
 

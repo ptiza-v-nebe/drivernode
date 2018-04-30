@@ -39,6 +39,7 @@ void Park::cancelExecute(){
 
 //this state if entered will stop all movement
 void IdleScara::commandReceived(const ScaraActionMessage& sam) {
+	printf("[ScaraStates.cpp] command received\r\n");
 	//generate trajectory
 	context.generatePickCubeTrajectory(sam.getX(), sam.getY(), sam.getPhi().getAngleInRadian(), sam.getStorageSpace());
 	//scara pumpe anschalten, scara ventil anschalten

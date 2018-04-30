@@ -54,19 +54,26 @@ void Scara::finalPark() {
 	servos[3].moveTo(0 + 105 * M_PI / 180);
 }
 
+void Scara::startPark() {
+	servos[0].moveTo((0 + 150) * M_PI / 180);
+	servos[1].moveTo((90 + 150) * M_PI / 180);
+	servos[2].moveTo((0 + 60) * M_PI / 180);
+	servos[3].moveTo((0 + 105) * M_PI / 180);
+}
+
 void Scara::commandReceived(const ScaraActionMessage& sam) {
 	//reset servos to prevent getting false angles
-	servos[0].disableAndStop();
-	servos[1].disableAndStop();
-	servos[2].disableAndStop();
-	servos[3].disableAndStop();
+//	servos[0].disableAndStop();
+//	servos[1].disableAndStop();
+//	servos[2].disableAndStop();
+//	servos[3].disableAndStop();
+//
+//	servos[0].enable();
+//	servos[1].enable();
+//	servos[2].enable();
+//	servos[3].enable();
 
-	servos[0].enable();
-	servos[1].enable();
-	servos[2].enable();
-	servos[3].enable();
-
-	//printf("[scara.cpp] command received, reset servos\r\n");
+	printf("[scara.cpp] command received\r\n");
 
 	currentState->commandReceived(sam);
 }
@@ -122,39 +129,38 @@ TimedAngles Scara::readMotorAngles() {
 }
 
 void Scara::generateParkTrajectory() {
-	trj.setActionTime(4);
+	trj.setActionTime(2);
 	trj.startPose( { 82, 135, 100, M_PI / 2, M_PI / 2 });
 	trj.addPose(TimeFactors::MEDIUM, { 82, 135, 250, M_PI / 2 });
 	trj.addPose(TimeFactors::MEDIUM, { 0, 210, 250, M_PI / 2 });
-	//trj.addQ(TimeFactors::MEDIUM,{pi/2, pi/2, pi*3/4,pi/10,pi/3}); //interpolieren in Gelenkkoordinaten
+	timeStep = 0;
 }
 
 void Scara::generatePreventAttachTrajectory() {
 	trj.setActionTime(2);
 
-	Angles cap = { currentAnglesPosition.q1, currentAnglesPosition.q2,
-			currentAnglesPosition.q3, currentAnglesPosition.q4,
-			currentAnglesPosition.q5 };
-	TimedPose p = trj.FK( { 0, cap.q1, cap.q2, cap.q3, cap.q4, cap.q5 });
+	TimedPose p = trj.FK( { 0, itaLast.q1, itaLast.q2, itaLast.q3, itaLast.q4, itaLast.q5 });
 	trj.startPose( { p.x, p.y, p.z, p.phi, p.theta });
 
 	trj.addPose(TimeFactors::MEDIUM, { p.x, p.y, p.z + 20, p.phi, p.theta });
+	timeStep = 0;
 }
 
 void Scara::generatePickCubeTrajectory(float x, float y, float phi,
 		StorageSpace stg) {
+	printf("generate pick cube trajectory \r\n");
 	//set actionTime
-	trj.setActionTime(15);
+	trj.setActionTime(4);
 
-	Angles cap = { currentAnglesPosition.q1, currentAnglesPosition.q2,
-			currentAnglesPosition.q3, currentAnglesPosition.q4,
-			currentAnglesPosition.q5 };
-	TimedPose p = trj.FK( { 0, cap.q1, cap.q2, cap.q3, cap.q4, cap.q5 });
+	TimedPose p = trj.FK( { 0, itaLast.q1, itaLast.q2, itaLast.q3, itaLast.q4, itaLast.q5 });
 	trj.startPose( { p.x, p.y, p.z, p.phi, p.theta });
 
 	//move first to given x,y,phi
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI / 2 });
-	trj.addPose(TimeFactors::SLOW, { x, y, 48, phi, M_PI / 2 }); //runter auf klotz saugen
+
+	trj.addPose(TimeFactors::SLOW, { x, y, 46, phi, M_PI / 2 }); //runter auf klotz saugen
+	//trj.addPose(TimeFactors::SLOW, { x, y, 47, phi, M_PI / 2 }); //runter auf klotz saugen
+	//trj.addPose(TimeFactors::SLOW, { x, y, 46, phi, M_PI / 2 }); //runter auf klotz saugen
 	trj.addPose(TimeFactors::FAST, { x, y, 100, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
 
 	float cx = 0;
@@ -170,12 +176,12 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi,
 
 	if (stg == StorageSpace::INNER_2 || stg == StorageSpace::MIDDLE_2
 			|| stg == StorageSpace::OUTER_2) {
-		trj.addPose(TimeFactors::FAST, { x, y, 196, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
+		trj.addPose(TimeFactors::MEDIUM, { x, y, 196, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
 	}
 
 	if (stg == StorageSpace::INNER_3 || stg == StorageSpace::MIDDLE_3
 			|| stg == StorageSpace::OUTER_3) {
-		trj.addPose(TimeFactors::FAST, { x, y, 250, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
+		trj.addPose(TimeFactors::SLOW, { x, y, 250, phi, M_PI / 2 }); // um klotze nicht zu zerst hoch
 	}
 
 //	//move cube befor storage
@@ -184,7 +190,7 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi,
 	cz = pLUT[static_cast<int>(stg)].z;
 	cphi = pLUT[static_cast<int>(stg)].phi;
 	ctheta = pLUT[static_cast<int>(stg)].theta;
-	trj.addPose(TimeFactors::MEDIUM, { cx + 30, cy, cz, cphi, ctheta });
+	trj.addPose(TimeFactors::FAST, { cx + 30, cy, cz, cphi, ctheta });
 
 //	//put in
 	cx = pLUT[static_cast<int>(stg)].x;
@@ -192,7 +198,11 @@ void Scara::generatePickCubeTrajectory(float x, float y, float phi,
 	cz = pLUT[static_cast<int>(stg)].z;
 	cphi = pLUT[static_cast<int>(stg)].phi;
 	ctheta = pLUT[static_cast<int>(stg)].theta;
-	trj.addPose(TimeFactors::MEDIUM, { cx, cy, cz, cphi, ctheta });
+	trj.addPose(TimeFactors::SLOW, { cx, cy, cz, cphi, ctheta });
+
+	trj.showXTrajectory(trj.xTrj);
+
+	timeStep = 0;
 }
 
 void Scara::scaraPumpValveControl(bool on) {
@@ -235,46 +245,40 @@ TimedAngles Scara::calculateQ(int trjElement, int interElement,
 		int numOfInterPoints) {
 	TimedPose interPose = trj.interpolateStep(trj.xTrj[trjElement],
 			trj.xTrj[trjElement + 1], numOfInterPoints, interElement);
-	//trj.qTrj[trjElement]
 	return trj.ik1(interPose);
 }
 
 void Scara::executeTrajectory() {
 	currentTime = timeStep * 0.010;
 
-	int numOfInterSteps = 10;
+	int numOfInterSteps = 40;
 
-	//calculate first angle configuration
-	if((trj.xTrj.size() > 0) && (actualTrajectoryStep == 0)){
-		itaLast = calculateQ(actualTrajectoryStep, actualInterpolationStep,
-						numOfInterSteps);
-	}
-
-	//calculate next angle configuration
-	if ((trj.xTrj.size() > 0) && (actualTrajectoryStep > 0)) {
-		itaActual = calculateQ(actualTrajectoryStep, actualInterpolationStep+1,
+	if ((trj.xTrj.size() > 0)) {
+		itaActual = calculateQ(actualTrajectoryStep, actualInterpolationStep,
 				numOfInterSteps);
 	}
 
 	//send command of position and speed to motor
 	if ((currentTime > itaActual.t) && (trj.xTrj.size() > 0)) {
 		if (!isValid(itaActual)) {
-			printf("[Non Valid]: t:%f,q1:%f,q1:%f,q1:%f,q1:%f,q1:%f \r\n",itaActual.t,itaActual.q1,itaActual.q2,itaActual.q3,itaActual.q4,itaActual.q5);
+			printf("[Non Valid]: t:%f,q1:%f,q2:%f,q3:%f,q4:%f,q5:%f \r\n",itaActual.t,itaActual.q1,itaActual.q2,itaActual.q3,itaActual.q4,itaActual.q5);
 			currentState->cancelExecute();
 		} else {
-			float tpm = (itaActual.t-itaLast.t)/(2*M_PI);
+			//printf("[Valid]: t:%f,q1:%f,q2:%f,q3:%f,q4:%f,q5:%f \r\n",itaActual.t,itaActual.q1,itaActual.q2,itaActual.q3,itaActual.q4,itaActual.q5);
+
+			float tpm = (itaActual.t-itaLast.t)*(2*M_PI);
 
 			servos[0].moveTo(itaActual.q1 + 150 * M_PI / 180);
-			servos[0].setRPM((itaActual.q1-itaLast.q1)/tpm);
+			//servos[0].setRPM((itaActual.q1-itaLast.q1)/tpm);
 
 			servos[1].moveTo(itaActual.q2 + 150 * M_PI / 180);
-			servos[1].setRPM((itaActual.q2-itaLast.q2)/tpm);
+			//servos[1].setRPM((itaActual.q2-itaLast.q2)/tpm);
 
 			servos[2].moveTo(itaActual.q3 + 60 * M_PI / 180);
-			servos[2].setRPM((itaActual.q1-itaLast.q1)/tpm);
+			//servos[2].setRPM((itaActual.q3-itaLast.q3)/tpm);
 
 			servos[3].moveTo(itaActual.q4 + 105 * M_PI / 180);
-			servos[3].setRPM((itaActual.q1-itaLast.q1)/tpm);
+			//servos[3].setRPM((itaActual.q4-itaLast.q4)/tpm);
 
 			lift.moveTo(itaActual.q5);
 
@@ -284,16 +288,17 @@ void Scara::executeTrajectory() {
 	}
 
 	//increment trajectory step
-	if (actualInterpolationStep > numOfInterSteps - 1) {
+	if (actualInterpolationStep > numOfInterSteps) {
 		actualTrajectoryStep++;
 		actualInterpolationStep = 0;
 	}
 
 	//at trajectory end then call trajectoryend transition
-	if (actualTrajectoryStep >= trj.xTrj.size()) {
+	if (actualTrajectoryStep == trj.xTrj.size()-1) {
 		trj.clear();
 		actualTrajectoryStep = 0;
 		actualInterpolationStep = 0;
+		timeStep = 0;
 		currentState->trajectoryEnd();
 	}
 	timeStep++;
@@ -329,10 +334,10 @@ bool Scara::isValid(TimedAngles qTrjP) {
 	if (!q4InRange)
 		return false;
 
-	bool q5InRange = (qTrjP.q5 > 59) && (qTrjP.q5 < 253);
-
-	if (!q5InRange)
-		return false;
+//	bool q5InRange = (qTrjP.q5 > 10) && (qTrjP.q5 < 255);
+//
+//	if (!q5InRange)
+//		return false;
 
 	return true;
 }
