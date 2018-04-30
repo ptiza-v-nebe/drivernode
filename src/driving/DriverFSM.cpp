@@ -179,12 +179,26 @@ bool DriverFSM::isAccuracyHigh() {
 }
 
 bool DriverFSM::isRobotStuck() {
-    float forwardVelocity = (leftMotorVelocity + rightMotorVelocity) * 0.5;
+    /*float forwardVelocity = (leftMotorVelocity + rightMotorVelocity) * 0.5;
 
-    bool forwardStuck = fabs(forwardVelocity - pm.getForwardVelocity())
-            > std::max(speed + 0.5f * speed, MINIMUM_DELTA_SPEED_FOR_STUCK);
+     bool forwardStuck = fabs(forwardVelocity - pm.getForwardVelocity())
+     > std::max(speed + 0.5f * speed, MINIMUM_DELTA_SPEED_FOR_STUCK);
 
-    return forwardStuck;
+     return forwardStuck;*/
+
+    if (turningAngle || (leftMotorVelocity < 0 && rightMotorVelocity > 0)
+            || (leftMotorVelocity > 0 && rightMotorVelocity < 0)) {
+        return false;
+    } else {
+
+        bool leftStuck = fabs((leftMotorVelocity - pm.getLeftWheelVelocity()))
+                > std::max(speed, MINIMUM_DELTA_SPEED_FOR_STUCK);
+        bool rightStuck = fabs(
+                (rightMotorVelocity - pm.getRightWheelVelocity()))
+                > std::max(speed, MINIMUM_DELTA_SPEED_FOR_STUCK);
+
+        return leftStuck && rightStuck;
+    }
 }
 
 bool DriverFSM::isEnemyBehindRobot() {
@@ -247,9 +261,9 @@ void DriverFSM::setDriveDirection(DriveDirection direction) {
 
 void DriverFSM::setDriveAccuracy(DriveAccuracy accuracy) {
     if (accuracy == DriveAccuracy::HIGH) {
-        targetRadius = 2.5; //mm
+        targetRadius = 4; //mm
     } else {
-        targetRadius = 50; //mm
+        targetRadius = 80; //mm
     }
     this->driveAccuracy = accuracy;
 }
