@@ -37,31 +37,27 @@ void ScaraLift::tick() {
 	currentPosition = encoder.getTick()*MM_PER_TICK+53;
 
 	float speed = 0;
-	float MAX_ACCELERATION = 1000;
+	//float MAX_ACCELERATION = 1000;
 
 	//if go up, we can use more power on controller
 	if((targetPosition-currentPosition) > 0){
-		MAX_ACCELERATION = 3000; //3000
+		//MAX_ACCELERATION = 3000; //3000
 		speed = 4*(targetPosition-currentPosition); //P = 2
 	}
 
 	//if go down we have earth acceleration, we have to go slower with controller
 	if((targetPosition-currentPosition) < 0){
-		MAX_ACCELERATION = 3000;
+		//MAX_ACCELERATION = 3000;
 		speed = 3*(targetPosition-currentPosition); //P = 2
 	}
 
-	if((targetPosition-currentPosition) == 0){
-			speed = 0; //P = 2
-	}
-
-    float rate = (speed - lastSpeed)/0.01;
-
-    if(rate > MAX_ACCELERATION) {
-    	speed = lastSpeed + MAX_ACCELERATION*0.01;
-    } else if(rate < -MAX_ACCELERATION) {
-    	speed = lastSpeed - MAX_ACCELERATION*0.01;
-    }
+//    float rate = (speed - lastSpeed)/0.01;
+//
+//    if(rate > MAX_ACCELERATION) {
+//    	speed = lastSpeed + MAX_ACCELERATION*0.01;
+//    } else if(rate < -MAX_ACCELERATION) {
+//    	speed = lastSpeed - MAX_ACCELERATION*0.01;
+//    }
 
 	//printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
 

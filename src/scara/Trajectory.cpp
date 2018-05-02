@@ -233,7 +233,7 @@ TimedAngles Trajectory::ik1(TimedPose& timedPose) {
 
 	float gamma = atan2((-yp / sqrt(pow(xp, 2) + pow(yp, 2))),
 			(-xp / sqrt(pow(xp, 2) + pow(yp, 2))));
-	int sign = 1;
+	int sign = 1; //1
 
 
 	float qOffset = 0;

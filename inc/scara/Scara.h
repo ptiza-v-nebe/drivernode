@@ -60,10 +60,12 @@ public:
 	void scaraPumpValveControl(bool on);
 	void storagePumpsControl(StorageSpace sam);
 	void disableStoragePumps();
-	bool isValid(TimedAngles qTrjP);
+	bool isValidSequence(TimedAngles qTrjP);
+	bool isValidSingle(TimedAngles qTrjP);
 	void showQPoint(TimedAngles qTrj);
 	void finalPark();
 	void startPark();
+	void monitoring();
 	TimedAngles calculateQ(int trjElement, int interElement, int numOfInterPoints);
 
 	TimedAngles readMotorAngles();
