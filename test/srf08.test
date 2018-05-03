@@ -1,0 +1,16 @@
+	//SRF08 srf08(&i2c, 0xE2);
+	SRF08& srf08_0xEE = hal.getSRF08s()[0];
+	SRF08& srf08_0xE2 = hal.getSRF08s()[1];
+	schedule_repeating_task([&srf08_0xEE, &srf08_0xE2]() {
+		uint16_t cm = srf08_0xEE.getRange();
+		uint16_t cm1 = srf08_0xE2.getRange();
+		if(cm < 10 || cm1 < 10){
+			printf("Warnung 0xEE %d %d cm\r\n", cm,cm1);
+
+		}
+//		printf("Range is %d cm\r\n", cm);
+//		printf("Measuring...\r\n");
+		srf08_0xEE.startRanging();
+		srf08_0xE2.startRanging();
+		srf08_0xEE.rangingFinished();
+	}, 100);

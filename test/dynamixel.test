@@ -1,0 +1,127 @@
+#if 1
+	DynamixelCOM dynamixel;
+
+    DynamixelMX12W mx12w(13, dynamixel);
+
+    /*int id = 254;
+
+     printf("Searching Dynamixel...\r\n");
+     for(int i = 0; i < 254; i++) {
+     if(dynamixel.ping(i) == 0){
+     printf("Found Dynamixel with ID %d\r\n", i);
+     id = i;
+     break;
+     }
+     }*/
+
+    /*printf("Switching to Wheel Mode...\r\n");
+     dynamixel.writeWord(id, 32, 0); // speed 0
+     dynamixel.writeWord(id, 6, 0); // cw limit 0
+     dynamixel.writeWord(id, 8, 0); // ccw limit 0
+     // both limits 0 --> wheel mode*/
+
+    dispatcher.registerMessageHandler<ResetOdometryMessage>(
+            [&mx12w](ResetOdometryMessage rom) {
+                float rpm = rom.getHeading() * 180.0 / 3.141592;
+                mx12w.setRPM(rpm);
+                printf("Setting RPM to %.2f \r\n", rpm);
+            });
+
+    dispatcher.registerMessageHandler<StopMessage>([&mx12w](StopMessage) {
+        mx12w.disableAndStop();
+    });
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>([&mx12w](SetSpeedMessage) {
+        mx12w.enable();
+    });
+#endif
+
+
+
+
+#if 0
+    DynamixelUART dynamixel;
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel](SetSpeedMessage ssm) {
+        // turn on led
+        //uint8_t checksum = ~(5 + 4 + 0x03 + 25 + 1);
+        //uint8_t msg[] = {0xFF, 0xFF, 5, 4, 0x03, 25, 1, checksum};
+        //int size = 8;
+
+
+
+                uint8_t id = 7;
+                uint8_t checksum = ~(id + 4 + 0x03 + 25 + ssm.getSpeedLeft());
+                uint8_t msg[] = {0xFF, 0xFF, id, 4, 0x03, 25, static_cast<uint8_t>(ssm.getSpeedLeft()), checksum};
+                constexpr int size = 8;
+                uint8_t answer[size] = {0};
+
+                dynamixel.send(msg, size);
+                int result = dynamixel.receive(answer, 6);
+
+                printf("Sent ");
+                printBytes(msg, size);
+                printf(" and got (%d) ", result);
+                printBytes(answer, size);
+                printf("\r\n");
+            });
+
+#endif
+
+#if 0
+    DynamixelCOM dynamixel;
+
+    int id = 7;
+
+    printf("Sending ping \r\n");
+    dynamixel.ping(id);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel, id](SetSpeedMessage ssm) {
+                //printf("Setting LED to %d \r\n", ssm.getSpeedLeft());
+                //dynamixel.writeByte(id, 25, ssm.getSpeedLeft());
+
+                uint16_t speed = ssm.getSpeedLeft();
+                printf("Setting GoalPosition to %d \r\n", speed);
+                dynamixel.writeWord(id, 30, speed);
+                dynamixel.writeByte(id, 25, speed < 500);
+
+                uint16_t presPos;
+                uint8_t volt;
+                dynamixel.readByte(id, 42, volt);
+                dynamixel.readWord(id, 36, presPos);
+
+                printf("Present Position is %d, Voltage is %d\r\n", presPos, volt);
+
+
+            });
+#endif
+
+#if 1
+    DynamixelCOM dynamixelCom;
+    DynamixelAX12A dynamixel(7, dynamixelCom);
+
+    dispatcher.registerMessageHandler<SetSpeedMessage>(
+            [&dynamixel](SetSpeedMessage ssm) {
+
+                bool enable = ssm.getSpeedLeft();
+
+                printf("%s Dynamixel\r\n", enable ? "Enabling" : "Disabling");
+                if(enable){
+                    dynamixel.enable();
+                } else {
+                    dynamixel.disableAndStop();
+                }
+
+
+            });
+    dispatcher.registerMessageHandler<ResetOdometryMessage>(
+               [&dynamixel](ResetOdometryMessage rom) {
+                   float heading = rom.getHeading();
+
+                   printf("Setting Angle to %.2f \r\n", heading);
+                   dynamixel.moveTo(heading);
+
+
+               });
+#endif
