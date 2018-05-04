@@ -39,6 +39,7 @@ private:
 
 	TimedAngles itaActual;
 	TimedAngles itaLast;
+	StorageSpace storageSpace;
 
 	float currentTime;
 

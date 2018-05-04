@@ -27,6 +27,8 @@ private:
     float lastSpeed;
     int16_t currentPosition;
     int16_t speed;
+   // int16_t lastPosition;
+    int16_t lastError;
 public:
     ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop);
 
@@ -43,6 +45,7 @@ public:
     float getPosition();
     void tick() override;
     void stop();
+    void disable();
 };
 
 #endif /* SCARA_SCARALIFT_H_ */
