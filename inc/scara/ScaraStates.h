@@ -47,6 +47,10 @@ public:
 
     }
 
+    virtual void tickSwitch(){
+
+    }
+
     virtual void cancelExecute(){
 
     }
@@ -76,6 +80,7 @@ STATE(Park)
 STATE(IdleScara)
     void commandReceived(const ScaraActionMessage& sam) override;
 	void park() override;
+	void tickSwitch() override;
 	void entry() override;
 };
 
@@ -91,5 +96,12 @@ STATE(PreventAttach)
 	void cancelExecute() override;
 	void entry() override;
 	};
+
+STATE(TickSwitch)
+	void trajectoryEnd() override;
+	void tick() override;
+	void cancelExecute() override;
+	void entry() override;
+};
 
 #endif /* SCARA_SCARASTATES_H_ */

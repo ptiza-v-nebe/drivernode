@@ -53,6 +53,10 @@ void IdleScara::park() {
 	CHANGE_STATE(Park);
 }
 
+void IdleScara::tickSwitch(){
+	CHANGE_STATE(TickSwitch);
+}
+
 void IdleScara::entry(){
 	//clear previous trajectory
 	context.clearTrajectory();
@@ -93,3 +97,26 @@ void PreventAttach::cancelExecute(){
 void PreventAttach::tick() {
 	context.executeTrajectory();
 }
+
+void TickSwitch::entry() {
+	//generate trajectory for going to park
+	//1.clear previous trajectory
+	context.clearTrajectory();
+	//2.generate new trajectory
+	context.generateTickSwitchTrajectory();
+}
+
+void TickSwitch::tick() {
+	context.executeTrajectory();
+}
+
+
+void TickSwitch::trajectoryEnd(){
+	CHANGE_STATE(IdleScara);
+}
+
+void TickSwitch::cancelExecute(){
+	CHANGE_STATE(IdleScara);
+}
+
+

@@ -189,10 +189,11 @@ int main(void) {
                    scara.cancelExecute();
                 } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
                     scara.park();
-                }
-                else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+                } else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
                      scara.disableStoragePumps();
-                }
+                } /*else if (bsm.getScaraCommand() == ScaraCommand::TICKSWITCH){
+                	scara.tickSwitch();
+                }*/
             });
 
 #if 0

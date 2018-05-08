@@ -56,6 +56,7 @@ public:
 	void generatePickCubeTrajectory(float x, float y, float phi, StorageSpace storage);
 	void generatePreventAttachTrajectory();
 	void generateParkTrajectory();
+	void generateTickSwitchTrajectory();
 	void commandReceived(const ScaraActionMessage& sam);
 	void park();
 	void scaraPumpValveControl(bool on);
@@ -67,6 +68,7 @@ public:
 	void finalPark();
 	void startPark();
 	void monitoring();
+	void tickSwitch();
 	TimedAngles calculateQ(int trjElement, int interElement, int numOfInterPoints);
 
 	TimedAngles readMotorAngles();
