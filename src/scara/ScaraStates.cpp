@@ -29,6 +29,7 @@ bool Park::tickInit() {
 }
 
 void Park::trajectoryEnd(){
+	context.sendFinishedMessage();
 	context.finalPark();
 	CHANGE_STATE(IdleScara);
 }
@@ -82,6 +83,7 @@ void PickCube::tick() {
 
 //this state will prevent attaching cube on next picking up session
 void PreventAttach::trajectoryEnd() {
+	context.sendFinishedMessage();
 	CHANGE_STATE(IdleScara);
 }
 
@@ -112,6 +114,7 @@ void TickSwitch::tick() {
 
 
 void TickSwitch::trajectoryEnd(){
+	context.sendFinishedMessage();
 	CHANGE_STATE(IdleScara);
 }
 

@@ -19,6 +19,8 @@
 #include <control/Clocked.h>
 #include <control/ClockedInitializable.h>
 
+#include "serial/MessageDispatcher.h"
+
 class Scara : public Clocked, public ClockedInitializable {
 private:
 	ScaraLift& lift;
@@ -26,6 +28,8 @@ private:
 	OutputPin& scaraPump;
 	OutputPin& scaraValve;
 	OutputPin* storagePumps;
+
+	MessageDispatcher& md;
 
 	bool runOnce;
 	Trajectory trj;
@@ -44,7 +48,7 @@ private:
 	float currentTime;
 
 public:
-	Scara(ScaraHardware& hw, ScaraLift& lift);
+	Scara(ScaraHardware& hw, ScaraLift& lift, MessageDispatcher& md);
 	virtual ~Scara();
 	void executeTrajectory();
 
@@ -69,6 +73,9 @@ public:
 	void startPark();
 	void monitoring();
 	void tickSwitch();
+
+	void sendFinishedMessage();
+
 	TimedAngles calculateQ(int trjElement, int interElement, int numOfInterPoints);
 
 	TimedAngles readMotorAngles();

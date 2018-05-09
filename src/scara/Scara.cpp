@@ -7,10 +7,12 @@
 
 #include "scara/Scara.h"
 
-Scara::Scara(ScaraHardware& hw, ScaraLift& lift) :
+#include "serial/messages/StatusMessage.h"
+
+Scara::Scara(ScaraHardware& hw, ScaraLift& lift, MessageDispatcher& md) :
 		lift(lift), servos(hw.getArmServos()), runOnce(false), timeStep(0),currentTime(0), currentState(
 				new Park(*this)), scaraPump(hw.getPump()), scaraValve(
-				hw.getValve()), storagePumps(hw.getStoragePumps()), itaActual(
+				hw.getValve()), storagePumps(hw.getStoragePumps()), md(md), itaActual(
 				{ 0, 0, 0, 0, 0 }),itaLast({ 0, 0, 0, 0, 0 }), actualInterpolationStep(0), actualTrajectoryStep(0) {
 
 	//pLUT[i] = {X,Y,Z,PHI,THETA};
@@ -62,6 +64,10 @@ Scara::Scara(ScaraHardware& hw, ScaraLift& lift) :
 	storagePumps[1].enable();
 	storagePumps[2].enable();
 
+}
+
+void Scara::sendFinishedMessage(){
+	md.sendMessage(StatusMessage(Status::SCARA_FINISHED));
 }
 
 void Scara::finalPark() {
