@@ -27,7 +27,7 @@ static constexpr float STOP_PERCENT = 0.05f;
 /**
  * duty cycle percentage for running the motor
  */
-static constexpr float ON_PERCENT = 0.058f;
+static constexpr float ON_PERCENT = 0.059f;
 
 /**
  * Constructs a ShootingBLDC
