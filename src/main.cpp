@@ -81,8 +81,8 @@ int main(void) {
 #ifdef SMALL_ROBOT
     HoneyControl honeyControl(hal.getServoLeft(), hal.getServoRight());
 
-    MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&honeyControl,
-                &startPinInit}, {&pm});
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl,
+            &startPinInit }, { &pm });
 #endif
 #ifdef BIG_ROBOT
     MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
@@ -165,7 +165,8 @@ int main(void) {
 
 #ifndef TEST_ALL
     schedule_repeating_task(
-            [&hal, &backwardVision]() {
+            [&hal, &backwardVision/*, &dispatcher*/]() {
+                static int srf08Index = 0;
                 uint16_t d1 = hal.getSRF08s()[0].getRange();
                 uint16_t d2 = hal.getSRF08s()[1].getRange();
 
@@ -179,9 +180,12 @@ int main(void) {
                     }
                 }
 
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 100);
+                hal.getSRF08s()[srf08Index].startRanging();
+                srf08Index = (srf08Index + 1) % SRF08_COUNT;
+
+                //dispatcher.sendMessage(ControlledDriveMessage( {d1, d2}, DriveSpeed::FAST, backwardVision ? DriveDirection::FORWARD : DriveDirection::BACKWARD, DriveAccuracy::HIGH));
+
+            }, 100, 50);
 
 #if 1
     schedule_repeating_task([&]() {
@@ -204,6 +208,7 @@ int main(void) {
     // Sensor Test
     schedule_repeating_task(
             [&hal]() {
+                static int srfIndex = 0;
                 printf("\033[2J");
                 printf("SENSOR TEST\r\n\n");
                 printf("Encoders: Left %ld, Right %ld\r\n",
@@ -221,10 +226,10 @@ int main(void) {
 #ifdef SMALL_ROBOT
                 printf("Front Switch: %s\r\n", hal.getFrontSwitch().isOn() ? "PRESSED" : "RELEASED");
 #endif
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 500);
-
+                hal.getSRF08s()[srfIndex].startRanging();
+                srfIndex = (srfIndex + 1) % SRF08_COUNT;
+            }, 250);
+#if 0
     //Actor Test
     hal.getLeftMotor().enable();
     hal.getRightMotor().enable();
@@ -304,6 +309,7 @@ int main(void) {
     dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
                 hal.disableAllActors();
             });
+#endif
 #endif
 
     // ////////////////////////////////////////////
