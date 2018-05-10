@@ -42,6 +42,12 @@
 //#define CALIBRATION
 
 /**
+ * Enables testing program
+ */
+//#define TEST_ALL
+
+
+/**
  * Enable to generate more output in the MessageParser.
  * only effective if HUMAN_MODE is enabled
  */

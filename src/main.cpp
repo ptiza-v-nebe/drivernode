@@ -144,6 +144,7 @@ int main(void) {
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+#ifndef TEST_ALL
 #ifndef HUMAN_MODE
     schedule_repeating_task(
             [&dispatcher, &pm]() {
@@ -154,6 +155,7 @@ int main(void) {
     schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
     }, 10);
+#endif
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
@@ -161,6 +163,7 @@ int main(void) {
     }, 250);
 #endif
 
+#ifndef TEST_ALL
     schedule_repeating_task(
             [&hal, &backwardVision]() {
                 uint16_t d1 = hal.getSRF08s()[0].getRange();
@@ -180,30 +183,6 @@ int main(void) {
                 hal.getSRF08s()[1].startRanging();
             }, 100);
 
-    // ////////////////////////////////////////////
-    // BEGIN TEST AREA
-    // ////////////////////////////////////////////
-#if 0
-
-    schedule_repeating_task([&hal, &stop]() {
-                uint16_t d1 = hal.getSRF08s()[0].getRange();
-                uint16_t d2 = hal.getSRF08s()[1].getRange();
-
-                if(stop) {
-                    if(d1 > 30 && d2 > 30) {
-                        stop = false;
-                    }
-                } else {
-                    if(d1 < 20 || d2 < 20) {
-                        stop = true;
-                    }
-                }
-
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 100);
-#endif
-
 #if 1
     schedule_repeating_task([&]() {
         static InputPin& front = hal.getFrontSwitch();
@@ -219,8 +198,9 @@ int main(void) {
         }
     }, 50);
 #endif
+#endif
 
-#if 0
+#ifdef TEST_ALL
     // Sensor Test
     schedule_repeating_task(
             [&hal]() {
@@ -291,7 +271,7 @@ int main(void) {
                 hal.getScaraHardware().getArmServos()[3].moveTo(150_deg);
 #endif
 #ifdef SMALL_ROBOT
-                hal.getShootingBLDC().start();
+                hal.getShootingBLDC().stop();
                 hal.getServoLeft().moveTo(150_deg);
                 hal.getServoRight().moveTo(100_deg);
 #endif
@@ -315,7 +295,7 @@ int main(void) {
                 hal.getScaraHardware().getArmServos()[3].moveTo(50_deg);
 #endif
 #ifdef SMALL_ROBOT
-                hal.getShootingBLDC().stop();
+                hal.getShootingBLDC().start();
                 hal.getServoLeft().moveTo(100_deg);
                 hal.getServoRight().moveTo(150_deg);
 #endif
