@@ -103,6 +103,8 @@ void DriverFSM::updateControl() {
 void DriverFSM::resetControl() {
     leftWheelControl.reset();
     rightWheelControl.reset();
+    referenceSpeedLeft = 0;
+    referenceSpeedRight = 0;
     leftMotorVelocity = 0;
     rightMotorVelocity = 0;
 }
