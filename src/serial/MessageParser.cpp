@@ -209,6 +209,11 @@ int MessageParser::parseScaraMessage(const uint8_t* msg, const int size,
                 print(bsm);
                 return Serializer::serialize(bsm, buffer, buffersize);
             }
+            case 't': {
+                            BasicScaraMessage bsm(ScaraCommand::TICKSWITCH);
+                            print(bsm);
+                            return Serializer::serialize(bsm, buffer, buffersize);
+            }
             case 'p': {
                 BasicScaraMessage bsm(ScaraCommand::PARK);
                 print(bsm);

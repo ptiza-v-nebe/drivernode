@@ -129,10 +129,11 @@ void Scara::tickSwitch() {
 }
 
 void Scara::generateTickSwitchTrajectory(){
-	trj.setActionTime(3);
-	trj.startPose( { 82, 135, 100, M_PI / 2, M_PI / 2 });
-	trj.addPose(TimeFactors::MEDIUM, { 82, 135, 250, M_PI / 2 });
-	trj.addPose(TimeFactors::MEDIUM, { 0, 210, 250, M_PI / 2 });
+	trj.setActionTime(1.0);
+	TimedPose p = trj.FK( { 0, itaLast.q1, itaLast.q2, itaLast.q3, itaLast.q4,
+				itaLast.q5 });
+		trj.startPose( { p.x, p.y, p.z, p.phi, p.theta });
+	trj.addPose(TimeFactors::MEDIUM, { 82, 135, 80, M_PI / 2, M_PI / 2 });
 	timeStep = 0;
 }
 
