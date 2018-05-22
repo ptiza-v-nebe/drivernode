@@ -11,6 +11,7 @@
 #include <cstring>
 #include "util/util.h"
 #include "config.h"
+#include <memory>
 
 /**
  * custom error flag to indicate an IO error
@@ -73,11 +74,11 @@ uint8_t DynamixelCOM::write(const uint8_t id, const uint8_t address,
         const uint8_t* data, const int dataLength) {
     // create params
     int paramCount = dataLength + 1;
-    uint8_t *params = new uint8_t[paramCount];
+    std::unique_ptr<uint8_t[]> params(new uint8_t[paramCount]);
     params[0] = address;
-    memcpy(params + 1, data, dataLength);
+    memcpy(params.get() + 1, data, dataLength);
 
-    sendInstruction(id, DYNAMIXEL_WRITE, params, paramCount);
+    sendInstruction(id, DYNAMIXEL_WRITE, params.get(), paramCount);
 
     uint8_t buffer[4];
     int result = readStatus(buffer, 4);
@@ -85,7 +86,6 @@ uint8_t DynamixelCOM::write(const uint8_t id, const uint8_t address,
         return COM_FAIL;
     }
 
-    delete[] params;
     return buffer[2]; // return error code
 }
 
@@ -106,16 +106,15 @@ uint8_t DynamixelCOM::read(const uint8_t id, const uint8_t address,
     sendInstruction(id, DYNAMIXEL_READ, params, 2);
 
     int recvLength = length + 4;
-    uint8_t *recvBuf = new uint8_t[recvLength];
-    int result = readStatus(recvBuf, recvLength);
+    std::unique_ptr<uint8_t[]> recvBuf(new uint8_t[recvLength]);
+    int result = readStatus(recvBuf.get(), recvLength);
     if (result < 0) {
         return COM_FAIL;
     }
 
-    memcpy(buffer, recvBuf + 3, length);
+    memcpy(buffer, recvBuf.get() + 3, length);
     uint8_t errorCode = recvBuf[2];
 
-    delete[] recvBuf;
     return errorCode;
 }
 
@@ -131,23 +130,22 @@ void DynamixelCOM::sendInstruction(const uint8_t id, const uint8_t instruction,
         const uint8_t* parameters, const int paramCount) {
     uint8_t length = paramCount + 2; // param count + instruction + checksum
     int msgLength = length + 1 + 1 + 2; //length + id + header (2 byte)
-    uint8_t* msg = new uint8_t[msgLength];
+    std::unique_ptr<uint8_t[]> msg(new uint8_t[msgLength]);
     msg[0] = 0xFF;
     msg[1] = 0xFF;
     msg[2] = id;
     msg[3] = length;
     msg[4] = instruction;
-    memcpy(msg + 5, parameters, paramCount);
+    memcpy(msg.get() + 5, parameters, paramCount);
 
-    msg[msgLength - 1] = calculateChecksum(msg + 2, length + 1);
+    msg[msgLength - 1] = calculateChecksum(msg.get() + 2, length + 1);
 
 #ifdef DEBUG_DYNAMIXEL_COM
     printf("Sending ");
     printBytes(msg, msgLength);
     printf("to the Dynamixel(s).\r\n");
 #endif
-    uart.send(msg, msgLength);
-    delete[] msg;
+    uart.send(msg.get(), msgLength);
 }
 
 /**
