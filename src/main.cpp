@@ -29,6 +29,7 @@
 #include "serial/messages/version.h"
 #include "serial/messages/all.h"
 #include "scara/ScaraLift.h"
+#include "scara/Scara.h"
 
 #include <control/HoneyControl.h>
 #include <control/StartPinInitializer.h>
@@ -85,8 +86,14 @@ int main(void) {
             &startPinInit }, { &pm });
 #endif
 #ifdef BIG_ROBOT
-    MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
-            {   &pm});
+    ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder(), hal.getScaraHardware().getEndStop());
+    Scara scara(hal.getScaraHardware(), lift, dispatcher);
+
+    MainFSMContext mainFSM(dispatcher, {&driverFSM, &scara}, {/*&startPinInit,*/ &scara},
+            {&pm, &lift});
+
+//        MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
+//                {&pm});
 #endif
 
     // ////////////////////////////////////////////
@@ -118,33 +125,19 @@ int main(void) {
                 driverFSM.newAngle();
             });
 
-    hal.getShootingBLDC().enable();
-    dispatcher.registerMessageHandler<ShootingMechanismMessage>(
-            [&hal](const ShootingMechanismMessage& smm) {
-                if(smm.getCommand() == ShootingCommand::ENABLE) {
-                    hal.getShootingBLDC().start();
-                } else {
-                    hal.getShootingBLDC().stop();
-                }
-            });
-
-    dispatcher.registerMessageHandler<ServoControlMessage>(
-            [&honeyControl, &dispatcher](const ServoControlMessage& scm) {
-                honeyControl.processCommand(scm);
-            });
-
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&hal](const SetSpeedMessage& ssm) {
                 hal.getLeftMotor().enable();
                 hal.getRightMotor().enable();
                 hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
                 hal.getRightMotor().setSpeed(ssm.getSpeedRight());
-            });
+    });
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
 #ifndef TEST_ALL
+
 #ifndef HUMAN_MODE
     schedule_repeating_task(
             [&dispatcher, &pm]() {
@@ -187,7 +180,7 @@ int main(void) {
 
             }, 100, 50);
 
-#if 1
+#ifdef SMALL_OTTER
     schedule_repeating_task([&]() {
         static InputPin& front = hal.getFrontSwitch();
         static bool stopped = false;
@@ -202,8 +195,30 @@ int main(void) {
         }
     }, 50);
 #endif
-#endif
 
+    // ////////////////////////////////////////////
+    // BEGIN TEST AREA
+    // ////////////////////////////////////////////
+
+    dispatcher.registerMessageHandler<ScaraActionMessage>(
+            [&](ScaraActionMessage sam) {
+    			scara.commandReceived(sam);
+    			//wie gebe ich statuscodes raus?
+            });
+
+    dispatcher.registerMessageHandler<BasicScaraMessage>(
+            [&](BasicScaraMessage bsm) {
+                if(bsm.getScaraCommand() == ScaraCommand::CANCEL) {
+                   scara.cancelExecute();
+                } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
+                    scara.park();
+                } else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+                     scara.disableStoragePumps();
+                } else if (bsm.getScaraCommand() == ScaraCommand::TICKSWITCH){
+                	scara.tickSwitch();
+                }
+            });
+#endif
 #ifdef TEST_ALL
     // Sensor Test
     schedule_repeating_task(

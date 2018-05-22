@@ -82,7 +82,9 @@ void MainFSMContext::sendStartMessage() {
 }
 
 void MainFSMContext::startGameTimer() {
+#ifndef HUMAN_MODE
     GameTimer::getInstance().start();
+#endif
 }
 
 void MainFSMContext::handleComEstablished() {

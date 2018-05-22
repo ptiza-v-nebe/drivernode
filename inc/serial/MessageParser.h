@@ -27,6 +27,7 @@ private:
     static int parseTurnMessage(const uint8_t *msg, const int size, uint8_t *buffer, const int buffersize);
     static int parseSetSpeedMessage(const uint8_t *msg, const int size, uint8_t *buffer, const int buffersize);
     static int parseResetMessage(const uint8_t *msg, const int size, uint8_t *buffer, const int buffersize);
+    static int parseScaraMessage(const uint8_t *msg, const int size, uint8_t *buffer, const int buffersize);
 
     static void print(const Message& message);
 };

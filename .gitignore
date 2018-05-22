@@ -4,6 +4,7 @@
 .project
 .settings
 .pioenvs
-
+.DS_Store
 # Prevent commiting line swapping in this file
 NUCLEO-L476RG.xml
+
