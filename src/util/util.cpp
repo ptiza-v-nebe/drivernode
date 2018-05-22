@@ -23,15 +23,6 @@ void printBytes(const uint8_t* bytes, const int length) {
     }
 }
 
-float clamp(float x, float min, float max) {
-	if(x < min) {
-		x = min;
-	} else if(x > max) {
-		x = max;
-	}
-	return x;
-}
-
 float smoothstep(float edge0, float edge1, float x) {
 	x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 	return x * x * (3 - 2 * x);
@@ -42,5 +33,4 @@ int signum(float x) {
 	if(x < 0) return -1;
 	return 0;
 }
-
 /** @} */

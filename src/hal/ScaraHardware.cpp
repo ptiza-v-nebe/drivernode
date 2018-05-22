@@ -36,7 +36,7 @@ ScaraHardware::ScaraHardware(DynamixelCOM& dynamixelCOM) :
                 { GPIOH, GPIO_PIN_1, GPIO_PIN_RESET }), //
         encoder(SCARA_ENCODER_GPIO, SCARA_ENCODER_A, SCARA_ENCODER_B,
                 SCARA_ENCODER_INVERT), //
-        endStop(GPIOB, GPIO_PIN_7, GPIO_PIN_SET, GPIO_PULLUP), //
+        endStop(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET, GPIO_PULLUP), //
         pump(GPIOC, GPIO_PIN_3), //
         valve(GPIOC, GPIO_PIN_2), //
         armServos { { ARMSERVO_1_ID, dynamixelCOM }, //

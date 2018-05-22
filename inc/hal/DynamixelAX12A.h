@@ -28,12 +28,12 @@ public:
     DynamixelAX12A& operator=(const DynamixelAX12A&) = delete;
     DynamixelAX12A& operator=(DynamixelAX12A&&) = default;
 
-    virtual void enable() override;
+    virtual void enable() override; //once at start
     virtual void disableAndStop() override;
 
     virtual Angle getAngle() override;
-    virtual void moveTo(const Angle& angle) override;
-    virtual void setRPM(float rpm) override;
+    virtual void moveTo(const Angle& angle) override; //position as angle (0 - 300 grad. 150 startposition)
+    virtual void setRPM(float rpm) override; //velocity
 };
 
 #endif /* HAL_DYNAMIXELAX12A_H_ */

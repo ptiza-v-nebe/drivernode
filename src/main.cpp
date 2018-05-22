@@ -29,6 +29,7 @@
 #include "serial/messages/version.h"
 #include "serial/messages/all.h"
 #include "scara/ScaraLift.h"
+#include "scara/Scara.h"
 
 #include <control/HoneyControl.h>
 #include <control/StartPinInitializer.h>
@@ -81,12 +82,18 @@ int main(void) {
 #ifdef SMALL_ROBOT
     HoneyControl honeyControl(hal.getServoLeft(), hal.getServoRight());
 
-    MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&honeyControl,
-                &startPinInit}, {&pm});
+    MainFSMContext mainFSM(dispatcher, { &driverFSM }, { &honeyControl,
+            &startPinInit }, { &pm });
 #endif
 #ifdef BIG_ROBOT
-    MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
-            {   &pm});
+    ScaraLift lift(hal.getScaraHardware().getLiftMotor(), hal.getScaraHardware().getLiftEncoder(), hal.getScaraHardware().getEndStop());
+    Scara scara(hal.getScaraHardware(), lift, dispatcher);
+
+    MainFSMContext mainFSM(dispatcher, {&driverFSM, &scara}, {/*&startPinInit,*/ &scara},
+            {&pm, &lift});
+
+//        MainFSMContext mainFSM(dispatcher, {&driverFSM}, {&startPinInit},
+//                {&pm});
 #endif
 
     // ////////////////////////////////////////////
@@ -118,32 +125,19 @@ int main(void) {
                 driverFSM.newAngle();
             });
 
-    hal.getShootingBLDC().enable();
-    dispatcher.registerMessageHandler<ShootingMechanismMessage>(
-            [&hal](const ShootingMechanismMessage& smm) {
-                if(smm.getCommand() == ShootingCommand::ENABLE) {
-                    hal.getShootingBLDC().start();
-                } else {
-                    hal.getShootingBLDC().stop();
-                }
-            });
-
-    dispatcher.registerMessageHandler<ServoControlMessage>(
-            [&honeyControl, &dispatcher](const ServoControlMessage& scm) {
-                honeyControl.processCommand(scm);
-            });
-
     dispatcher.registerMessageHandler<SetSpeedMessage>(
             [&hal](const SetSpeedMessage& ssm) {
                 hal.getLeftMotor().enable();
                 hal.getRightMotor().enable();
                 hal.getLeftMotor().setSpeed(ssm.getSpeedLeft());
                 hal.getRightMotor().setSpeed(ssm.getSpeedRight());
-            });
+    });
 
     // ////////////////////////////////////////////
     // Setup Tasks
     // ////////////////////////////////////////////
+#ifndef TEST_ALL
+
 #ifndef HUMAN_MODE
     schedule_repeating_task(
             [&dispatcher, &pm]() {
@@ -154,6 +148,7 @@ int main(void) {
     schedule_repeating_task([&mainFSM]() {
         mainFSM.tick();
     }, 10);
+#endif
 
 #ifdef BLINK_LED
     schedule_repeating_task([&hal]() {
@@ -161,8 +156,10 @@ int main(void) {
     }, 250);
 #endif
 
+#ifndef TEST_ALL
     schedule_repeating_task(
-            [&hal, &backwardVision]() {
+            [&hal, &backwardVision/*, &dispatcher*/]() {
+                static int srf08Index = 0;
                 uint16_t d1 = hal.getSRF08s()[0].getRange();
                 uint16_t d2 = hal.getSRF08s()[1].getRange();
 
@@ -176,35 +173,14 @@ int main(void) {
                     }
                 }
 
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 100);
+                hal.getSRF08s()[srf08Index].startRanging();
+                srf08Index = (srf08Index + 1) % SRF08_COUNT;
 
-    // ////////////////////////////////////////////
-    // BEGIN TEST AREA
-    // ////////////////////////////////////////////
-#if 0
+                //dispatcher.sendMessage(ControlledDriveMessage( {d1, d2}, DriveSpeed::FAST, backwardVision ? DriveDirection::FORWARD : DriveDirection::BACKWARD, DriveAccuracy::HIGH));
 
-    schedule_repeating_task([&hal, &stop]() {
-                uint16_t d1 = hal.getSRF08s()[0].getRange();
-                uint16_t d2 = hal.getSRF08s()[1].getRange();
+            }, 100, 50);
 
-                if(stop) {
-                    if(d1 > 30 && d2 > 30) {
-                        stop = false;
-                    }
-                } else {
-                    if(d1 < 20 || d2 < 20) {
-                        stop = true;
-                    }
-                }
-
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 100);
-#endif
-
-#if 1
+#ifdef SMALL_OTTER
     schedule_repeating_task([&]() {
         static InputPin& front = hal.getFrontSwitch();
         static bool stopped = false;
@@ -220,10 +196,34 @@ int main(void) {
     }, 50);
 #endif
 
-#if 0
+    // ////////////////////////////////////////////
+    // BEGIN TEST AREA
+    // ////////////////////////////////////////////
+
+    dispatcher.registerMessageHandler<ScaraActionMessage>(
+            [&](ScaraActionMessage sam) {
+    			scara.commandReceived(sam);
+    			//wie gebe ich statuscodes raus?
+            });
+
+    dispatcher.registerMessageHandler<BasicScaraMessage>(
+            [&](BasicScaraMessage bsm) {
+                if(bsm.getScaraCommand() == ScaraCommand::CANCEL) {
+                   scara.cancelExecute();
+                } else if (bsm.getScaraCommand() == ScaraCommand::PARK) {
+                    scara.park();
+                } else if (bsm.getScaraCommand() == ScaraCommand::RELEASECUBES) {
+                     scara.disableStoragePumps();
+                } else if (bsm.getScaraCommand() == ScaraCommand::TICKSWITCH){
+                	scara.tickSwitch();
+                }
+            });
+#endif
+#ifdef TEST_ALL
     // Sensor Test
     schedule_repeating_task(
             [&hal]() {
+                static int srfIndex = 0;
                 printf("\033[2J");
                 printf("SENSOR TEST\r\n\n");
                 printf("Encoders: Left %ld, Right %ld\r\n",
@@ -241,10 +241,10 @@ int main(void) {
 #ifdef SMALL_ROBOT
                 printf("Front Switch: %s\r\n", hal.getFrontSwitch().isOn() ? "PRESSED" : "RELEASED");
 #endif
-                hal.getSRF08s()[0].startRanging();
-                hal.getSRF08s()[1].startRanging();
-            }, 500);
-
+                hal.getSRF08s()[srfIndex].startRanging();
+                srfIndex = (srfIndex + 1) % SRF08_COUNT;
+            }, 250);
+#if 0
     //Actor Test
     hal.getLeftMotor().enable();
     hal.getRightMotor().enable();
@@ -291,7 +291,7 @@ int main(void) {
                 hal.getScaraHardware().getArmServos()[3].moveTo(150_deg);
 #endif
 #ifdef SMALL_ROBOT
-                hal.getShootingBLDC().start();
+                hal.getShootingBLDC().stop();
                 hal.getServoLeft().moveTo(150_deg);
                 hal.getServoRight().moveTo(100_deg);
 #endif
@@ -315,7 +315,7 @@ int main(void) {
                 hal.getScaraHardware().getArmServos()[3].moveTo(50_deg);
 #endif
 #ifdef SMALL_ROBOT
-                hal.getShootingBLDC().stop();
+                hal.getShootingBLDC().start();
                 hal.getServoLeft().moveTo(100_deg);
                 hal.getServoRight().moveTo(150_deg);
 #endif
@@ -324,6 +324,7 @@ int main(void) {
     dispatcher.registerMessageHandler<StopMessage>([&hal](StopMessage) {
                 hal.disableAllActors();
             });
+#endif
 #endif
 
     // ////////////////////////////////////////////

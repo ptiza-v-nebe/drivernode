@@ -9,72 +9,101 @@
 
 #include <scara/ScaraLift.h>
 #include <scheduler/Scheduler.h>
+#include <position/Angle.h>
+#include "util/util.h"
 
 static constexpr int16_t DELTA_MIN = 50;
 static constexpr int16_t DELTA_MAX = 500;
-static constexpr int16_t ACCURACY = 20;
+static constexpr int16_t ACCURACY = 50;
 static constexpr float DELTA_TO_SPEED = 8.0f;
 
-static constexpr int16_t MAX_POSITION = 7100;
-static constexpr int16_t MIN_POSITION = 0;
+static constexpr int16_t MAX_POSITION = 253; // mm from floor
+static constexpr int16_t MIN_POSITION = 53; // mm from floor
 
-ScaraLift::ScaraLift(Motor& motor, Encoder& encoder) :
-        motor(motor), encoder(encoder), startPosition(0), targetPosition(0), //
-        initialized(false) {
+static constexpr float MOTORCONSTANT = 32*200*(1/(2*PI*7)); // in mm
+static constexpr float MM_PER_TICK = (253.0f-53)/7150;
+
+
+
+ScaraLift::ScaraLift(Motor& motor, Encoder& encoder, InputPin& endStop) :
+        motor(motor), encoder(encoder), endStop(endStop), startPosition(0), targetPosition(53), //
+        initialized(false),  lastSpeed(0.0) , currentPosition(53), lastError(0){
 }
 
 void ScaraLift::tick() {
-    // TODO!!
-    // read input
-    int16_t currentPosition = encoder.getTick(); //between 0 and 7100
+	if(!initialized){
+		return;
+	}
+	currentPosition = encoder.getTick()*MM_PER_TICK+53;
 
-    // calculate
-    int16_t deltaEnd = std::abs(targetPosition - currentPosition);
-    int16_t speed;
-    if (deltaEnd < ACCURACY) {
-        speed = 0;
-    } else {
-        int16_t deltaStart = std::abs(currentPosition - startPosition);
-        int16_t delta = std::min( std::max(std::min(deltaStart, deltaEnd), DELTA_MIN), DELTA_MAX);
+	float speed = 0;
+	float currentError = (targetPosition-currentPosition);
+	float MAX_ACCELERATION = 1000;
 
-        if (currentPosition > targetPosition) {
-            delta = -delta;
-        }
+	//if go up, we can use more power on controller
+	if(currentError > 0){
+		//MAX_ACCELERATION = 3000; //3000
+		speed = 3.8*currentError + 0.0*(currentError-lastError)/0.010;; //P = 2
 
-        speed = static_cast<int16_t>(delta * DELTA_TO_SPEED);
+	}
+
+	//if go down we have earth acceleration, we have to go slower with controller
+	if(currentError < 0){
+		//MAX_ACCELERATION = 3000;
+		speed = 3*currentError; //P = 2
+	}
+
+    float rate = (speed - lastSpeed)/0.01;
+
+    if(rate > MAX_ACCELERATION) {
+    	speed = lastSpeed + MAX_ACCELERATION*0.01;
+    } else if(rate < -MAX_ACCELERATION) {
+    	speed = lastSpeed - MAX_ACCELERATION*0.01;
     }
 
-    // set output
-    motor.setSpeed(speed);
+	//printf("Ticks: %d pos: %d speed: %f rate %f\r\n", encoder.getTick(), currentPosition, speed, rate);
+
+    // calculat
+    motor.setSpeed(MOTORCONSTANT*speed);
+    lastSpeed = speed;
+    //lastPosition = currentPosition;
+   // lastError = currentError;
 }
 
 void ScaraLift::initialize() {
-    // TODO!!
     encoder.reset();
     motor.enable();
     motor.stop();
-    initialized = true;
-    schedule_repeating_task([this](){
-       tick();
-    }, 100);
+}
+
+void ScaraLift::stop(){
+	motor.stop();
+}
+
+void ScaraLift::disable(){
+	motor.disableAndStop();
 }
 
 void ScaraLift::moveTo(float mm) {
     if (!initialized) {
         return;
     }
-    startPosition = encoder.getTick();
-    // TODO!!
-    targetPosition = /*CONVERSION * mm*/clamp(static_cast<int16_t>(mm));
+    targetPosition = clamp<int16_t>(static_cast<int16_t>(mm), MIN_POSITION, MAX_POSITION);
 }
 
 float ScaraLift::getPosition() {
-    // TODO!!
-    // return CONVERSION * mm
-    return 0;
+    return currentPosition;
 }
 
-int16_t ScaraLift::clamp(int16_t value) {
-    return std::min(std::max(value, MIN_POSITION), MAX_POSITION);
+bool ScaraLift::tickInit() {
+    if(endStop.isOn()) {
+        encoder.reset();
+        motor.stop();
+        initialized = true;
+        return true;
+    } else {
+        motor.setSpeed(-5000);
+        return false;
+    }
 }
 /** @} */
