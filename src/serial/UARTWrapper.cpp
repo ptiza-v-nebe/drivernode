@@ -21,7 +21,7 @@ extern "C" {
 /**
  * ISR for USART2
  */
-void USART2_IRQHandler() {
+void UART4_IRQHandler() {
     if (USART2->ISR & USART_ISR_RXNE) {
         // byte was received
         UARTWrapper::getInstance().handleByte(USART2->RDR);
@@ -90,7 +90,7 @@ void UARTWrapper::setReceiveHandler(UARTReceiveHandler* receiveHandler) {
  * Initialize the UART instance
  */
 void UARTWrapper::init() {
-    uart.Instance = USART2;
+    uart.Instance = UART4;
 
     uart.Init.BaudRate = 115200;
     uart.Init.Parity = UART_PARITY_NONE;
@@ -104,23 +104,23 @@ void UARTWrapper::init() {
     uart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
     uart_gpio = getDefaultGPIO();
-    uart_gpio.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+    uart_gpio.Pin = GPIO_PIN_10 | GPIO_PIN_11;
     uart_gpio.Mode = GPIO_MODE_AF_PP;
-    uart_gpio.Alternate = GPIO_AF7_USART2;
+    uart_gpio.Alternate = GPIO_AF8_UART4;
 
-    __HAL_RCC_GPIOA_CLK_ENABLE()
+    __HAL_RCC_GPIOC_CLK_ENABLE()
     ;
-    __HAL_RCC_USART2_CLK_ENABLE()
+    __HAL_RCC_UART4_CLK_ENABLE()
     ;
 
-    HAL_GPIO_Init(GPIOA, &uart_gpio);
+    HAL_GPIO_Init(GPIOC, &uart_gpio);
     HAL_UART_Init(&uart);
 
     uint8_t unusedBuffer;
     // Use receive IT function but we are actually handling the interrupt ourselves
     HAL_UART_Receive_IT(&uart, &unusedBuffer, 1);
-    HAL_NVIC_SetPriority(USART2_IRQn, UART_PREMPTION_PRIO, UART_SUB_PRIO);
-    HAL_NVIC_EnableIRQ(USART2_IRQn);
+    HAL_NVIC_SetPriority(UART4_IRQn, UART_PREMPTION_PRIO, UART_SUB_PRIO);
+    HAL_NVIC_EnableIRQ(UART4_IRQn);
 }
 
 /**

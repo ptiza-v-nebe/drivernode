@@ -16,114 +16,57 @@
 #include "config.h"
 
 #include "Encoder.h"
-#include "SRF08.h"
 #include "PWM.h"
-#include "StepperMotor.h"
-#include "DynamixelCOM.h"
-#include "InputPin.h"
+#include "OutputPin.h"
+#include "DCMotor.h"
+#include "hal/EncoderManager.h"
+#include "stm32l4xx.h"
 
-// /////////////////////////////////////////////////////////////
-// Specific Includes and Constants
-// /////////////////////////////////////////////////////////////
-#ifdef BIG_ROBOT
-#include "FaulhaberBLDC.h"
-#include "ScaraHardware.h"
-
-constexpr int SRF08_COUNT = 2;
-#endif
-#ifdef SMALL_ROBOT
-#include "StepperMotor.h"
-#include "ShootingBLDC.h"
-#include "DynamixelAX12A.h"
-constexpr int SRF08_COUNT = 2;
-#endif
-
-// /////////////////////////////////////////////////////////////
-// Common
-// /////////////////////////////////////////////////////////////
 class HALManager {
 public:
-    static HALManager& getInstance();
+	static HALManager& getInstance();
+
 private:
-    // /////////////////////////////////////////////////////////////
-    // Common Members
-    // /////////////////////////////////////////////////////////////
-    Encoder leftEncoder; ///< the left encoder used for odometry
-    Encoder rightEncoder; ///< the right encoder used for odometry
-    SRF08 srf08[SRF08_COUNT]; ///< the ultrasonic sensor used for enemy detection when driving backwards
-    DynamixelCOM dynamixelCom; ///< the COM object for the dynamixels
-    InputPin starterSwitch; ///< the starter switch
-    OutputPin statusLED; ///< the status LED
-    OutputPin errorLED; ///< the error LED
+	PWM leftMotorPWM;
+	PWM rightMotorPWM;
 
-    I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
+	DCMotor leftMotor;
+	DCMotor rightMotor;
 
-    // /////////////////////////////////////////////////////////////
-    // Specific Members
-    // /////////////////////////////////////////////////////////////
-#ifdef BIG_ROBOT
-    ScaraHardware scaraHardware; ///< the scara hardware
+	OutputPin statusLED; ///< the status LED
+	OutputPin errorLED; ///< the error LED
 
-    FaulhaberBLDC leftMotor;///< the left motor used for driving
-    FaulhaberBLDC rightMotor;///< the right motor used for driving
-    UART_HandleTypeDef motorUART;///< the UART used for the Faulhaber BLDC motors
-#endif
-#ifdef SMALL_ROBOT
-    PWM leftMotorPWM; ///< the PWM for the left motor.
-    PWM rightMotorPWM; /// the PWM for the right motor
-    StepperMotor leftMotor; ///< the left motor used for driving
-    StepperMotor rightMotor; ///< the right motor used for driving
-    InputPin frontSwitch; ///< the switch at the front, used to detect when we are under the ball thingy
+	I2C_HandleTypeDef i2c; ///< the I²C to be used for the SRF08 sensors
 
-    PWM shootingBLDCPWM; ///<
-    ShootingBLDC shootingBLDC; ///< the BLDC used to shoot
-    DynamixelAX12A servoLeft; ///< the dynamixel used for bee
-    DynamixelAX12A servoRight; ///< the dynamixel used for bee
-#endif
+	EncoderManager encoderManager;
+	TIM_HandleTypeDef htim1;
 
-    // /////////////////////////////////////////////////////////////
-    // Common Functions
-    // /////////////////////////////////////////////////////////////
 private:
-    HALManager();
+	HALManager();
 public:
-    Encoder& getLeftEncoder();
-    Encoder& getRightEncoder();
-    Motor& getLeftMotor();
-    Motor& getRightMotor();
-    SRF08* getSRF08s();
-    InputPin& getStarterPin();
-    OutputPin& getStatusLED();
-    OutputPin& getErrorLED();
+	EncoderManager& getEncoderManager();
+	OutputPin& getStatusLED();
+	OutputPin& getErrorLED();
 
-    void enableISRs();
-    void disableAllActors();
+	Motor& getLeftMotor();
+	Motor& getRightMotor();
+	PWM& getLeftMotorPWM();
+	PWM& getRightMotorPWM();
 
-private:
-    void initializeHal();
-    void initializeEncoders();
-    void initializeI2C();
-
-    // /////////////////////////////////////////////////////////////
-    // Specific Functions
-    // /////////////////////////////////////////////////////////////
-#ifdef BIG_ROBOT
-public:
-    ScaraHardware& getScaraHardware();
+	void disableAllActors();
+	Encoder& getLeftEncoder();
+	Encoder& getRightEncoder();
 
 private:
-    void initializeMotorUART();
-#endif
-#ifdef SMALL_ROBOT
-public:
-    ShootingBLDC& getShootingBLDC();
-    DynamixelAX12A& getServoLeft();
-    DynamixelAX12A& getServoRight();
-    InputPin& getFrontSwitch();
-private:
-    void initializeMotors();
-    void initializeShootingBLDC();
-#endif
+	void initializeHal();
+	void initializeEncoders();
+
+	//motors
+	void initializeMotorsPWM();
+	void Error_Handler();
+	void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim);
+	void MX_TIM1_Init(TIM_HandleTypeDef& htim1);
+
 };
 
 #endif /* HAL_HALMANAGER_H_ */

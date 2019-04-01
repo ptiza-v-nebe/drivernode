@@ -53,8 +53,9 @@ void Ready::entry() {
 }
 
 void Ready::tick() {
-    static InputPin& starterPin = HALManager::getInstance().getStarterPin();
-    if(starterPin.isOff()) {
+    //static InputPin& starterPin = HALManager::getInstance().getStarterPin();
+    //if(starterPin.isOff()) {
+	if(true){
         CHANGE_STATE(Normal_Operation);
     }
 }

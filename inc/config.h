@@ -29,7 +29,7 @@
  * Should the program continue when an error occured?
  * Only effective if HUMAN_MODE is enabled
  */
-#define CONTINUE_ON_ERROR
+//#define CONTINUE_ON_ERROR
 
 /**
  * Use this to prevent showing errors
@@ -44,7 +44,7 @@
 /**
  * Enables testing program
  */
-//#define TEST_ALL
+#define TEST_ALL
 
 
 /**

@@ -19,23 +19,27 @@
  * @param channel the channel to be used
  */
 PWM::PWM(TIM_TypeDef* timer, uint32_t channel) :
-        timer(timer), ccr(nullptr), enableMask(0), dutyCycle(0.5) {
+        timer(timer), ccr(nullptr), enableMask(0), polarityChannel(0), dutyCycle(0.5) {
     switch (channel) {
         case TIM_CHANNEL_1:
             ccr = &(timer->CCR1);
             enableMask = TIM_CCER_CC1E | TIM_CCER_CC1NE;
+            polarityChannel = TIM_CCER_CC1NP;
             break;
         case TIM_CHANNEL_2:
             ccr = &(timer->CCR2);
             enableMask = TIM_CCER_CC2E | TIM_CCER_CC2NE;
+            polarityChannel = TIM_CCER_CC2NP;
             break;
         case TIM_CHANNEL_3:
             ccr = &(timer->CCR3);
             enableMask = TIM_CCER_CC3E | TIM_CCER_CC3NE;
+            polarityChannel = TIM_CCER_CC3NP;
             break;
         case TIM_CHANNEL_4:
             ccr = &(timer->CCR4);
             enableMask = TIM_CCER_CC4E;
+            polarityChannel = TIM_CCER_CC4P;
             break;
         default:
             ERROR("Invalid Channel!");
@@ -104,4 +108,18 @@ void PWM::enable() {
 void PWM::disable() {
     CLEAR_BIT(timer->CCER, enableMask);
 }
+
+/**
+ * change polarity of pwm signal
+ */
 /** @} */
+
+void PWM::setPolarity(int polarity){
+	if(polarity == TIM_OCNPOLARITY_HIGH){
+	    SET_BIT(timer->CCER, polarityChannel);
+	}
+
+	if(polarity == TIM_OCNPOLARITY_LOW){
+		CLEAR_BIT(timer->CCER, polarityChannel);
+	}
+}

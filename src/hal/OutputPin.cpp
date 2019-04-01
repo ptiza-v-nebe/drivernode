@@ -22,6 +22,7 @@
 OutputPin::OutputPin(GPIO_TypeDef* gpio, uint16_t pin, GPIO_PinState onState,
         uint32_t pullUp, uint32_t mode) :
         gpio(gpio), pin(pin), enabled(true), onState(onState) {
+
     init(pullUp, mode);
     disableAndStop();
 }

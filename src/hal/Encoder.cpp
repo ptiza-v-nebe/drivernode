@@ -48,6 +48,7 @@ Encoder::Encoder(GPIO_TypeDef* gpio, uint16_t channelAPin, uint16_t channelBPin,
     currentPhase = getPhase();
 }
 
+
 /**
  * updates the encoder.
  * this will read both channels and add/subtract tick accordingly
