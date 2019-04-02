@@ -45,7 +45,6 @@ public:
     int32_t getTickAndReset();
 private:
     Phase getPhase();
-    void initializeEncoders();
 };
 
 #endif /* HAL_ENCODER_H_ */

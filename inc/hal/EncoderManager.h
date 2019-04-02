@@ -41,7 +41,7 @@ static constexpr uint16_t LEFT_ENCODER_B = GPIO_PIN_10;
 /**
  * should the left encoder be inverted?
  */
-static constexpr bool LEFT_ENCODER_INVERT = false;
+static constexpr bool LEFT_ENCODER_INVERT = true;
 
 /**
  * GPIO Bank for right encoder.
@@ -71,10 +71,10 @@ class EncoderManager {
 private:
     Encoder leftEncoder; ///< the left encoder used for odometry
     Encoder rightEncoder; ///< the right encoder used for odometry
-public:
-    static EncoderManager& getInstance();
-	EncoderManager();
 	void initializeEncoders();
+public:
+	EncoderManager();
+    static EncoderManager& getInstance();
 	Encoder& getLeftEncoder();
 	Encoder& getRightEncoder();
 };

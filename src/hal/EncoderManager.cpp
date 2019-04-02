@@ -6,6 +6,7 @@
  */
 
 #include "hal/EncoderManager.h"
+#include "cstdio"
 
 // ///////////////////////////////////////////////////////////////////////////////
 // ISRs
@@ -14,12 +15,15 @@
 extern "C" {
 
 void EXTI9_5_IRQHandler() {
+	//printf("EXTI9_5_IRQHandler\n\r");
     // handles left encoder A+B
-    HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B);
+	HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_A | RIGHT_ENCODER_B);
 }
 void EXTI15_10_IRQHandler() {
+	//printf("EXTI15_10_IRQHandler\n\r");
     // handles right encoder A+B
-    HAL_GPIO_EXTI_IRQHandler(RIGHT_ENCODER_A | RIGHT_ENCODER_B);
+	HAL_GPIO_EXTI_IRQHandler(LEFT_ENCODER_A | LEFT_ENCODER_B);
+
 }
 }
 
@@ -58,7 +62,7 @@ void EncoderManager::initializeEncoders() {
     HAL_GPIO_Init(RIGHT_ENCODER_GPIO, &gpio_right);
 
     //enable interrupts
-    /*
+
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, ENCODERS_PREEMPTION_PRIORITY,
                     ENCODERS_SUB_PRIORITY);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
@@ -66,7 +70,7 @@ void EncoderManager::initializeEncoders() {
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, ENCODERS_PREEMPTION_PRIORITY,
                     ENCODERS_SUB_PRIORITY);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-    */
+
 }
 
 /**
